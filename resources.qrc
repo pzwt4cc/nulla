@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/M3Button.qml</file>
+        <file>qml/M3Switch.qml</file>
+        <file>qml/SettingsModal.qml</file>
+        <file>qml/ConfirmModal.qml</file>
+        <file>assets/nulla.svg</file>
+    </qresource>
+</RCC>

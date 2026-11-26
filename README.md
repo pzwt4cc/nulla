@@ -4,7 +4,7 @@
 
 # Nulla
 
-Minimalist text editor for scripts and configs built with C, GTK4, and GtkSourceView 5.
+Minimalist text editor for scripts and configs built with C++17 and Qt 6 Quick (QML), designed around a monochrome Material 3 outlined interface.
 
 ## Project Structure
 
@@ -15,33 +15,44 @@ Minimalist text editor for scripts and configs built with C, GTK4, and GtkSource
 │   ├── nulla.png
 │   └── nulla.svg
 ├── include/
-│   └── nulla.h
+│   ├── editor_backend.h
+│   ├── gutter.h
+│   └── highlighter.h
 ├── package/
 │   └── arch/
 │       └── PKGBUILD
+├── qml/
+│   ├── ConfirmModal.qml
+│   ├── M3Button.qml
+│   ├── M3Switch.qml
+│   ├── SettingsModal.qml
+│   └── main.qml
 ├── src/
-│   ├── file.c
-│   ├── main.c
-│   ├── settings.c
-│   └── window.c
+│   ├── editor_backend.cpp
+│   ├── gutter.cpp
+│   ├── highlighter.cpp
+│   └── main.cpp
 ├── Makefile
-└── README.md
+├── README.md
+└── resources.qrc
 ```
 
 ## Features
 
-- Open, edit, and save files (`Ctrl+O`, `Ctrl+S`, `Ctrl+Shift+S`, `Ctrl+N`)
+- Open, edit, and save files (`Ctrl+O`, `Ctrl+S`, `Ctrl+Shift+S`, `Ctrl+N`, drag & drop)
+- Custom monochrome Material 3 outlined UI with smooth micro-transitions
 - Line numbers toggle
-- Light, Dark, and GTK system themes
-- Syntax highlighting toggle and language selector (with auto-detection)
-- Zoom control (`Ctrl++`, `Ctrl+-`, `Ctrl+0`)
+- Dark, Light, and System themes
+- Built-in syntax highlighting toggle and searchable language selector (with auto-detection)
+- Zoom control (`Ctrl++`, `Ctrl+-`, `Ctrl+0`, `Ctrl+Wheel`)
 
 ## Dependencies
 
 - `gcc`
 - `make`
-- `gtk4`
-- `gtksourceview5`
+- `pkgconf`
+- `qt6-base`
+- `qt6-declarative`
 
 ## Build & Run
 

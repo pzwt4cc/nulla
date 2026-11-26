@@ -1,4 +1,4 @@
-CC = gcc
+CXX = g++
 TARGET = nulla
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
@@ -7,29 +7,51 @@ APPDIR = $(DATADIR)/applications
 ICONDIR_SCALABLE = $(DATADIR)/icons/hicolor/scalable/apps
 ICONDIR_512 = $(DATADIR)/icons/hicolor/512x512/apps
 
-PKGS = gtk4 gtksourceview-5
-CFLAGS = -std=c17 -O2 -Wall -Wextra -Werror -Wpedantic -Iinclude $(shell pkg-config --cflags $(PKGS))
-DEBUG_CFLAGS = -std=c17 -g -O0 -Wall -Wextra -Werror -Wpedantic -fsanitize=address,undefined -Iinclude $(shell pkg-config --cflags $(PKGS))
+PKGS = Qt6Core Qt6Gui Qt6Widgets Qt6Quick Qt6QuickControls2
+QT_LIBEXEC = $(shell pkg-config --variable=libexecdir Qt6Core)
+MOC = $(QT_LIBEXEC)/moc
+RCC = $(QT_LIBEXEC)/rcc
+
+CXXFLAGS = -std=c++17 -O2 -Wall -Wextra -Werror -Wpedantic -fPIC -Iinclude $(shell pkg-config --cflags $(PKGS))
+DEBUG_CXXFLAGS = -std=c++17 -g -O0 -Wall -Wextra -Werror -Wpedantic -fPIC -fsanitize=address,undefined -Iinclude $(shell pkg-config --cflags $(PKGS))
 LDFLAGS = $(shell pkg-config --libs $(PKGS))
 DEBUG_LDFLAGS = -fsanitize=address,undefined $(shell pkg-config --libs $(PKGS))
 
-SRCS = src/main.c src/window.c src/file.c src/settings.c
-OBJS = $(SRCS:src/%.c=build/%.o)
+HEADERS = include/editor_backend.h include/highlighter.h include/gutter.h
+MOC_SRCS = build/moc_editor_backend.cpp build/moc_highlighter.cpp build/moc_gutter.cpp
+RCC_SRC = build/qrc_resources.cpp
+SRCS = src/main.cpp src/editor_backend.cpp src/highlighter.cpp src/gutter.cpp $(MOC_SRCS) $(RCC_SRC)
+OBJS = $(patsubst %.cpp,build/%.o,$(notdir $(SRCS)))
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
-
-build/%.o: src/%.c include/nulla.h | build
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CXX) $(OBJS) -o $(TARGET) $(LDFLAGS)
 
 build:
 	mkdir -p build
 
+build/moc_%.cpp: include/%.h | build
+	$(MOC) -Iinclude $< -o $@
+
+QML_FILES = qml/main.qml qml/M3Button.qml qml/M3Switch.qml qml/SettingsModal.qml qml/ConfirmModal.qml
+
+build/qrc_resources.cpp: resources.qrc $(QML_FILES) assets/nulla.svg | build
+	$(RCC) $< -o $@
+
+build/%.o: src/%.cpp $(HEADERS) | build
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+build/%.o: build/%.cpp $(HEADERS) | build
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 debug: clean
 	mkdir -p build
-	$(CC) $(DEBUG_CFLAGS) $(SRCS) -o $(TARGET) $(DEBUG_LDFLAGS)
+	$(MOC) -Iinclude include/editor_backend.h -o build/moc_editor_backend.cpp
+	$(MOC) -Iinclude include/highlighter.h -o build/moc_highlighter.cpp
+	$(MOC) -Iinclude include/gutter.h -o build/moc_gutter.cpp
+	$(RCC) resources.qrc -o build/qrc_resources.cpp
+	$(CXX) $(DEBUG_CXXFLAGS) $(SRCS) -o $(TARGET) $(DEBUG_LDFLAGS)
 
 install: $(TARGET)
 	install -Dm755 $(TARGET) $(DESTDIR)$(BINDIR)/$(TARGET)
