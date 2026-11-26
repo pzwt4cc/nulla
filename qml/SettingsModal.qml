@@ -30,8 +30,8 @@ Item {
         if (!backend || !backend.uiLanguagesModel) {
             return "English";
         }
-        var m = backend.uiLanguagesModel;
-        for (var i = 0; i < m.length; i++) {
+        const m = backend.uiLanguagesModel;
+        for (let i = 0; i < m.length; i++) {
             if (m[i].id === backend.uiLanguage) {
                 return m[i].name;
             }
@@ -319,7 +319,7 @@ Item {
                                     onStrokeColorChanged: requestPaint()
                                     onUpChanged: requestPaint()
                                     onPaint: {
-                                        var ctx = getContext("2d");
+                                        const ctx = getContext("2d");
                                         ctx.reset();
                                         ctx.strokeStyle = strokeColor;
                                         ctx.lineWidth = 1.5;
@@ -395,8 +395,8 @@ Item {
 
                                     onOpened: {
                                         if (root.backend && root.backend.uiLanguagesModel) {
-                                            var m = root.backend.uiLanguagesModel;
-                                            for (var i = 0; i < m.length; i++) {
+                                            const m = root.backend.uiLanguagesModel;
+                                            for (let i = 0; i < m.length; i++) {
                                                 if (m[i].id === root.backend.uiLanguage) {
                                                     langDropList.positionViewAtIndex(i, ListView.Contain);
                                                     break;

@@ -11,12 +11,15 @@
 #include <QVariantList>
 #include <QVariantMap>
 #include <QVector>
+#include <QtQml/qqmlregistration.h>
 
 class QFileSystemWatcher;
 class QTimer;
 
 class TabModel : public QAbstractListModel {
   Q_OBJECT
+  QML_ELEMENT
+  QML_UNCREATABLE("Managed by EditorBackend")
 
 public:
   enum Roles { SessionRole = Qt::UserRole + 1 };
@@ -41,6 +44,7 @@ private:
 
 class EditorBackend : public QObject {
   Q_OBJECT
+  QML_ELEMENT
   Q_PROPERTY(TabModel *tabModel READ tabModel CONSTANT)
   Q_PROPERTY(int activeTabIndex READ activeTabIndex WRITE setActiveTabIndex
                  NOTIFY activeTabChanged)

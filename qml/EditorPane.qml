@@ -62,17 +62,17 @@ Item {
     }
 
     function updateHoverGuide(vx, vy) {
-        var rightLimit = (vScroll.visible && vScroll.size < 1.0) ? (editorViewport.width - 8) : editorViewport.width;
-        var bottomLimit = (hScroll.visible && hScroll.size < 1.0) ? (editorViewport.height - 8) : editorViewport.height;
+        const rightLimit = (vScroll.visible && vScroll.size < 1.0) ? (editorViewport.width - 8) : editorViewport.width;
+        const bottomLimit = (hScroll.visible && hScroll.size < 1.0) ? (editorViewport.height - 8) : editorViewport.height;
         if (vx < 0 || vy < 0 || vx >= rightLimit || vy >= bottomLimit) {
             hoverInsideTextArea = false;
             return;
         }
         hoverInsideTextArea = true;
-        var docX = vx + flick.contentX - editor.x;
-        var docY = vy + flick.contentY - editor.y;
-        var pos = editor.positionAt(docX, docY);
-        var r = editor.positionToRectangle(pos);
+        const docX = vx + flick.contentX - editor.x;
+        const docY = vy + flick.contentY - editor.y;
+        const pos = editor.positionAt(docX, docY);
+        let r = editor.positionToRectangle(pos);
         if (r.height <= 0) {
             r = Qt.rect(r.x, r.y, Math.max(1, r.width), editorMetrics.height);
         }
@@ -80,9 +80,9 @@ Item {
     }
 
     function lineBoundsAt(pos) {
-        var text = editor.text;
-        var start = pos === 0 ? 0 : text.lastIndexOf("\n", pos - 1) + 1;
-        var end = text.indexOf("\n", pos);
+        const text = editor.text;
+        const start = pos === 0 ? 0 : text.lastIndexOf("\n", pos - 1) + 1;
+        let end = text.indexOf("\n", pos);
         if (end === -1) {
             end = text.length;
         }
@@ -93,22 +93,22 @@ Item {
     }
 
     function indentSelection(unindent) {
-        var text = editor.text;
-        var selStart = editor.selectionStart;
-        var selEnd = editor.selectionEnd;
+        const text = editor.text;
+        const selStart = editor.selectionStart;
+        const selEnd = editor.selectionEnd;
         if (selStart === selEnd && !unindent) {
             editor.insert(editor.cursorPosition, "    ");
             return;
         }
-        var adjEnd = (selEnd > selStart && text.charAt(selEnd - 1) === "\n") ? (selEnd - 1) : selEnd;
-        var lineStart = selStart === 0 ? 0 : text.lastIndexOf("\n", selStart - 1) + 1;
-        var lineEnd = text.indexOf("\n", adjEnd);
+        const adjEnd = (selEnd > selStart && text.charAt(selEnd - 1) === "\n") ? (selEnd - 1) : selEnd;
+        const lineStart = selStart === 0 ? 0 : text.lastIndexOf("\n", selStart - 1) + 1;
+        let lineEnd = text.indexOf("\n", adjEnd);
         if (lineEnd === -1) {
             lineEnd = text.length;
         }
-        var block = text.slice(lineStart, lineEnd);
-        var lines = block.split("\n");
-        for (var i = 0; i < lines.length; i++) {
+        const block = text.slice(lineStart, lineEnd);
+        const lines = block.split("\n");
+        for (let i = 0; i < lines.length; i++) {
             if (unindent) {
                 if (lines[i].startsWith("    ")) {
                     lines[i] = lines[i].slice(4);
@@ -121,20 +121,20 @@ Item {
                 lines[i] = "    " + lines[i];
             }
         }
-        var updated = lines.join("\n");
+        const updated = lines.join("\n");
         editor.remove(lineStart, lineEnd);
         editor.insert(lineStart, updated);
         editor.select(lineStart, lineStart + updated.length);
     }
 
     function duplicateCurrentLine() {
-        var text = editor.text;
-        var selStart = editor.selectionStart;
-        var selEnd = editor.selectionEnd;
-        var adjEnd = (selEnd > selStart && text.charAt(selEnd - 1) === "\n") ? (selEnd - 1) : selEnd;
-        var first = lineBoundsAt(selStart);
-        var last = lineBoundsAt(adjEnd);
-        var block = text.slice(first.start, last.end);
+        const text = editor.text;
+        const selStart = editor.selectionStart;
+        const selEnd = editor.selectionEnd;
+        const adjEnd = (selEnd > selStart && text.charAt(selEnd - 1) === "\n") ? (selEnd - 1) : selEnd;
+        const first = lineBoundsAt(selStart);
+        const last = lineBoundsAt(adjEnd);
+        const block = text.slice(first.start, last.end);
         editor.insert(last.end, "\n" + block);
         if (selStart === selEnd) {
             editor.cursorPosition = selStart + block.length + 1;
@@ -144,11 +144,11 @@ Item {
     }
 
     function cutCurrentLine() {
-        var text = editor.text;
+        const text = editor.text;
         if (text.length === 0) {
             return;
         }
-        var b = lineBoundsAt(editor.cursorPosition);
+        const b = lineBoundsAt(editor.cursorPosition);
         if (b.end < text.length) {
             editor.select(b.start, b.end + 1);
         } else if (b.start > 0) {
@@ -160,12 +160,12 @@ Item {
     }
 
     function copyCurrentLine() {
-        var text = editor.text;
+        const text = editor.text;
         if (text.length === 0) {
             return;
         }
-        var pos = editor.cursorPosition;
-        var b = lineBoundsAt(pos);
+        const pos = editor.cursorPosition;
+        const b = lineBoundsAt(pos);
         if (b.end < text.length) {
             editor.select(b.start, b.end + 1);
         } else {
@@ -176,11 +176,11 @@ Item {
     }
 
     function deleteCurrentLine() {
-        var text = editor.text;
+        const text = editor.text;
         if (text.length === 0) {
             return;
         }
-        var b = lineBoundsAt(editor.cursorPosition);
+        const b = lineBoundsAt(editor.cursorPosition);
         if (b.end < text.length) {
             editor.remove(b.start, b.end + 1);
             editor.cursorPosition = b.start;
@@ -193,14 +193,14 @@ Item {
     }
 
     function selectCurrentLine() {
-        var text = editor.text;
-        var b = lineBoundsAt(editor.cursorPosition);
-        var endPos = b.end < text.length ? (b.end + 1) : b.end;
+        const text = editor.text;
+        const b = lineBoundsAt(editor.cursorPosition);
+        const endPos = b.end < text.length ? (b.end + 1) : b.end;
         editor.select(b.start, endPos);
     }
 
     function insertLine(above) {
-        var b = lineBoundsAt(editor.cursorPosition);
+        const b = lineBoundsAt(editor.cursorPosition);
         if (above) {
             editor.insert(b.start, "\n");
             editor.cursorPosition = b.start;
@@ -211,17 +211,17 @@ Item {
     }
 
     function moveCurrentLine(down) {
-        var text = editor.text;
-        var pos = editor.cursorPosition;
-        var cur = lineBoundsAt(pos);
-        var col = pos - cur.start;
-        var line = text.slice(cur.start, cur.end);
+        const text = editor.text;
+        const pos = editor.cursorPosition;
+        const cur = lineBoundsAt(pos);
+        const col = pos - cur.start;
+        const line = text.slice(cur.start, cur.end);
         if (!down) {
             if (cur.start === 0) {
                 return;
             }
-            var prev = lineBoundsAt(cur.start - 1);
-            var prevLine = text.slice(prev.start, prev.end);
+            const prev = lineBoundsAt(cur.start - 1);
+            const prevLine = text.slice(prev.start, prev.end);
             editor.remove(prev.start, cur.end);
             editor.insert(prev.start, line + "\n" + prevLine);
             editor.cursorPosition = prev.start + Math.min(col, line.length);
@@ -229,8 +229,8 @@ Item {
             if (cur.end >= text.length) {
                 return;
             }
-            var next = lineBoundsAt(cur.end + 1);
-            var nextLine = text.slice(next.start, next.end);
+            const next = lineBoundsAt(cur.end + 1);
+            const nextLine = text.slice(next.start, next.end);
             editor.remove(cur.start, next.end);
             editor.insert(cur.start, nextLine + "\n" + line);
             editor.cursorPosition = cur.start + nextLine.length + 1 + Math.min(col, line.length);
@@ -238,43 +238,43 @@ Item {
     }
 
     function toggleLineComment() {
-        var prefix = pane.session ? pane.session.commentPrefix : "#";
+        const prefix = pane.session ? pane.session.commentPrefix : "#";
         if (!prefix || prefix === "") {
             return;
         }
-        var text = editor.text;
-        var selStart = editor.selectionStart;
-        var selEnd = editor.selectionEnd;
-        var adjEnd = (selEnd > selStart && text.charAt(selEnd - 1) === "\n") ? (selEnd - 1) : selEnd;
-        var first = lineBoundsAt(selStart);
-        var last = lineBoundsAt(adjEnd);
-        var block = text.slice(first.start, last.end);
-        var lines = block.split("\n");
-        var allCommented = true;
-        for (var i = 0; i < lines.length; i++) {
-            var trimmed = lines[i].trim();
+        const text = editor.text;
+        const selStart = editor.selectionStart;
+        const selEnd = editor.selectionEnd;
+        const adjEnd = (selEnd > selStart && text.charAt(selEnd - 1) === "\n") ? (selEnd - 1) : selEnd;
+        const first = lineBoundsAt(selStart);
+        const last = lineBoundsAt(adjEnd);
+        const block = text.slice(first.start, last.end);
+        const lines = block.split("\n");
+        let allCommented = true;
+        for (let i = 0; i < lines.length; i++) {
+            const trimmed = lines[i].trim();
             if (trimmed !== "" && !trimmed.startsWith(prefix)) {
                 allCommented = false;
                 break;
             }
         }
-        for (var j = 0; j < lines.length; j++) {
+        for (let j = 0; j < lines.length; j++) {
             if (allCommented) {
-                var idx = lines[j].indexOf(prefix);
+                const idx = lines[j].indexOf(prefix);
                 if (idx !== -1) {
-                    var cutLen = prefix.length;
+                    let cutLen = prefix.length;
                     if (lines[j].charAt(idx + cutLen) === " ") {
                         cutLen += 1;
                     }
                     lines[j] = lines[j].slice(0, idx) + lines[j].slice(idx + cutLen);
                 }
             } else if (lines[j].trim() !== "" || lines.length === 1) {
-                var wsMatch = lines[j].match(/^\s*/);
-                var indent = wsMatch ? wsMatch[0] : "";
+                const wsMatch = lines[j].match(/^\s*/);
+                const indent = wsMatch ? wsMatch[0] : "";
                 lines[j] = indent + prefix + " " + lines[j].slice(indent.length);
             }
         }
-        var updated = lines.join("\n");
+        const updated = lines.join("\n");
         editor.remove(first.start, last.end);
         editor.insert(first.start, updated);
         if (selStart === selEnd) {
@@ -288,7 +288,7 @@ Item {
         if (!pane.session) {
             return;
         }
-        var pos = pane.session.lineStartPosition(lineNumber);
+        const pos = pane.session.lineStartPosition(lineNumber);
         editor.forceActiveFocus();
         editor.cursorPosition = pos;
     }
@@ -434,8 +434,8 @@ Item {
 
                 function smoothScrollBy(dx, dy, animDuration) {
                     if (dy !== 0) {
-                        var baseY = scrollYAnim.running ? targetY : contentY;
-                        var nextY = clampY(baseY + dy);
+                        const baseY = scrollYAnim.running ? targetY : contentY;
+                        const nextY = clampY(baseY + dy);
                         targetY = nextY;
                         if (animDuration > 0) {
                             scrollYAnim.duration = animDuration;
@@ -447,8 +447,8 @@ Item {
                         }
                     }
                     if (dx !== 0) {
-                        var baseX = scrollXAnim.running ? targetX : contentX;
-                        var nextX = clampX(baseX + dx);
+                        const baseX = scrollXAnim.running ? targetX : contentX;
+                        const nextX = clampX(baseX + dx);
                         targetX = nextX;
                         if (animDuration > 0) {
                             scrollXAnim.duration = animDuration;
@@ -474,7 +474,7 @@ Item {
                 }
 
                 onContentHeightChanged: {
-                    var maxY = Math.max(0, contentHeight - height);
+                    const maxY = Math.max(0, contentHeight - height);
                     if (contentY > maxY) {
                         scrollYAnim.stop();
                         contentY = maxY;
@@ -483,7 +483,7 @@ Item {
                 }
 
                 onContentWidthChanged: {
-                    var maxX = Math.max(0, contentWidth - width);
+                    const maxX = Math.max(0, contentWidth - width);
                     if (contentX > maxX) {
                         scrollXAnim.stop();
                         contentX = maxX;
@@ -492,7 +492,7 @@ Item {
                 }
 
                 onHeightChanged: {
-                    var maxY = Math.max(0, contentHeight - height);
+                    const maxY = Math.max(0, contentHeight - height);
                     if (contentY > maxY) {
                         scrollYAnim.stop();
                         contentY = maxY;
@@ -501,7 +501,7 @@ Item {
                 }
 
                 onWidthChanged: {
-                    var maxX = Math.max(0, contentWidth - width);
+                    const maxX = Math.max(0, contentWidth - width);
                     if (contentX > maxX) {
                         scrollXAnim.stop();
                         contentX = maxX;
@@ -534,7 +534,7 @@ Item {
                     contentItem: Rectangle {
                         implicitWidth: 5
                         radius: 3
-                        color: parent.pressed ? (pane.theme.scrollPress || (pane.darkMode ? "#7d8594" : "#6c7382")) : (parent.hovered ? (pane.theme.scrollHover || (pane.darkMode ? "#5a606e" : "#8d94a3")) : (pane.theme.scrollIdle || (pane.darkMode ? "#373b46" : "#c1c6d0")))
+                        color: vScroll.pressed ? (pane.theme.scrollPress || (pane.darkMode ? "#7d8594" : "#6c7382")) : (vScroll.hovered ? (pane.theme.scrollHover || (pane.darkMode ? "#5a606e" : "#8d94a3")) : (pane.theme.scrollIdle || (pane.darkMode ? "#373b46" : "#c1c6d0")))
                         Behavior on color {
                             ColorAnimation {
                                 duration: 100
@@ -552,7 +552,7 @@ Item {
                     contentItem: Rectangle {
                         implicitHeight: 5
                         radius: 3
-                        color: parent.pressed ? (pane.theme.scrollPress || (pane.darkMode ? "#7d8594" : "#6c7382")) : (parent.hovered ? (pane.theme.scrollHover || (pane.darkMode ? "#5a606e" : "#8d94a3")) : (pane.theme.scrollIdle || (pane.darkMode ? "#373b46" : "#c1c6d0")))
+                        color: hScroll.pressed ? (pane.theme.scrollPress || (pane.darkMode ? "#7d8594" : "#6c7382")) : (hScroll.hovered ? (pane.theme.scrollHover || (pane.darkMode ? "#5a606e" : "#8d94a3")) : (pane.theme.scrollIdle || (pane.darkMode ? "#373b46" : "#c1c6d0")))
                         Behavior on color {
                             ColorAnimation {
                                 duration: 100
@@ -698,7 +698,7 @@ Item {
                     }
                     onPositionChanged: function (mouse) {
                         if ((mouse.buttons & Qt.LeftButton) !== 0) {
-                            var pos = editor.positionAt(mouse.x - editor.x, mouse.y - editor.y);
+                            const pos = editor.positionAt(mouse.x - editor.x, mouse.y - editor.y);
                             editor.select(dragAnchor, pos);
                         }
                     }
@@ -738,7 +738,7 @@ Item {
                     property rect liveCursorRect: Qt.rect(0, 0, 1, 18)
 
                     function syncCursorBand() {
-                        var r = editor.positionToRectangle(editor.cursorPosition);
+                        let r = editor.positionToRectangle(editor.cursorPosition);
                         if (r.height <= 0) {
                             r = Qt.rect(r.x, r.y, Math.max(1, r.width), editorMetrics.height);
                         }
@@ -798,9 +798,9 @@ Item {
                         if (suppressCursorScroll || flick.height <= 24 || flick.width <= 24) {
                             return;
                         }
-                        var r = cursorRectangle;
-                        var cy = r.y + y;
-                        var cx = r.x + x;
+                        let r = cursorRectangle;
+                        const cy = r.y + y;
+                        const cx = r.x + x;
                         if (cy - flick.contentY < 8) {
                             flick.stopScrollAnims();
                             flick.contentY = Math.max(0, cy - 8);
@@ -822,17 +822,17 @@ Item {
                     }
 
                     Keys.onPressed: function (event) {
-                        var k = event.key;
-                        var ctrl = (event.modifiers & Qt.ControlModifier) !== 0;
-                        var shift = (event.modifiers & Qt.ShiftModifier) !== 0;
-                        var alt = (event.modifiers & Qt.AltModifier) !== 0;
-                        var meta = (event.modifiers & Qt.MetaModifier) !== 0;
+                        const k = event.key;
+                        const ctrl = (event.modifiers & Qt.ControlModifier) !== 0;
+                        const shift = (event.modifiers & Qt.ShiftModifier) !== 0;
+                        const alt = (event.modifiers & Qt.AltModifier) !== 0;
+                        const meta = (event.modifiers & Qt.MetaModifier) !== 0;
 
                         if (k === Qt.Key_Menu && !ctrl && !alt && !meta) {
                             editor.forceActiveFocus();
-                            var cr = editor.liveCursorRect;
-                            var mx = gutterContainer.width + editor.x + cr.x - flick.contentX;
-                            var my = editor.y + cr.y + cr.height - flick.contentY;
+                            const cr = editor.liveCursorRect;
+                            const mx = gutterContainer.width + editor.x + cr.x - flick.contentX;
+                            const my = editor.y + cr.y + cr.height - flick.contentY;
                             contextMenu.openAt(mx, my, pane.width, pane.height);
                             event.accepted = true;
                             return;
@@ -984,7 +984,7 @@ Item {
                 acceptedButtons: Qt.RightButton
                 onPressed: function (mouse) {
                     editor.forceActiveFocus();
-                    var clickPos = editor.positionAt(mouse.x + flick.contentX - editor.x, mouse.y + flick.contentY - editor.y);
+                    const clickPos = editor.positionAt(mouse.x + flick.contentX - editor.x, mouse.y + flick.contentY - editor.y);
                     if (!pane.hasSelection || clickPos < editor.selectionStart || clickPos > editor.selectionEnd) {
                         editor.cursorPosition = clickPos;
                     }
@@ -1068,7 +1068,7 @@ Item {
                 contextMenu.close();
             }
             if ((wheel.modifiers & Qt.ControlModifier) !== 0) {
-                var zDelta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.pixelDelta.y;
+                const zDelta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.pixelDelta.y;
                 if (Math.abs(zDelta) >= 120) {
                     pane.suppressZoomScroll();
                     if (zDelta > 0)
@@ -1091,16 +1091,16 @@ Item {
                 return;
             }
 
-            var shiftHeld = (wheel.modifiers & Qt.ShiftModifier) !== 0;
-            var dx = 0;
-            var dy = 0;
-            var animMs = 240;
+            const shiftHeld = (wheel.modifiers & Qt.ShiftModifier) !== 0;
+            let dx = 0;
+            let dy = 0;
+            let animMs = 240;
 
             if (wheel.pixelDelta.y !== 0 && Math.abs(wheel.angleDelta.y) < 120) {
                 dy = -wheel.pixelDelta.y * 1.45;
                 animMs = 90;
             } else if (wheel.angleDelta.y !== 0) {
-                var stepPx = Math.max(150, editor.font.pixelSize * 10.5);
+                const stepPx = Math.max(150, editor.font.pixelSize * 10.5);
                 dy = -(wheel.angleDelta.y / 120.0) * stepPx;
             }
 
@@ -1108,7 +1108,7 @@ Item {
                 dx = -wheel.pixelDelta.x * 1.45;
                 animMs = 90;
             } else if (wheel.angleDelta.x !== 0) {
-                var stepX = Math.max(120, editor.font.pixelSize * 8);
+                const stepX = Math.max(120, editor.font.pixelSize * 8);
                 dx = -(wheel.angleDelta.x / 120.0) * stepX;
             }
 

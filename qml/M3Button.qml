@@ -106,9 +106,9 @@ Item {
         if (kind === "") {
             return ""
         }
-        var hex = col.toString()
-        var body = svgBody(kind).split("currentColor").join(hex)
-        var svg = '<svg xmlns="http:\x2f\x2fwww.w3.org\x2f2000\x2fsvg" viewBox="0 0 24 24" fill="none" stroke="' +
+        const hex = col.toString()
+        const body = svgBody(kind).split("currentColor").join(hex)
+        const svg = '<svg xmlns="http:\x2f\x2fwww.w3.org\x2f2000\x2fsvg" viewBox="0 0 24 24" fill="none" stroke="' +
                   hex + '" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">' +
                   body + '</svg>'
         return "data:image/svg+xml;utf8," + encodeURIComponent(svg)

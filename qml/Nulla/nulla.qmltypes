@@ -1,0 +1,1114 @@
+import QtQuick.tooling 1.2
+
+
+Module {
+    Component {
+        file: "editor_backend.h"
+        lineNumber: 45
+        name: "EditorBackend"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Nulla/EditorBackend 1.0"]
+        exportMetaObjectRevisions: [256]
+        Enum {
+            name: "ThemeMode"
+            lineNumber: 74
+            values: ["ThemeSystem", "ThemeLight", "ThemeDark"]
+        }
+        Property {
+            name: "tabModel"
+            type: "TabModel"
+            isPointer: true
+            read: "tabModel"
+            index: 0
+            lineNumber: 48
+            isReadonly: true
+            isPropertyConstant: true
+        }
+        Property {
+            name: "activeTabIndex"
+            type: "int"
+            read: "activeTabIndex"
+            write: "setActiveTabIndex"
+            notify: "activeTabChanged"
+            index: 1
+            lineNumber: 49
+        }
+        Property {
+            name: "activeTab"
+            type: "TabSession"
+            isPointer: true
+            read: "activeTab"
+            notify: "activeTabChanged"
+            index: 2
+            lineNumber: 51
+            isReadonly: true
+        }
+        Property {
+            name: "tabCount"
+            type: "int"
+            read: "tabCount"
+            notify: "tabCountChanged"
+            index: 3
+            lineNumber: 52
+            isReadonly: true
+        }
+        Property {
+            name: "showLineNumbers"
+            type: "bool"
+            read: "showLineNumbers"
+            write: "setShowLineNumbers"
+            notify: "settingsChanged"
+            index: 4
+            lineNumber: 53
+        }
+        Property {
+            name: "themeMode"
+            type: "int"
+            read: "themeMode"
+            write: "setThemeMode"
+            notify: "themeChanged"
+            index: 5
+            lineNumber: 55
+        }
+        Property {
+            name: "effectiveDark"
+            type: "bool"
+            read: "effectiveDark"
+            notify: "themeChanged"
+            index: 6
+            lineNumber: 57
+            isReadonly: true
+        }
+        Property {
+            name: "theme"
+            type: "QVariantMap"
+            read: "theme"
+            notify: "themeChanged"
+            index: 7
+            lineNumber: 58
+            isReadonly: true
+        }
+        Property {
+            name: "syntaxEnabled"
+            type: "bool"
+            read: "syntaxEnabled"
+            write: "setSyntaxEnabled"
+            notify: "settingsChanged"
+            index: 8
+            lineNumber: 59
+        }
+        Property {
+            name: "languageId"
+            type: "QString"
+            read: "languageId"
+            write: "setLanguageId"
+            notify: "languageChanged"
+            index: 9
+            lineNumber: 61
+        }
+        Property {
+            name: "zoomPercent"
+            type: "int"
+            read: "zoomPercent"
+            write: "setZoomPercent"
+            notify: "settingsChanged"
+            index: 10
+            lineNumber: 63
+        }
+        Property {
+            name: "languagesModel"
+            type: "QVariantList"
+            read: "languagesModel"
+            index: 11
+            lineNumber: 65
+            isReadonly: true
+            isPropertyConstant: true
+        }
+        Property {
+            name: "uiLanguage"
+            type: "QString"
+            read: "uiLanguage"
+            write: "setUiLanguage"
+            notify: "uiLanguageChanged"
+            index: 12
+            lineNumber: 66
+        }
+        Property {
+            name: "uiLanguagesModel"
+            type: "QVariantList"
+            read: "uiLanguagesModel"
+            index: 13
+            lineNumber: 68
+            isReadonly: true
+            isPropertyConstant: true
+        }
+        Property {
+            name: "ui"
+            type: "QVariantMap"
+            read: "ui"
+            notify: "uiLanguageChanged"
+            index: 14
+            lineNumber: 69
+            isReadonly: true
+        }
+        Property {
+            name: "showWindowControls"
+            type: "bool"
+            read: "showWindowControls"
+            index: 15
+            lineNumber: 70
+            isReadonly: true
+            isPropertyConstant: true
+        }
+        Property {
+            name: "monoFontFamily"
+            type: "QString"
+            read: "monoFontFamily"
+            index: 16
+            lineNumber: 71
+            isReadonly: true
+            isPropertyConstant: true
+        }
+        Signal { name: "activeTabChanged"; lineNumber: 130 }
+        Signal { name: "tabCountChanged"; lineNumber: 131 }
+        Signal { name: "settingsChanged"; lineNumber: 132 }
+        Signal { name: "themeChanged"; lineNumber: 133 }
+        Signal { name: "languageChanged"; lineNumber: 134 }
+        Signal { name: "uiLanguageChanged"; lineNumber: 135 }
+        Signal {
+            name: "errorOccurred"
+            lineNumber: 136
+            Parameter { name: "title"; type: "QString" }
+            Parameter { name: "message"; type: "QString" }
+        }
+        Method { name: "onSystemColorSchemeChanged"; lineNumber: 139 }
+        Method { name: "onThemeFilesChanged"; lineNumber: 140 }
+        Method { name: "zoomIn"; lineNumber: 108 }
+        Method { name: "zoomOut"; lineNumber: 109 }
+        Method { name: "zoomReset"; lineNumber: 110 }
+        Method {
+            name: "newTab"
+            type: "int"
+            lineNumber: 112
+            Parameter { name: "initialFilePath"; type: "QString" }
+        }
+        Method { name: "newTab"; type: "int"; isCloned: true; lineNumber: 112 }
+        Method {
+            name: "activateTab"
+            lineNumber: 113
+            Parameter { name: "index"; type: "int" }
+        }
+        Method { name: "nextTab"; lineNumber: 114 }
+        Method { name: "prevTab"; lineNumber: 115 }
+        Method {
+            name: "closeTabImmediate"
+            lineNumber: 116
+            Parameter { name: "index"; type: "int" }
+        }
+        Method {
+            name: "isTabModified"
+            type: "bool"
+            isMethodConstant: true
+            lineNumber: 117
+            Parameter { name: "index"; type: "int" }
+        }
+        Method {
+            name: "isActivePristineUntitled"
+            type: "bool"
+            isMethodConstant: true
+            lineNumber: 118
+        }
+        Method {
+            name: "tabFileName"
+            type: "QString"
+            isMethodConstant: true
+            lineNumber: 119
+            Parameter { name: "index"; type: "int" }
+        }
+        Method { name: "firstModifiedTabIndex"; type: "int"; isMethodConstant: true; lineNumber: 120 }
+        Method {
+            name: "loadFile"
+            type: "bool"
+            lineNumber: 122
+            Parameter { name: "path"; type: "QString" }
+            Parameter { name: "allowMissing"; type: "bool" }
+        }
+        Method {
+            name: "loadFile"
+            type: "bool"
+            isCloned: true
+            lineNumber: 122
+            Parameter { name: "path"; type: "QString" }
+        }
+        Method { name: "openFileDialog"; type: "bool"; lineNumber: 123 }
+        Method {
+            name: "saveFile"
+            type: "bool"
+            lineNumber: 124
+            Parameter { name: "index"; type: "int" }
+        }
+        Method { name: "saveFile"; type: "bool"; isCloned: true; lineNumber: 124 }
+        Method {
+            name: "saveFileAsDialog"
+            type: "bool"
+            lineNumber: 125
+            Parameter { name: "index"; type: "int" }
+        }
+        Method { name: "saveFileAsDialog"; type: "bool"; isCloned: true; lineNumber: 125 }
+        Method {
+            name: "discardTabChanges"
+            lineNumber: 126
+            Parameter { name: "index"; type: "int" }
+        }
+        Method { name: "discardTabChanges"; isCloned: true; lineNumber: 126 }
+        Method {
+            name: "setInitialFiles"
+            lineNumber: 127
+            Parameter { name: "paths"; type: "QStringList" }
+        }
+    }
+    Component {
+        file: "gutter.h"
+        lineNumber: 11
+        name: "LineNumberGutter"
+        accessSemantics: "reference"
+        prototype: "QQuickPaintedItem"
+        exports: ["Nulla/LineNumberGutter 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "document"
+            type: "QQuickTextDocument"
+            isPointer: true
+            read: "document"
+            write: "setDocument"
+            notify: "documentChanged"
+            index: 0
+            lineNumber: 14
+        }
+        Property {
+            name: "contentY"
+            type: "double"
+            read: "contentY"
+            write: "setContentY"
+            notify: "contentYChanged"
+            index: 1
+            lineNumber: 15
+        }
+        Property {
+            name: "currentLine"
+            type: "int"
+            read: "currentLine"
+            write: "setCurrentLine"
+            notify: "currentLineChanged"
+            index: 2
+            lineNumber: 16
+        }
+        Property {
+            name: "font"
+            type: "QFont"
+            read: "font"
+            write: "setFont"
+            notify: "fontChanged"
+            index: 3
+            lineNumber: 17
+        }
+        Property {
+            name: "textColor"
+            type: "QColor"
+            read: "textColor"
+            write: "setTextColor"
+            notify: "textColorChanged"
+            index: 4
+            lineNumber: 18
+        }
+        Property {
+            name: "activeTextColor"
+            type: "QColor"
+            read: "activeTextColor"
+            write: "setActiveTextColor"
+            notify: "activeTextColorChanged"
+            index: 5
+            lineNumber: 19
+        }
+        Property {
+            name: "activeLineColor"
+            type: "QColor"
+            read: "activeLineColor"
+            write: "setActiveLineColor"
+            notify: "activeLineColorChanged"
+            index: 6
+            lineNumber: 20
+        }
+        Property {
+            name: "topPadding"
+            type: "double"
+            read: "topPadding"
+            write: "setTopPadding"
+            notify: "topPaddingChanged"
+            index: 7
+            lineNumber: 21
+        }
+        Signal { name: "documentChanged"; lineNumber: 56 }
+        Signal { name: "contentYChanged"; lineNumber: 57 }
+        Signal { name: "currentLineChanged"; lineNumber: 58 }
+        Signal { name: "fontChanged"; lineNumber: 59 }
+        Signal { name: "textColorChanged"; lineNumber: 60 }
+        Signal { name: "activeTextColorChanged"; lineNumber: 61 }
+        Signal { name: "activeLineColorChanged"; lineNumber: 62 }
+        Signal { name: "topPaddingChanged"; lineNumber: 63 }
+        Method { name: "refresh"; lineNumber: 53 }
+    }
+    Component {
+        file: "qabstractitemmodel.h"
+        lineNumber: 261
+        name: "QAbstractItemModel"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        Enum {
+            name: "LayoutChangeHint"
+            lineNumber: 337
+            values: [
+                "NoLayoutChangeHint",
+                "VerticalSortHint",
+                "HorizontalSortHint"
+            ]
+        }
+        Enum {
+            name: "CheckIndexOption"
+            isScoped: true
+            lineNumber: 345
+            values: [
+                "NoOption",
+                "IndexIsValid",
+                "DoNotUseParent",
+                "ParentIsInvalid"
+            ]
+        }
+        Signal {
+            name: "dataChanged"
+            lineNumber: 359
+            Parameter { name: "topLeft"; type: "QModelIndex" }
+            Parameter { name: "bottomRight"; type: "QModelIndex" }
+            Parameter { name: "roles"; type: "int"; isList: true }
+        }
+        Signal {
+            name: "dataChanged"
+            isCloned: true
+            lineNumber: 359
+            Parameter { name: "topLeft"; type: "QModelIndex" }
+            Parameter { name: "bottomRight"; type: "QModelIndex" }
+        }
+        Signal {
+            name: "headerDataChanged"
+            lineNumber: 361
+            Parameter { name: "orientation"; type: "Qt::Orientation" }
+            Parameter { name: "first"; type: "int" }
+            Parameter { name: "last"; type: "int" }
+        }
+        Signal {
+            name: "layoutChanged"
+            lineNumber: 362
+            Parameter { name: "parents"; type: "QPersistentModelIndex"; isList: true }
+            Parameter { name: "hint"; type: "QAbstractItemModel::LayoutChangeHint" }
+        }
+        Signal {
+            name: "layoutChanged"
+            isCloned: true
+            lineNumber: 362
+            Parameter { name: "parents"; type: "QPersistentModelIndex"; isList: true }
+        }
+        Signal { name: "layoutChanged"; isCloned: true; lineNumber: 362 }
+        Signal {
+            name: "layoutAboutToBeChanged"
+            lineNumber: 363
+            Parameter { name: "parents"; type: "QPersistentModelIndex"; isList: true }
+            Parameter { name: "hint"; type: "QAbstractItemModel::LayoutChangeHint" }
+        }
+        Signal {
+            name: "layoutAboutToBeChanged"
+            isCloned: true
+            lineNumber: 363
+            Parameter { name: "parents"; type: "QPersistentModelIndex"; isList: true }
+        }
+        Signal { name: "layoutAboutToBeChanged"; isCloned: true; lineNumber: 363 }
+        Signal {
+            name: "rowsAboutToBeInserted"
+            lineNumber: 365
+            Parameter { name: "parent"; type: "QModelIndex" }
+            Parameter { name: "first"; type: "int" }
+            Parameter { name: "last"; type: "int" }
+        }
+        Signal {
+            name: "rowsInserted"
+            lineNumber: 366
+            Parameter { name: "parent"; type: "QModelIndex" }
+            Parameter { name: "first"; type: "int" }
+            Parameter { name: "last"; type: "int" }
+        }
+        Signal {
+            name: "rowsAboutToBeRemoved"
+            lineNumber: 368
+            Parameter { name: "parent"; type: "QModelIndex" }
+            Parameter { name: "first"; type: "int" }
+            Parameter { name: "last"; type: "int" }
+        }
+        Signal {
+            name: "rowsRemoved"
+            lineNumber: 369
+            Parameter { name: "parent"; type: "QModelIndex" }
+            Parameter { name: "first"; type: "int" }
+            Parameter { name: "last"; type: "int" }
+        }
+        Signal {
+            name: "columnsAboutToBeInserted"
+            lineNumber: 371
+            Parameter { name: "parent"; type: "QModelIndex" }
+            Parameter { name: "first"; type: "int" }
+            Parameter { name: "last"; type: "int" }
+        }
+        Signal {
+            name: "columnsInserted"
+            lineNumber: 372
+            Parameter { name: "parent"; type: "QModelIndex" }
+            Parameter { name: "first"; type: "int" }
+            Parameter { name: "last"; type: "int" }
+        }
+        Signal {
+            name: "columnsAboutToBeRemoved"
+            lineNumber: 374
+            Parameter { name: "parent"; type: "QModelIndex" }
+            Parameter { name: "first"; type: "int" }
+            Parameter { name: "last"; type: "int" }
+        }
+        Signal {
+            name: "columnsRemoved"
+            lineNumber: 375
+            Parameter { name: "parent"; type: "QModelIndex" }
+            Parameter { name: "first"; type: "int" }
+            Parameter { name: "last"; type: "int" }
+        }
+        Signal { name: "modelAboutToBeReset"; lineNumber: 377 }
+        Signal { name: "modelReset"; lineNumber: 378 }
+        Signal {
+            name: "rowsAboutToBeMoved"
+            lineNumber: 380
+            Parameter { name: "sourceParent"; type: "QModelIndex" }
+            Parameter { name: "sourceStart"; type: "int" }
+            Parameter { name: "sourceEnd"; type: "int" }
+            Parameter { name: "destinationParent"; type: "QModelIndex" }
+            Parameter { name: "destinationRow"; type: "int" }
+        }
+        Signal {
+            name: "rowsMoved"
+            lineNumber: 381
+            Parameter { name: "sourceParent"; type: "QModelIndex" }
+            Parameter { name: "sourceStart"; type: "int" }
+            Parameter { name: "sourceEnd"; type: "int" }
+            Parameter { name: "destinationParent"; type: "QModelIndex" }
+            Parameter { name: "destinationRow"; type: "int" }
+        }
+        Signal {
+            name: "columnsAboutToBeMoved"
+            lineNumber: 383
+            Parameter { name: "sourceParent"; type: "QModelIndex" }
+            Parameter { name: "sourceStart"; type: "int" }
+            Parameter { name: "sourceEnd"; type: "int" }
+            Parameter { name: "destinationParent"; type: "QModelIndex" }
+            Parameter { name: "destinationColumn"; type: "int" }
+        }
+        Signal {
+            name: "columnsMoved"
+            lineNumber: 384
+            Parameter { name: "sourceParent"; type: "QModelIndex" }
+            Parameter { name: "sourceStart"; type: "int" }
+            Parameter { name: "sourceEnd"; type: "int" }
+            Parameter { name: "destinationParent"; type: "QModelIndex" }
+            Parameter { name: "destinationColumn"; type: "int" }
+        }
+        Method { name: "submit"; type: "bool"; lineNumber: 387 }
+        Method { name: "revert"; lineNumber: 388 }
+        Method { name: "resetInternalData"; lineNumber: 391 }
+        Method {
+            name: "hasIndex"
+            type: "bool"
+            isMethodConstant: true
+            lineNumber: 273
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "column"; type: "int" }
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "hasIndex"
+            type: "bool"
+            isCloned: true
+            isMethodConstant: true
+            lineNumber: 273
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "column"; type: "int" }
+        }
+        Method {
+            name: "index"
+            type: "QModelIndex"
+            isMethodConstant: true
+            lineNumber: 274
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "column"; type: "int" }
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "index"
+            type: "QModelIndex"
+            isCloned: true
+            isMethodConstant: true
+            lineNumber: 274
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "column"; type: "int" }
+        }
+        Method {
+            name: "parent"
+            type: "QModelIndex"
+            isMethodConstant: true
+            lineNumber: 276
+            Parameter { name: "child"; type: "QModelIndex" }
+        }
+        Method {
+            name: "sibling"
+            type: "QModelIndex"
+            isMethodConstant: true
+            lineNumber: 278
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "column"; type: "int" }
+            Parameter { name: "idx"; type: "QModelIndex" }
+        }
+        Method {
+            name: "rowCount"
+            type: "int"
+            isMethodConstant: true
+            lineNumber: 279
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method { name: "rowCount"; type: "int"; isCloned: true; isMethodConstant: true; lineNumber: 279 }
+        Method {
+            name: "columnCount"
+            type: "int"
+            isMethodConstant: true
+            lineNumber: 280
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "columnCount"
+            type: "int"
+            isCloned: true
+            isMethodConstant: true
+            lineNumber: 280
+        }
+        Method {
+            name: "hasChildren"
+            type: "bool"
+            isMethodConstant: true
+            lineNumber: 281
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "hasChildren"
+            type: "bool"
+            isCloned: true
+            isMethodConstant: true
+            lineNumber: 281
+        }
+        Method {
+            name: "data"
+            type: "QVariant"
+            isMethodConstant: true
+            lineNumber: 283
+            Parameter { name: "index"; type: "QModelIndex" }
+            Parameter { name: "role"; type: "int" }
+        }
+        Method {
+            name: "data"
+            type: "QVariant"
+            isCloned: true
+            isMethodConstant: true
+            lineNumber: 283
+            Parameter { name: "index"; type: "QModelIndex" }
+        }
+        Method {
+            name: "setData"
+            type: "bool"
+            lineNumber: 284
+            Parameter { name: "index"; type: "QModelIndex" }
+            Parameter { name: "value"; type: "QVariant" }
+            Parameter { name: "role"; type: "int" }
+        }
+        Method {
+            name: "setData"
+            type: "bool"
+            isCloned: true
+            lineNumber: 284
+            Parameter { name: "index"; type: "QModelIndex" }
+            Parameter { name: "value"; type: "QVariant" }
+        }
+        Method {
+            name: "headerData"
+            type: "QVariant"
+            isMethodConstant: true
+            lineNumber: 286
+            Parameter { name: "section"; type: "int" }
+            Parameter { name: "orientation"; type: "Qt::Orientation" }
+            Parameter { name: "role"; type: "int" }
+        }
+        Method {
+            name: "headerData"
+            type: "QVariant"
+            isCloned: true
+            isMethodConstant: true
+            lineNumber: 286
+            Parameter { name: "section"; type: "int" }
+            Parameter { name: "orientation"; type: "Qt::Orientation" }
+        }
+        Method {
+            name: "insertRows"
+            revision: 1540
+            type: "bool"
+            lineNumber: 304
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "count"; type: "int" }
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "insertRows"
+            revision: 1540
+            type: "bool"
+            isCloned: true
+            lineNumber: 304
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "count"; type: "int" }
+        }
+        Method {
+            name: "insertColumns"
+            revision: 1540
+            type: "bool"
+            lineNumber: 305
+            Parameter { name: "column"; type: "int" }
+            Parameter { name: "count"; type: "int" }
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "insertColumns"
+            revision: 1540
+            type: "bool"
+            isCloned: true
+            lineNumber: 305
+            Parameter { name: "column"; type: "int" }
+            Parameter { name: "count"; type: "int" }
+        }
+        Method {
+            name: "removeRows"
+            revision: 1540
+            type: "bool"
+            lineNumber: 306
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "count"; type: "int" }
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "removeRows"
+            revision: 1540
+            type: "bool"
+            isCloned: true
+            lineNumber: 306
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "count"; type: "int" }
+        }
+        Method {
+            name: "removeColumns"
+            revision: 1540
+            type: "bool"
+            lineNumber: 307
+            Parameter { name: "column"; type: "int" }
+            Parameter { name: "count"; type: "int" }
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "removeColumns"
+            revision: 1540
+            type: "bool"
+            isCloned: true
+            lineNumber: 307
+            Parameter { name: "column"; type: "int" }
+            Parameter { name: "count"; type: "int" }
+        }
+        Method {
+            name: "moveRows"
+            revision: 1540
+            type: "bool"
+            lineNumber: 308
+            Parameter { name: "sourceParent"; type: "QModelIndex" }
+            Parameter { name: "sourceRow"; type: "int" }
+            Parameter { name: "count"; type: "int" }
+            Parameter { name: "destinationParent"; type: "QModelIndex" }
+            Parameter { name: "destinationChild"; type: "int" }
+        }
+        Method {
+            name: "moveColumns"
+            revision: 1540
+            type: "bool"
+            lineNumber: 310
+            Parameter { name: "sourceParent"; type: "QModelIndex" }
+            Parameter { name: "sourceColumn"; type: "int" }
+            Parameter { name: "count"; type: "int" }
+            Parameter { name: "destinationParent"; type: "QModelIndex" }
+            Parameter { name: "destinationChild"; type: "int" }
+        }
+        Method {
+            name: "insertRow"
+            revision: 1540
+            type: "bool"
+            lineNumber: 313
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "insertRow"
+            revision: 1540
+            type: "bool"
+            isCloned: true
+            lineNumber: 313
+            Parameter { name: "row"; type: "int" }
+        }
+        Method {
+            name: "insertColumn"
+            revision: 1540
+            type: "bool"
+            lineNumber: 314
+            Parameter { name: "column"; type: "int" }
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "insertColumn"
+            revision: 1540
+            type: "bool"
+            isCloned: true
+            lineNumber: 314
+            Parameter { name: "column"; type: "int" }
+        }
+        Method {
+            name: "removeRow"
+            revision: 1540
+            type: "bool"
+            lineNumber: 315
+            Parameter { name: "row"; type: "int" }
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "removeRow"
+            revision: 1540
+            type: "bool"
+            isCloned: true
+            lineNumber: 315
+            Parameter { name: "row"; type: "int" }
+        }
+        Method {
+            name: "removeColumn"
+            revision: 1540
+            type: "bool"
+            lineNumber: 316
+            Parameter { name: "column"; type: "int" }
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "removeColumn"
+            revision: 1540
+            type: "bool"
+            isCloned: true
+            lineNumber: 316
+            Parameter { name: "column"; type: "int" }
+        }
+        Method {
+            name: "moveRow"
+            revision: 1540
+            type: "bool"
+            lineNumber: 317
+            Parameter { name: "sourceParent"; type: "QModelIndex" }
+            Parameter { name: "sourceRow"; type: "int" }
+            Parameter { name: "destinationParent"; type: "QModelIndex" }
+            Parameter { name: "destinationChild"; type: "int" }
+        }
+        Method {
+            name: "moveColumn"
+            revision: 1540
+            type: "bool"
+            lineNumber: 319
+            Parameter { name: "sourceParent"; type: "QModelIndex" }
+            Parameter { name: "sourceColumn"; type: "int" }
+            Parameter { name: "destinationParent"; type: "QModelIndex" }
+            Parameter { name: "destinationChild"; type: "int" }
+        }
+        Method {
+            name: "fetchMore"
+            lineNumber: 322
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "canFetchMore"
+            type: "bool"
+            isMethodConstant: true
+            lineNumber: 323
+            Parameter { name: "parent"; type: "QModelIndex" }
+        }
+        Method {
+            name: "flags"
+            type: "Qt::ItemFlags"
+            isMethodConstant: true
+            lineNumber: 324
+            Parameter { name: "index"; type: "QModelIndex" }
+        }
+        Method {
+            name: "sort"
+            revision: 1540
+            lineNumber: 325
+            Parameter { name: "column"; type: "int" }
+            Parameter { name: "order"; type: "Qt::SortOrder" }
+        }
+        Method {
+            name: "sort"
+            revision: 1540
+            isCloned: true
+            lineNumber: 325
+            Parameter { name: "column"; type: "int" }
+        }
+        Method {
+            name: "match"
+            type: "QModelIndexList"
+            isMethodConstant: true
+            lineNumber: 327
+            Parameter { name: "start"; type: "QModelIndex" }
+            Parameter { name: "role"; type: "int" }
+            Parameter { name: "value"; type: "QVariant" }
+            Parameter { name: "hits"; type: "int" }
+            Parameter { name: "flags"; type: "Qt::MatchFlags" }
+        }
+        Method {
+            name: "match"
+            type: "QModelIndexList"
+            isCloned: true
+            isMethodConstant: true
+            lineNumber: 327
+            Parameter { name: "start"; type: "QModelIndex" }
+            Parameter { name: "role"; type: "int" }
+            Parameter { name: "value"; type: "QVariant" }
+            Parameter { name: "hits"; type: "int" }
+        }
+        Method {
+            name: "match"
+            type: "QModelIndexList"
+            isCloned: true
+            isMethodConstant: true
+            lineNumber: 327
+            Parameter { name: "start"; type: "QModelIndex" }
+            Parameter { name: "role"; type: "int" }
+            Parameter { name: "value"; type: "QVariant" }
+        }
+    }
+    Component {
+        file: "qabstractitemmodel.h"
+        lineNumber: 495
+        name: "QAbstractListModel"
+        accessSemantics: "reference"
+        prototype: "QAbstractItemModel"
+    }
+    Component {
+        file: "editor_backend.h"
+        lineNumber: 19
+        name: "TabModel"
+        accessSemantics: "reference"
+        prototype: "QAbstractListModel"
+        exports: ["Nulla/TabModel 1.0"]
+        isCreatable: false
+        exportMetaObjectRevisions: [256]
+    }
+    Component {
+        file: "tab_session.h"
+        lineNumber: 14
+        name: "TabSession"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Nulla/TabSession 1.0"]
+        isCreatable: false
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "filePath"
+            type: "QString"
+            read: "filePath"
+            notify: "fileInfoChanged"
+            index: 0
+            lineNumber: 18
+            isReadonly: true
+        }
+        Property {
+            name: "fileName"
+            type: "QString"
+            read: "fileName"
+            notify: "fileInfoChanged"
+            index: 1
+            lineNumber: 19
+            isReadonly: true
+        }
+        Property {
+            name: "modified"
+            type: "bool"
+            read: "modified"
+            notify: "modifiedChanged"
+            index: 2
+            lineNumber: 20
+            isReadonly: true
+        }
+        Property {
+            name: "languageId"
+            type: "QString"
+            read: "languageId"
+            write: "setLanguageId"
+            notify: "languageChanged"
+            index: 3
+            lineNumber: 21
+        }
+        Property {
+            name: "statusLanguage"
+            type: "QString"
+            read: "statusLanguage"
+            notify: "languageStatusChanged"
+            index: 4
+            lineNumber: 22
+            isReadonly: true
+        }
+        Property {
+            name: "commentPrefix"
+            type: "QString"
+            read: "commentPrefix"
+            notify: "languageStatusChanged"
+            index: 5
+            lineNumber: 23
+            isReadonly: true
+        }
+        Property {
+            name: "lineCount"
+            type: "int"
+            read: "lineCount"
+            notify: "cursorStatsChanged"
+            index: 6
+            lineNumber: 24
+            isReadonly: true
+        }
+        Property {
+            name: "cursorLine"
+            type: "int"
+            read: "cursorLine"
+            notify: "cursorStatsChanged"
+            index: 7
+            lineNumber: 25
+            isReadonly: true
+        }
+        Property {
+            name: "cursorColumn"
+            type: "int"
+            read: "cursorColumn"
+            notify: "cursorStatsChanged"
+            index: 8
+            lineNumber: 26
+            isReadonly: true
+        }
+        Signal { name: "fileInfoChanged"; lineNumber: 60 }
+        Signal { name: "modifiedChanged"; lineNumber: 61 }
+        Signal { name: "languageChanged"; lineNumber: 62 }
+        Signal { name: "languageStatusChanged"; lineNumber: 63 }
+        Signal { name: "cursorStatsChanged"; lineNumber: 64 }
+        Signal { name: "documentLoaded"; lineNumber: 65 }
+        Signal {
+            name: "errorOccurred"
+            lineNumber: 66
+            Parameter { name: "title"; type: "QString" }
+            Parameter { name: "message"; type: "QString" }
+        }
+        Method {
+            name: "onDocumentModifiedChanged"
+            lineNumber: 69
+            Parameter { name: "m"; type: "bool" }
+        }
+        Method { name: "onDocumentContentsChanged"; lineNumber: 70 }
+        Method { name: "runAutoDetect"; lineNumber: 71 }
+        Method {
+            name: "attachDocument"
+            lineNumber: 47
+            Parameter { name: "doc"; type: "QQuickTextDocument"; isPointer: true }
+        }
+        Method {
+            name: "updateCursorPosition"
+            lineNumber: 48
+            Parameter { name: "position"; type: "int" }
+        }
+        Method {
+            name: "loadFile"
+            type: "bool"
+            lineNumber: 49
+            Parameter { name: "path"; type: "QString" }
+            Parameter { name: "allowMissing"; type: "bool" }
+        }
+        Method {
+            name: "loadFile"
+            type: "bool"
+            isCloned: true
+            lineNumber: 49
+            Parameter { name: "path"; type: "QString" }
+        }
+        Method {
+            name: "writeToFile"
+            type: "bool"
+            lineNumber: 50
+            Parameter { name: "path"; type: "QString" }
+        }
+        Method { name: "resetEmpty"; lineNumber: 51 }
+        Method { name: "discardChanges"; lineNumber: 52 }
+        Method {
+            name: "findText"
+            type: "QVariantMap"
+            lineNumber: 53
+            Parameter { name: "query"; type: "QString" }
+            Parameter { name: "fromPos"; type: "int" }
+            Parameter { name: "backward"; type: "bool" }
+        }
+        Method {
+            name: "matchStats"
+            type: "QVariantMap"
+            lineNumber: 54
+            Parameter { name: "query"; type: "QString" }
+            Parameter { name: "selectionStart"; type: "int" }
+        }
+        Method {
+            name: "replaceMatch"
+            type: "QVariantMap"
+            lineNumber: 55
+            Parameter { name: "query"; type: "QString" }
+            Parameter { name: "replacement"; type: "QString" }
+            Parameter { name: "selStart"; type: "int" }
+            Parameter { name: "selEnd"; type: "int" }
+        }
+        Method {
+            name: "replaceAllMatches"
+            type: "int"
+            lineNumber: 56
+            Parameter { name: "query"; type: "QString" }
+            Parameter { name: "replacement"; type: "QString" }
+        }
+        Method {
+            name: "lineStartPosition"
+            type: "int"
+            isMethodConstant: true
+            lineNumber: 57
+            Parameter { name: "lineNumber"; type: "int" }
+        }
+    }
+    Component { isTypeOpaque: true; name: "QModelIndex"; accessSemantics: "value" }
+    Component { isTypeOpaque: true; name: "QModelIndexList"; accessSemantics: "value" }
+    Component { isTypeOpaque: true; name: "QPersistentModelIndex"; accessSemantics: "value" }
+}

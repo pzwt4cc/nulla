@@ -18,6 +18,7 @@
 #include <QStandardPaths>
 #include <QStyleHints>
 #include <QTimer>
+#include <QtEnvironmentVariables>
 #include <QUrl>
 
 #include <algorithm>

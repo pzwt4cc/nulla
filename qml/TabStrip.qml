@@ -49,7 +49,7 @@ Rectangle {
         boundsBehavior: Flickable.StopAtBounds
 
         onWidthChanged: {
-            var maxX = Math.max(0, contentWidth - width);
+            const maxX = Math.max(0, contentWidth - width);
             if (contentX > maxX) {
                 contentX = maxX;
             }
@@ -59,9 +59,9 @@ Rectangle {
             anchors.fill: parent
             acceptedButtons: Qt.NoButton
             onWheel: function (wheel) {
-                var d = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x;
+                const d = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x;
                 if (d !== 0) {
-                    var maxX = Math.max(0, tabFlick.contentWidth - tabFlick.width);
+                    const maxX = Math.max(0, tabFlick.contentWidth - tabFlick.width);
                     tabFlick.contentX = Math.max(0, Math.min(maxX, tabFlick.contentX - (d / 120.0) * 90));
                 }
                 wheel.accepted = true;

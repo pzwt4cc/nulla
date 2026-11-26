@@ -22,7 +22,7 @@ Item {
     readonly property color fgSub: theme.fgSub || (darkMode ? "#787f8e" : "#6a7180")
 
     function selectFirstMatch() {
-        var m = langList.model;
+        const m = langList.model;
         if (m && m.length > 0 && root.backend) {
             root.backend.languageId = m[0].id;
             root.closed();
@@ -180,11 +180,11 @@ Item {
                 model: {
                     if (!root.backend)
                         return [];
-                    var raw = root.backend.languagesModel;
-                    var q = root.langFilter.trim().toLowerCase();
-                    var out = [];
-                    for (var i = 0; i < raw.length; i++) {
-                        var disp = raw[i].id === "auto" ? (root.ui.langAuto || raw[i].name) : raw[i].name;
+                    const raw = root.backend.languagesModel;
+                    const q = root.langFilter.trim().toLowerCase();
+                    const out = [];
+                    for (let i = 0; i < raw.length; i++) {
+                        const disp = raw[i].id === "auto" ? (root.ui.langAuto || raw[i].name) : raw[i].name;
                         if (q === "" || disp.toLowerCase().indexOf(q) !== -1 || raw[i].name.toLowerCase().indexOf(q) !== -1) {
                             out.push({
                                 id: raw[i].id,

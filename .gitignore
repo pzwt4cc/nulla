@@ -9,3 +9,4 @@ package/arch/*.pkg.tar.*
 build-win/
 dist/
 *.msi
+compile_commands.json

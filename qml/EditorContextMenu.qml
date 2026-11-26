@@ -26,8 +26,8 @@ Popup {
     signal actionTriggered(string act)
 
     function openAt(px, py, maxW, maxH) {
-        var menuW = width;
-        var menuH = contentCol.implicitHeight + padding * 2;
+        const menuW = width;
+        const menuH = contentCol.implicitHeight + padding * 2;
         x = Math.max(6, Math.min(px, maxW - menuW - 6));
         y = Math.max(6, Math.min(py, maxH - menuH - 6));
         open();

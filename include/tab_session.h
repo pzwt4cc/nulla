@@ -9,9 +9,12 @@
 #include <QString>
 #include <QTimer>
 #include <QVariantMap>
+#include <QtQml/qqmlregistration.h>
 
 class TabSession : public QObject {
     Q_OBJECT
+    QML_ELEMENT
+    QML_UNCREATABLE("Managed by EditorBackend")
     Q_PROPERTY(QString filePath READ filePath NOTIFY fileInfoChanged)
     Q_PROPERTY(QString fileName READ fileName NOTIFY fileInfoChanged)
     Q_PROPERTY(bool modified READ modified NOTIFY modifiedChanged)

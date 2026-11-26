@@ -1,0 +1,3 @@
+module Nulla
+typeinfo nulla.qmltypes
+depends QtQuick

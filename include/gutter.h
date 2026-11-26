@@ -6,9 +6,11 @@
 #include <QPointer>
 #include <QQuickPaintedItem>
 #include <QQuickTextDocument>
+#include <QtQml/qqmlregistration.h>
 
 class LineNumberGutter : public QQuickPaintedItem {
     Q_OBJECT
+    QML_ELEMENT
     Q_PROPERTY(QQuickTextDocument *document READ document WRITE setDocument NOTIFY documentChanged)
     Q_PROPERTY(qreal contentY READ contentY WRITE setContentY NOTIFY contentYChanged)
     Q_PROPERTY(int currentLine READ currentLine WRITE setCurrentLine NOTIFY currentLineChanged)

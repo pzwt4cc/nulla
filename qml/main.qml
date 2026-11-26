@@ -12,7 +12,7 @@ ApplicationWindow {
     minimumHeight: 360
     flags: Qt.Window | Qt.FramelessWindowHint
     color: "transparent"
-    title: ((backend.activeTab && backend.activeTab.modified) ? "* " : "") + ((backend.activeTab && backend.activeTab.filePath !== "") ? backend.activeTab.fileName : (win.ui.untitled || "Untitled")) +
+    title: ((editorBackend.activeTab && editorBackend.activeTab.modified) ? "* " : "") + ((editorBackend.activeTab && editorBackend.activeTab.filePath !== "") ? editorBackend.activeTab.fileName : (win.ui.untitled || "Untitled")) +
            " — Nulla"
 
     property bool forceClose: false
@@ -20,9 +20,9 @@ ApplicationWindow {
     property int pendingTabIndex: -1
     property real menuAnchorX: 0
 
-    readonly property bool dark: backend.effectiveDark
-    readonly property var theme: backend.theme
-    readonly property var ui: backend.ui
+    readonly property bool dark: editorBackend.effectiveDark
+    readonly property var theme: editorBackend.theme
+    readonly property var ui: editorBackend.ui
     readonly property color bgShell: theme.bgShell || (dark ? "#0d0e11" : "#ebedf2")
     readonly property color bgHeader: theme.bgHeader || (dark ? "#0d0e11" : "#ebedf2")
     readonly property color bgEditor: theme.bgEditor || (dark ? "#16181e" : "#ffffff")
@@ -39,11 +39,11 @@ ApplicationWindow {
     readonly property color fgGutter: theme.fgGutter || (dark ? "#565d6e" : "#8c93a3")
     readonly property color selBg: theme.selBg || (dark ? "#2e3d59" : "#cde0ff")
 
-    readonly property var activePane: tabRepeater.itemAt(backend.activeTabIndex)
+    readonly property var activePane: tabRepeater.itemAt(editorBackend.activeTabIndex)
     readonly property bool modalOpen: confirmModal.open || settingsModal.open || languageModal.open
 
     EditorBackend {
-        id: backend
+        id: editorBackend
         onActiveTabChanged: {
             if (findBar.open && !findBar.gotoMode) {
                 updateMatchStats();
@@ -60,7 +60,7 @@ ApplicationWindow {
 
     Component.onCompleted: {
         if (initialFilesArg && initialFilesArg.length > 0) {
-            backend.setInitialFiles(initialFilesArg);
+            editorBackend.setInitialFiles(initialFilesArg);
         }
         focusActiveEditor();
     }
@@ -75,7 +75,7 @@ ApplicationWindow {
         findBar.gotoMode = !!gotoMode;
         findBar.replaceMode = !gotoMode && !!replaceMode;
         findBar.open = true;
-        var sel = (!gotoMode && activePane) ? activePane.editorItem.selectedText : "";
+        const sel = (!gotoMode && activePane) ? activePane.editorItem.selectedText : "";
         if (!gotoMode && sel !== "" && sel.indexOf("\n") === -1 && sel.indexOf("\u2029") === -1) {
             findBar.query = sel;
             findBar.focusInput(sel, false);
@@ -94,24 +94,24 @@ ApplicationWindow {
     }
 
     function updateMatchStats() {
-        if (!backend.activeTab || !activePane || findBar.query === "") {
+        if (!editorBackend.activeTab || !activePane || findBar.query === "") {
             findBar.matchCurrent = 0;
             findBar.matchTotal = 0;
             return;
         }
-        var st = backend.activeTab.matchStats(findBar.query, activePane.editorItem.selectionStart);
+        const st = editorBackend.activeTab.matchStats(findBar.query, activePane.editorItem.selectionStart);
         findBar.matchCurrent = st.current;
         findBar.matchTotal = st.total;
     }
 
     function findNext(backward) {
-        if (!backend.activeTab || !activePane || findBar.query === "") {
+        if (!editorBackend.activeTab || !activePane || findBar.query === "") {
             updateMatchStats();
             return;
         }
-        var ed = activePane.editorItem;
-        var fromPos = backward ? Math.max(0, ed.selectionStart) : ed.selectionEnd;
-        var res = backend.activeTab.findText(findBar.query, fromPos, backward);
+        const ed = activePane.editorItem;
+        const fromPos = backward ? Math.max(0, ed.selectionStart) : ed.selectionEnd;
+        const res = editorBackend.activeTab.findText(findBar.query, fromPos, backward);
         if (res.found) {
             ed.select(res.start, res.end);
         }
@@ -119,11 +119,11 @@ ApplicationWindow {
     }
 
     function replaceOne(replacement) {
-        if (!backend.activeTab || !activePane || findBar.query === "") {
+        if (!editorBackend.activeTab || !activePane || findBar.query === "") {
             return;
         }
-        var ed = activePane.editorItem;
-        var res = backend.activeTab.replaceMatch(findBar.query, replacement, ed.selectionStart, ed.selectionEnd);
+        const ed = activePane.editorItem;
+        const res = editorBackend.activeTab.replaceMatch(findBar.query, replacement, ed.selectionStart, ed.selectionEnd);
         if (res.found) {
             ed.select(res.start, res.end);
         }
@@ -131,24 +131,24 @@ ApplicationWindow {
     }
 
     function replaceAll(replacement) {
-        if (!backend.activeTab || !activePane || findBar.query === "") {
+        if (!editorBackend.activeTab || !activePane || findBar.query === "") {
             return;
         }
-        backend.activeTab.replaceAllMatches(findBar.query, replacement);
+        editorBackend.activeTab.replaceAllMatches(findBar.query, replacement);
         updateMatchStats();
     }
 
     function localizedTabName(index) {
-        var name = backend.tabFileName(index)
+        const name = editorBackend.tabFileName(index)
         return name === "Untitled" ? (win.ui.untitled || "Untitled") : name
     }
 
     function requestCloseTab(index) {
-        if (backend.tabCount === 1 && backend.isActivePristineUntitled()) {
+        if (editorBackend.tabCount === 1 && editorBackend.isActivePristineUntitled()) {
             win.close();
             return;
         }
-        if (backend.isTabModified(index)) {
+        if (editorBackend.isTabModified(index)) {
             win.pendingAction = "closeTab";
             win.pendingTabIndex = index;
             confirmModal.errorOnly = false;
@@ -159,13 +159,13 @@ ApplicationWindow {
             confirmModal.open = true;
             return;
         }
-        backend.closeTabImmediate(index);
+        editorBackend.closeTabImmediate(index);
     }
 
     function requestQuit() {
-        var dirtyIdx = backend.firstModifiedTabIndex();
+        const dirtyIdx = editorBackend.firstModifiedTabIndex();
         if (dirtyIdx >= 0) {
-            backend.activateTab(dirtyIdx);
+            editorBackend.activateTab(dirtyIdx);
             win.pendingAction = "quitApp";
             win.pendingTabIndex = dirtyIdx;
             confirmModal.errorOnly = false;
@@ -181,12 +181,12 @@ ApplicationWindow {
     }
 
     function continuePendingAction() {
-        var act = win.pendingAction;
-        var idx = win.pendingTabIndex;
+        const act = win.pendingAction;
+        const idx = win.pendingTabIndex;
         win.pendingAction = "";
         win.pendingTabIndex = -1;
         if (act === "closeTab") {
-            backend.closeTabImmediate(idx);
+            editorBackend.closeTabImmediate(idx);
             focusActiveEditor();
         } else if (act === "quitApp") {
             requestQuit();
@@ -194,7 +194,7 @@ ApplicationWindow {
     }
 
     onClosing: function (close) {
-        if (!win.forceClose && backend.firstModifiedTabIndex() >= 0) {
+        if (!win.forceClose && editorBackend.firstModifiedTabIndex() >= 0) {
             close.accepted = false;
             requestQuit();
         }
@@ -203,32 +203,32 @@ ApplicationWindow {
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+T"
-        onActivated: backend.newTab()
+        onActivated: editorBackend.newTab()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+N"
-        onActivated: backend.newTab()
+        onActivated: editorBackend.newTab()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+O"
-        onActivated: backend.openFileDialog()
+        onActivated: editorBackend.openFileDialog()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+S"
-        onActivated: backend.saveFile()
+        onActivated: editorBackend.saveFile()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+Shift+S"
-        onActivated: backend.saveFileAsDialog()
+        onActivated: editorBackend.saveFileAsDialog()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+W"
-        onActivated: requestCloseTab(backend.activeTabIndex)
+        onActivated: requestCloseTab(editorBackend.activeTabIndex)
     }
     Shortcut {
         enabled: !win.modalOpen
@@ -238,72 +238,72 @@ ApplicationWindow {
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+Tab"
-        onActivated: backend.nextTab()
+        onActivated: editorBackend.nextTab()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+Shift+Tab"
-        onActivated: backend.prevTab()
+        onActivated: editorBackend.prevTab()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+Backtab"
-        onActivated: backend.prevTab()
+        onActivated: editorBackend.prevTab()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+PgDown"
-        onActivated: backend.nextTab()
+        onActivated: editorBackend.nextTab()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+PgUp"
-        onActivated: backend.prevTab()
+        onActivated: editorBackend.prevTab()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+1"
-        onActivated: backend.activateTab(0)
+        onActivated: editorBackend.activateTab(0)
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+2"
-        onActivated: backend.activateTab(1)
+        onActivated: editorBackend.activateTab(1)
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+3"
-        onActivated: backend.activateTab(2)
+        onActivated: editorBackend.activateTab(2)
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+4"
-        onActivated: backend.activateTab(3)
+        onActivated: editorBackend.activateTab(3)
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+5"
-        onActivated: backend.activateTab(4)
+        onActivated: editorBackend.activateTab(4)
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+6"
-        onActivated: backend.activateTab(5)
+        onActivated: editorBackend.activateTab(5)
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+7"
-        onActivated: backend.activateTab(6)
+        onActivated: editorBackend.activateTab(6)
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+8"
-        onActivated: backend.activateTab(7)
+        onActivated: editorBackend.activateTab(7)
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+9"
-        onActivated: backend.activateTab(8)
+        onActivated: editorBackend.activateTab(8)
     }
     Shortcut {
         enabled: !win.modalOpen
@@ -348,27 +348,27 @@ ApplicationWindow {
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl++"
-        onActivated: backend.zoomIn()
+        onActivated: editorBackend.zoomIn()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+="
-        onActivated: backend.zoomIn()
+        onActivated: editorBackend.zoomIn()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+Shift+="
-        onActivated: backend.zoomIn()
+        onActivated: editorBackend.zoomIn()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+-"
-        onActivated: backend.zoomOut()
+        onActivated: editorBackend.zoomOut()
     }
     Shortcut {
         enabled: !win.modalOpen
         sequence: "Ctrl+0"
-        onActivated: backend.zoomReset()
+        onActivated: editorBackend.zoomReset()
     }
     Shortcut {
         sequence: "F11"
@@ -441,8 +441,8 @@ ApplicationWindow {
                 anchors.right: parent.right
                 darkMode: win.dark
                 theme: win.theme
-                activeTab: backend.activeTab
-                showWindowControls: backend.showWindowControls
+                activeTab: editorBackend.activeTab
+                showWindowControls: editorBackend.showWindowControls
                 isMaximized: win.visibility === Window.Maximized
                 menuOpened: menuPopup.opened
                 ui: win.ui
@@ -463,9 +463,9 @@ ApplicationWindow {
                 }
                 onMinimizeRequested: win.showMinimized()
                 onCloseWindowRequested: win.requestQuit()
-                onNewTabRequested: backend.newTab()
-                onOpenFileRequested: backend.openFileDialog()
-                onSaveFileRequested: backend.saveFile()
+                onNewTabRequested: editorBackend.newTab()
+                onOpenFileRequested: editorBackend.openFileDialog()
+                onSaveFileRequested: editorBackend.saveFile()
                 onFindRequested: openFindBar(false, false)
                 onSettingsRequested: settingsModal.open = true
                 onMenuToggleRequested: function (anchorX) {
@@ -485,9 +485,9 @@ ApplicationWindow {
                 anchors.right: parent.right
                 darkMode: win.dark
                 theme: win.theme
-                tabModel: backend.tabModel
-                tabCount: backend.tabCount
-                activeIndex: backend.activeTabIndex
+                tabModel: editorBackend.tabModel
+                tabCount: editorBackend.tabCount
+                activeIndex: editorBackend.activeTabIndex
                 ui: win.ui
                 bgShell: win.bgShell
                 bgEditor: win.bgEditor
@@ -499,12 +499,12 @@ ApplicationWindow {
                 fgMuted: win.fgMuted
 
                 onTabActivated: function (index) {
-                    backend.activateTab(index);
+                    editorBackend.activateTab(index);
                 }
                 onTabClosed: function (index) {
                     requestCloseTab(index);
                 }
-                onNewTabRequested: backend.newTab()
+                onNewTabRequested: editorBackend.newTab()
             }
 
             FindBar {
@@ -514,7 +514,7 @@ ApplicationWindow {
                 anchors.right: parent.right
                 darkMode: win.dark
                 theme: win.theme
-                totalLines: backend.activeTab ? backend.activeTab.lineCount : 1
+                totalLines: editorBackend.activeTab ? editorBackend.activeTab.lineCount : 1
                 ui: win.ui
                 bgGutter: win.bgGutter
                 bgEditor: win.bgEditor
@@ -555,17 +555,17 @@ ApplicationWindow {
 
                 Repeater {
                     id: tabRepeater
-                    model: backend.tabModel
+                    model: editorBackend.tabModel
 
                     delegate: EditorPane {
                         anchors.fill: parent
-                        visible: index === backend.activeTabIndex
+                        visible: index === editorBackend.activeTabIndex
                         session: model.session
                         darkMode: win.dark
                 theme: win.theme
-                        showLineNumbers: backend.showLineNumbers
-                        zoomPercent: backend.zoomPercent
-                        monoFontFamily: backend.monoFontFamily
+                        showLineNumbers: editorBackend.showLineNumbers
+                        zoomPercent: editorBackend.zoomPercent
+                        monoFontFamily: editorBackend.monoFontFamily
                         ui: win.ui
                         bgEditor: win.bgEditor
                         bgGutter: win.bgGutter
@@ -580,15 +580,15 @@ ApplicationWindow {
                         fgGutter: win.fgGutter
                         selBg: win.selBg
 
-                        onZoomInRequested: backend.zoomIn()
-                        onZoomOutRequested: backend.zoomOut()
+                        onZoomInRequested: editorBackend.zoomIn()
+                        onZoomOutRequested: editorBackend.zoomOut()
                         onOpenFindRequested: openFindBar(false, false)
                         onOpenReplaceRequested: openFindBar(true, false)
                         onOpenGotoRequested: openFindBar(false, true)
-                        onNewTabRequested: backend.newTab()
-                        onOpenFileRequested: backend.openFileDialog()
-                        onSaveFileRequested: backend.saveFile()
-                        onSaveAsRequested: backend.saveFileAsDialog()
+                        onNewTabRequested: editorBackend.newTab()
+                        onOpenFileRequested: editorBackend.openFileDialog()
+                        onSaveFileRequested: editorBackend.saveFile()
+                        onSaveAsRequested: editorBackend.saveFileAsDialog()
                         onCloseTabRequested: requestCloseTab(index)
                         onQuitRequested: requestQuit()
                         onToggleSettingsRequested: settingsModal.open = !settingsModal.open
@@ -603,8 +603,8 @@ ApplicationWindow {
                 anchors.right: parent.right
                 darkMode: win.dark
                 theme: win.theme
-                activeTab: backend.activeTab
-                zoomPercent: backend.zoomPercent
+                activeTab: editorBackend.activeTab
+                zoomPercent: editorBackend.zoomPercent
                 selectedChars: activePane ? activePane.selectedLength : 0
                 ui: win.ui
                 bgShell: win.bgShell
@@ -617,9 +617,9 @@ ApplicationWindow {
 
                 onGotoLineClicked: openFindBar(false, true)
                 onLanguageClicked: languageModal.open = true
-                onZoomInRequested: backend.zoomIn()
-                onZoomOutRequested: backend.zoomOut()
-                onZoomResetRequested: backend.zoomReset()
+                onZoomInRequested: editorBackend.zoomIn()
+                onZoomOutRequested: editorBackend.zoomOut()
+                onZoomResetRequested: editorBackend.zoomReset()
             }
         }
 
@@ -748,17 +748,17 @@ ApplicationWindow {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     menuPopup.close();
-                                    var a = modelData.act;
+                                    const a = modelData.act;
                                     if (a === "new")
-                                        backend.newTab();
+                                        editorBackend.newTab();
                                     else if (a === "open")
-                                        backend.openFileDialog();
+                                        editorBackend.openFileDialog();
                                     else if (a === "save")
-                                        backend.saveFile();
+                                        editorBackend.saveFile();
                                     else if (a === "saveas")
-                                        backend.saveFileAsDialog();
+                                        editorBackend.saveFileAsDialog();
                                     else if (a === "closetab")
-                                        requestCloseTab(backend.activeTabIndex);
+                                        requestCloseTab(editorBackend.activeTabIndex);
                                     else if (a === "find")
                                         openFindBar(false, false);
                                     else if (a === "replace")
@@ -766,11 +766,11 @@ ApplicationWindow {
                                     else if (a === "goto")
                                         openFindBar(false, true);
                                     else if (a === "zoomin")
-                                        backend.zoomIn();
+                                        editorBackend.zoomIn();
                                     else if (a === "zoomout")
-                                        backend.zoomOut();
+                                        editorBackend.zoomOut();
                                     else if (a === "zoomreset")
-                                        backend.zoomReset();
+                                        editorBackend.zoomReset();
                                     else if (a === "settings")
                                         settingsModal.open = true;
                                     else if (a === "quit")
@@ -795,7 +795,7 @@ ApplicationWindow {
             id: settingsModal
             darkMode: win.dark
                 theme: win.theme
-            backend: backend
+            backend: editorBackend
             ui: win.ui
             onClosed: {
                 open = false;
@@ -807,7 +807,7 @@ ApplicationWindow {
             id: languageModal
             darkMode: win.dark
                 theme: win.theme
-            backend: backend
+            backend: editorBackend
             ui: win.ui
             onClosed: {
                 open = false;
@@ -828,12 +828,12 @@ ApplicationWindow {
             }
             onDiscarded: {
                 open = false;
-                backend.discardTabChanges(win.pendingTabIndex);
+                editorBackend.discardTabChanges(win.pendingTabIndex);
                 win.continuePendingAction();
             }
             onSaved: {
                 open = false;
-                if (backend.saveFile(win.pendingTabIndex)) {
+                if (editorBackend.saveFile(win.pendingTabIndex)) {
                     win.continuePendingAction();
                 } else {
                     win.pendingAction = "";
@@ -846,10 +846,10 @@ ApplicationWindow {
             anchors.fill: parent
             onDropped: function (drop) {
                 if (drop.hasUrls && drop.urls.length > 0) {
-                    for (var i = 0; i < drop.urls.length; i++) {
-                        var u = drop.urls[i].toString();
+                    for (let i = 0; i < drop.urls.length; i++) {
+                        const u = drop.urls[i].toString();
                         if (u.indexOf("file:") === 0 || u.indexOf("/") === 0) {
-                            backend.loadFile(u, true);
+                            editorBackend.loadFile(u, true);
                         }
                     }
                 }

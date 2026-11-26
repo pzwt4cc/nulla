@@ -10,6 +10,7 @@
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QStandardPaths>
+#include <QtEnvironmentVariables>
 #include <QtGlobal>
 #if defined(Q_OS_LINUX)
 #include <dlfcn.h>

@@ -106,7 +106,7 @@ Rectangle {
                         Keys.onPressed: function (event) {
                             if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                                 if (root.gotoMode) {
-                                    var ln = parseInt(text.trim(), 10);
+                                    const ln = parseInt(text.trim(), 10);
                                     if (!isNaN(ln) && ln >= 1) {
                                         root.gotoLineRequested(ln);
                                     }
