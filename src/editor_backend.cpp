@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFontDatabase>
 #include <QGuiApplication>
 #include <QSaveFile>
 #include <QSettings>
@@ -51,9 +52,33 @@ static bool detectDesktopEnvironment() {
     return false;
 }
 
+static QString pickMonoFontFamily() {
+    const QStringList available = QFontDatabase::families();
+    const char * const preferred[] = {
+        "JetBrains Mono",
+        "IBM Plex Mono",
+        "Cascadia Mono",
+        "CaskaydiaCove Nerd Font Mono",
+        "Fira Code",
+        "FiraCode Nerd Font Mono",
+        "Hack",
+        "Adwaita Mono",
+        "Ubuntu Mono",
+        "Liberation Mono"
+    };
+    for (const char *name : preferred) {
+        const QString qname = QLatin1String(name);
+        if (available.contains(qname, Qt::CaseInsensitive)) {
+            return qname;
+        }
+    }
+    return QFontDatabase::systemFont(QFontDatabase::FixedFont).family();
+}
+
 EditorBackend::EditorBackend(QObject *parent)
     : QObject(parent),
-      m_showWindowControls(detectDesktopEnvironment()) {
+      m_showWindowControls(detectDesktopEnvironment()),
+      m_monoFontFamily(pickMonoFontFamily()) {
     loadSettings();
     if (QGuiApplication::styleHints()) {
         connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged,
@@ -274,6 +299,7 @@ bool EditorBackend::loadFile(const QString &rawPath, bool allowMissing) {
         emit modifiedChanged();
         emit languageStatusChanged();
         emit cursorStatsChanged();
+        emit documentLoaded();
         return true;
     }
 
@@ -300,6 +326,7 @@ bool EditorBackend::loadFile(const QString &rawPath, bool allowMissing) {
     emit modifiedChanged();
     emit languageStatusChanged();
     emit cursorStatsChanged();
+    emit documentLoaded();
     return true;
 }
 
@@ -323,6 +350,7 @@ void EditorBackend::newFile() {
     emit modifiedChanged();
     emit languageStatusChanged();
     emit cursorStatsChanged();
+    emit documentLoaded();
 }
 
 bool EditorBackend::openFileDialog() {

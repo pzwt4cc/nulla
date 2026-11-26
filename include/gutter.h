@@ -14,6 +14,7 @@ class LineNumberGutter : public QQuickPaintedItem {
     Q_PROPERTY(QFont font READ font WRITE setFont NOTIFY fontChanged)
     Q_PROPERTY(QColor textColor READ textColor WRITE setTextColor NOTIFY textColorChanged)
     Q_PROPERTY(QColor activeTextColor READ activeTextColor WRITE setActiveTextColor NOTIFY activeTextColorChanged)
+    Q_PROPERTY(QColor activeLineColor READ activeLineColor WRITE setActiveLineColor NOTIFY activeLineColorChanged)
     Q_PROPERTY(qreal topPadding READ topPadding WRITE setTopPadding NOTIFY topPaddingChanged)
 
 public:
@@ -37,6 +38,9 @@ public:
     QColor activeTextColor() const { return m_activeTextColor; }
     void setActiveTextColor(const QColor &c);
 
+    QColor activeLineColor() const { return m_activeLineColor; }
+    void setActiveLineColor(const QColor &c);
+
     qreal topPadding() const { return m_topPadding; }
     void setTopPadding(qreal p);
 
@@ -52,6 +56,7 @@ signals:
     void fontChanged();
     void textColorChanged();
     void activeTextColorChanged();
+    void activeLineColorChanged();
     void topPaddingChanged();
 
 private:
@@ -63,6 +68,7 @@ private:
     QFont m_font;
     QColor m_textColor = QColor(QStringLiteral("#5b616e"));
     QColor m_activeTextColor = QColor(QStringLiteral("#e6e8ec"));
+    QColor m_activeLineColor = QColor(QStringLiteral("#1c1e24"));
     qreal m_topPadding = 8.0;
 };
 

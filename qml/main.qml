@@ -23,21 +23,31 @@ ApplicationWindow {
     property int matchTotal: 0
 
     readonly property bool dark: backend.effectiveDark
-    readonly property color bgShell: dark ? "#131417" : "#eceef2"
-    readonly property color bgHeader: dark ? "#16181c" : "#f2f4f7"
-    readonly property color bgEditor: dark ? "#181a1f" : "#f6f7f9"
-    readonly property color bgGutter: dark ? "#16181c" : "#f0f2f5"
-    readonly property color bgHover: dark ? "#23262e" : "#e2e5ec"
-    readonly property color bgLineHighlight: dark ? "#1f2229" : "#eceff4"
-    readonly property color borderSubtle: dark ? "#282b33" : "#d3d7e0"
-    readonly property color borderFocus: dark ? "#5c6370" : "#7c8494"
-    readonly property color fgMain: dark ? "#e6e8ec" : "#16181d"
-    readonly property color fgMuted: dark ? "#8e95a3" : "#5e6573"
-    readonly property color fgGutter: dark ? "#565c68" : "#9aa1ae"
-    readonly property color selBg: dark ? "#323744" : "#d4d9e3"
+    readonly property color bgShell: dark ? "#111215" : "#f2f3f6"
+    readonly property color bgHeader: dark ? "#111215" : "#f2f3f6"
+    readonly property color bgEditor: dark ? "#16171b" : "#fbfbfc"
+    readonly property color bgGutter: dark ? "#131418" : "#f6f7f9"
+    readonly property color bgSurfaceElev: dark ? "#181a20" : "#ffffff"
+    readonly property color bgHover: dark ? "#20222a" : "#e7e9ef"
+    readonly property color bgLineHighlight: dark ? "#1c1e24" : "#eff1f5"
+    readonly property color borderSubtle: dark ? "#22242c" : "#e0e3eb"
+    readonly property color borderControl: dark ? "#2c2f38" : "#cfd4de"
+    readonly property color borderFocus: dark ? "#687082" : "#737b8c"
+    readonly property color fgMain: dark ? "#eceef2" : "#14161a"
+    readonly property color fgMuted: dark ? "#8c92a0" : "#606674"
+    readonly property color fgGutter: dark ? "#4a4f5c" : "#9ba1ae"
+    readonly property color selBg: dark ? "#2a3347" : "#dbe4f5"
 
     EditorBackend {
         id: backend
+        onDocumentLoaded: {
+            flick.stopScrollAnims()
+            editor.cursorPosition = 0
+            flick.contentY = 0
+            flick.contentX = 0
+            flick.targetY = 0
+            flick.targetX = 0
+        }
         onErrorOccurred: function(title, message) {
             confirmModal.errorOnly = true
             confirmModal.title = title
@@ -287,25 +297,25 @@ ApplicationWindow {
                 Rectangle {
                     id: actionGroup
                     anchors.left: parent.left
-                    anchors.leftMargin: 8
+                    anchors.leftMargin: 10
                     anchors.verticalCenter: parent.verticalCenter
-                    height: 30
-                    width: groupRow.implicitWidth
+                    height: 28
+                    width: groupRow.implicitWidth + 2
                     radius: 8
-                    color: "transparent"
+                    color: win.bgSurfaceElev
                     border.width: 1
-                    border.color: win.borderSubtle
+                    border.color: win.borderControl
 
                     Row {
                         id: groupRow
-                        anchors.fill: parent
+                        anchors.centerIn: parent
                         spacing: 0
 
                         M3Button {
                             iconKind: "plus"
                             iconOnly: true
                             ghost: true
-                            buttonHeight: 30
+                            buttonHeight: 26
                             cornerRadius: 7
                             darkMode: win.dark
                             tooltipText: "New File (Ctrl+N)"
@@ -314,7 +324,7 @@ ApplicationWindow {
 
                         Rectangle {
                             width: 1
-                            height: 16
+                            height: 14
                             anchors.verticalCenter: parent.verticalCenter
                             color: win.borderSubtle
                         }
@@ -322,8 +332,8 @@ ApplicationWindow {
                         M3Button {
                             text: "Open"
                             ghost: true
-                            buttonHeight: 30
-                            horizontalPadding: 11
+                            buttonHeight: 26
+                            horizontalPadding: 10
                             cornerRadius: 7
                             darkMode: win.dark
                             tooltipText: "Open File (Ctrl+O)"
@@ -332,17 +342,18 @@ ApplicationWindow {
 
                         Rectangle {
                             width: 1
-                            height: 16
+                            height: 14
                             anchors.verticalCenter: parent.verticalCenter
                             color: win.borderSubtle
                         }
 
                         M3Button {
-                            text: backend.modified ? "• Save" : "Save"
+                            text: "Save"
                             ghost: !backend.modified
                             accent: backend.modified
-                            buttonHeight: 30
-                            horizontalPadding: 11
+                            showDot: backend.modified
+                            buttonHeight: 26
+                            horizontalPadding: 10
                             cornerRadius: 7
                             darkMode: win.dark
                             tooltipText: "Save File (Ctrl+S)"
@@ -355,35 +366,45 @@ ApplicationWindow {
                     id: centerTitle
                     anchors.centerIn: parent
                     spacing: 7
-                    width: Math.min(24 + titleLabel.implicitWidth, Math.max(80, topbar.width - actionGroup.width - rightControls.width - 48))
+                    width: Math.min(24 + titleLabel.implicitWidth + (backend.modified ? 12 : 0),
+                                    Math.max(80, topbar.width - actionGroup.width - rightControls.width - 48))
 
                     Image {
                         source: "qrc:/assets/nulla.svg"
-                        width: 15
-                        height: 15
-                        sourceSize: Qt.size(32, 32)
+                        width: 14
+                        height: 14
+                        sourceSize: Qt.size(28, 28)
                         anchors.verticalCenter: parent.verticalCenter
-                        opacity: win.dark ? 0.85 : 0.78
+                        opacity: win.dark ? 0.88 : 0.82
                     }
 
                     Text {
                         id: titleLabel
-                        width: Math.min(implicitWidth, centerTitle.width - 24)
+                        width: Math.min(implicitWidth, centerTitle.width - 24 - (backend.modified ? 12 : 0))
                         elide: Text.ElideMiddle
-                        text: (backend.modified ? "• " : "") + backend.fileName
+                        text: backend.fileName
                         color: backend.modified ? win.fgMain : win.fgMuted
                         font.pixelSize: 13
                         font.weight: backend.modified ? Font.DemiBold : Font.Medium
                         anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Rectangle {
+                        visible: backend.modified
+                        width: 6
+                        height: 6
+                        radius: 3
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: win.fgMain
                     }
                 }
 
                 Row {
                     id: rightControls
                     anchors.right: parent.right
-                    anchors.rightMargin: 8
+                    anchors.rightMargin: 10
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 4
+                    spacing: 3
 
                     M3Button {
                         iconKind: "search"
@@ -425,7 +446,7 @@ ApplicationWindow {
                     Rectangle {
                         visible: backend.showWindowControls
                         width: 1
-                        height: 16
+                        height: 14
                         anchors.verticalCenter: parent.verticalCenter
                         color: win.borderSubtle
                     }
@@ -443,7 +464,7 @@ ApplicationWindow {
 
                     M3Button {
                         visible: backend.showWindowControls
-                        iconKind: "max"
+                        iconKind: win.visibility === Window.Maximized ? "restore" : "max"
                         iconOnly: true
                         ghost: true
                         buttonHeight: 28
@@ -470,24 +491,24 @@ ApplicationWindow {
                         onClicked: win.close()
                     }
                 }
+
+                Rectangle {
+                    width: parent.width
+                    height: 1
+                    anchors.bottom: parent.bottom
+                    color: win.borderSubtle
+                }
             }
 
             Rectangle {
                 id: editorCard
-                width: parent.width - 6
+                width: parent.width
                 height: parent.height - topbar.height - statusBar.height
-                anchors.horizontalCenter: parent.horizontalCenter
-                radius: 8
                 color: win.bgEditor
-                border.width: 1
-                border.color: editor.activeFocus ? win.borderFocus : win.borderSubtle
                 clip: true
 
                 Behavior on color {
                     ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
-                }
-                Behavior on border.color {
-                    ColorAnimation { duration: 100; easing.type: Easing.OutCubic }
                 }
 
                 Column {
@@ -503,18 +524,18 @@ ApplicationWindow {
 
                         Row {
                             anchors.fill: parent
-                            anchors.leftMargin: 8
-                            anchors.rightMargin: 8
+                            anchors.leftMargin: 10
+                            anchors.rightMargin: 10
                             spacing: 6
 
                             Rectangle {
                                 anchors.verticalCenter: parent.verticalCenter
-                                width: Math.min(260, Math.max(120, findBar.width - 190))
+                                width: Math.min(264, Math.max(120, findBar.width - 210))
                                 height: 26
                                 radius: 7
                                 color: win.bgEditor
                                 border.width: 1
-                                border.color: findInput.activeFocus ? win.borderFocus : win.borderSubtle
+                                border.color: findInput.activeFocus ? win.borderFocus : win.borderControl
 
                                 TextInput {
                                     id: findInput
@@ -542,7 +563,7 @@ ApplicationWindow {
 
                                     Text {
                                         visible: findInput.text === ""
-                                        text: "Find..."
+                                        text: "Find in file..."
                                         color: win.fgGutter
                                         font.pixelSize: 12
                                         anchors.verticalCenter: parent.verticalCenter
@@ -560,30 +581,53 @@ ApplicationWindow {
                                 font.pixelSize: 12
                             }
 
-                            M3Button {
+                            Rectangle {
                                 anchors.verticalCenter: parent.verticalCenter
-                                iconKind: "up"
-                                iconOnly: true
-                                buttonHeight: 24
-                                cornerRadius: 7
-                                darkMode: win.dark
-                                tooltipText: "Previous (Shift+Enter)"
-                                onClicked: findNext(true)
-                            }
+                                height: 26
+                                width: findNavRow.implicitWidth + 2
+                                radius: 7
+                                color: win.bgSurfaceElev
+                                border.width: 1
+                                border.color: win.borderControl
 
-                            M3Button {
-                                anchors.verticalCenter: parent.verticalCenter
-                                iconKind: "chevron"
-                                iconOnly: true
-                                buttonHeight: 24
-                                cornerRadius: 7
-                                darkMode: win.dark
-                                tooltipText: "Next (Enter)"
-                                onClicked: findNext(false)
+                                Row {
+                                    id: findNavRow
+                                    anchors.centerIn: parent
+                                    spacing: 0
+
+                                    M3Button {
+                                        iconKind: "up"
+                                        iconOnly: true
+                                        ghost: true
+                                        buttonHeight: 24
+                                        cornerRadius: 6
+                                        darkMode: win.dark
+                                        tooltipText: "Previous (Shift+Enter)"
+                                        onClicked: findNext(true)
+                                    }
+
+                                    Rectangle {
+                                        width: 1
+                                        height: 14
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        color: win.borderSubtle
+                                    }
+
+                                    M3Button {
+                                        iconKind: "chevron"
+                                        iconOnly: true
+                                        ghost: true
+                                        buttonHeight: 24
+                                        cornerRadius: 6
+                                        darkMode: win.dark
+                                        tooltipText: "Next (Enter)"
+                                        onClicked: findNext(false)
+                                    }
+                                }
                             }
 
                             Item {
-                                width: Math.max(1, findBar.width - 396)
+                                width: Math.max(1, findBar.width - 404)
                                 height: 1
                             }
 
@@ -592,7 +636,7 @@ ApplicationWindow {
                                 iconKind: "close"
                                 iconOnly: true
                                 ghost: true
-                                buttonHeight: 24
+                                buttonHeight: 26
                                 cornerRadius: 7
                                 darkMode: win.dark
                                 tooltipText: "Close (Esc)"
@@ -636,6 +680,7 @@ ApplicationWindow {
                                     font: editor.font
                                     textColor: win.fgGutter
                                     activeTextColor: win.fgMain
+                                    activeLineColor: editor.activeFocus ? win.bgLineHighlight : "transparent"
                                     topPadding: 8
                                 }
 
@@ -803,7 +848,7 @@ ApplicationWindow {
                                         selectionColor: win.selBg
                                         selectedTextColor: win.fgMain
                                         cursorVisible: activeFocus
-                                        font.family: "monospace"
+                                        font.family: backend.monoFontFamily
                                         font.pixelSize: Math.round(14 * backend.zoomPercent / 100)
 
                                         property bool suppressCursorScroll: false
@@ -1019,39 +1064,48 @@ ApplicationWindow {
                 }
             }
 
-            Item {
+            Rectangle {
                 id: statusBar
                 width: parent.width
-                height: 30
+                height: 28
+                color: win.bgShell
+
+                Behavior on color {
+                    ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: 1
+                    anchors.top: parent.top
+                    color: win.borderSubtle
+                }
 
                 Row {
                     anchors.left: parent.left
-                    anchors.leftMargin: 8
+                    anchors.leftMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 8
 
-                    Rectangle {
-                        height: 22
-                        width: posLabel.implicitWidth + 14
-                        radius: 7
-                        color: "transparent"
-                        border.width: 1
-                        border.color: win.borderSubtle
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "Ln " + backend.cursorLine + ", Col " + backend.cursorColumn
+                        color: win.fgMuted
+                        font.pixelSize: 11
+                    }
 
-                        Text {
-                            id: posLabel
-                            anchors.centerIn: parent
-                            text: "Ln " + backend.cursorLine + ", Col " + backend.cursorColumn
-                            color: win.fgMuted
-                            font.pixelSize: 12
-                        }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "·"
+                        color: win.fgGutter
+                        font.pixelSize: 11
                     }
 
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: backend.lineCount + (backend.lineCount === 1 ? " line" : " lines")
                         color: win.fgGutter
-                        font.pixelSize: 12
+                        font.pixelSize: 11
                     }
                 }
 
@@ -1059,15 +1113,16 @@ ApplicationWindow {
                     anchors.right: parent.right
                     anchors.rightMargin: 8
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 6
+                    spacing: 4
 
                     M3Button {
                         text: backend.statusLanguage
+                        ghost: true
                         darkMode: win.dark
-                        buttonHeight: 22
-                        horizontalPadding: 11
-                        fontPixelSize: 12
-                        cornerRadius: 7
+                        buttonHeight: 20
+                        horizontalPadding: 8
+                        fontPixelSize: 11
+                        cornerRadius: 6
                         tooltipText: "Change syntax language"
                         onClicked: {
                             settingsModal.open = true
@@ -1077,11 +1132,12 @@ ApplicationWindow {
 
                     M3Button {
                         text: backend.zoomPercent + "%"
+                        ghost: true
                         darkMode: win.dark
-                        buttonHeight: 22
-                        horizontalPadding: 11
-                        fontPixelSize: 12
-                        cornerRadius: 7
+                        buttonHeight: 20
+                        horizontalPadding: 8
+                        fontPixelSize: 11
+                        cornerRadius: 6
                         tooltipText: "Reset zoom (Ctrl+0)"
                         onClicked: backend.zoomReset()
                     }
@@ -1108,10 +1164,10 @@ ApplicationWindow {
             }
 
             background: Rectangle {
-                radius: 10
-                color: win.dark ? "#1b1d23" : "#f8f9fb"
+                radius: 9
+                color: win.bgSurfaceElev
                 border.width: 1
-                border.color: win.borderSubtle
+                border.color: win.borderControl
             }
 
             contentItem: Column {

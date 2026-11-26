@@ -25,6 +25,7 @@ class EditorBackend : public QObject {
     Q_PROPERTY(int cursorLine READ cursorLine NOTIFY cursorStatsChanged)
     Q_PROPERTY(int cursorColumn READ cursorColumn NOTIFY cursorStatsChanged)
     Q_PROPERTY(bool showWindowControls READ showWindowControls CONSTANT)
+    Q_PROPERTY(QString monoFontFamily READ monoFontFamily CONSTANT)
 
 public:
     enum ThemeMode {
@@ -51,6 +52,7 @@ public:
     int cursorLine() const { return m_cursorLine; }
     int cursorColumn() const { return m_cursorColumn; }
     bool showWindowControls() const { return m_showWindowControls; }
+    QString monoFontFamily() const { return m_monoFontFamily; }
 
     void setShowLineNumbers(bool show);
     void setThemeMode(int mode);
@@ -76,6 +78,7 @@ public:
 
 signals:
     void fileInfoChanged();
+    void documentLoaded();
     void modifiedChanged();
     void settingsChanged();
     void themeChanged();
@@ -110,6 +113,7 @@ private:
     int m_cursorLine = 1;
     int m_cursorColumn = 1;
     bool m_showWindowControls = false;
+    QString m_monoFontFamily;
 };
 
 #endif

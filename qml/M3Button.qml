@@ -9,30 +9,97 @@ Item {
     property bool darkMode: true
     property bool accent: false
     property bool activeChip: false
+    property bool primaryFill: false
     property bool ghost: false
     property bool iconOnly: false
     property bool dangerHover: false
-    property real buttonHeight: 30
-    property real horizontalPadding: 11
+    property bool showDot: false
+    property real buttonHeight: 28
+    property real horizontalPadding: 10
     property string tooltipText: ""
-    property int fontPixelSize: 13
-    property int cornerRadius: 8
+    property int fontPixelSize: 12
+    property int cornerRadius: 7
+    property int iconSize: 14
 
     signal clicked()
 
     readonly property bool hovered: ma.containsMouse
     readonly property bool pressed: ma.pressed
 
-    readonly property color fgNormal: darkMode ? "#e6e8ec" : "#16181d"
-    readonly property color fgMuted: darkMode ? "#b0b6c2" : "#4b5260"
-    readonly property color borderNormal: darkMode ? "#323640" : "#c5cad4"
-    readonly property color borderHover: darkMode ? "#6d7484" : "#6c7382"
-    readonly property color borderAccent: darkMode ? "#e6e8ec" : "#16181d"
-    readonly property color fillHover: darkMode ? "#1cffffff" : "#12000000"
-    readonly property color fillPress: darkMode ? "#2cffffff" : "#1e000000"
-    readonly property color fillAccent: darkMode ? "#14ffffff" : "#0e000000"
-    readonly property color fillDanger: "#30e5534b"
-    readonly property color borderDanger: "#e5534b"
+    readonly property color fgNormal: darkMode ? "#eceef2" : "#14161a"
+    readonly property color fgMuted: darkMode ? "#9ca2b0" : "#5a606e"
+    readonly property color fgOnPrimary: darkMode ? "#111215" : "#ffffff"
+    readonly property color borderNormal: darkMode ? "#2c2f38" : "#d0d4de"
+    readonly property color borderHover: darkMode ? "#565d6e" : "#7e8696"
+    readonly property color borderAccent: darkMode ? "#cfd4df" : "#252932"
+    readonly property color fillHover: darkMode ? "#16ffffff" : "#0e000000"
+    readonly property color fillPress: darkMode ? "#24ffffff" : "#18000000"
+    readonly property color fillAccent: darkMode ? "#12ffffff" : "#0a000000"
+    readonly property color fillChip: darkMode ? "#242730" : "#e5e8ef"
+    readonly property color fillDanger: darkMode ? "#2ee5534b" : "#1fe04840"
+    readonly property color borderDanger: "#e0554d"
+
+    readonly property color iconColor: {
+        if (primaryFill) {
+            return fgOnPrimary
+        }
+        if (dangerHover && (hovered || pressed)) {
+            return borderDanger
+        }
+        if (accent || activeChip || hovered || pressed) {
+            return fgNormal
+        }
+        return fgMuted
+    }
+
+    function svgBody(kind) {
+        if (kind === "plus") {
+            return '<path d="M12 5v14M5 12h14"/>'
+        }
+        if (kind === "minus") {
+            return '<path d="M5 12h14"/>'
+        }
+        if (kind === "close") {
+            return '<path d="M17 7L7 17M7 7l10 10"/>'
+        }
+        if (kind === "max") {
+            return '<rect x="5.5" y="5.5" width="13" height="13" rx="2"/>'
+        }
+        if (kind === "restore") {
+            return '<rect x="5" y="8" width="11" height="11" rx="1.8"/><path d="M8 8V6.8A1.8 1.8 0 0 1 9.8 5h7.4A1.8 1.8 0 0 1 19 6.8v7.4a1.8 1.8 0 0 1-1.8 1.8H16"/>'
+        }
+        if (kind === "dots") {
+            return '<circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none"/>'
+        }
+        if (kind === "gear") {
+            return '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'
+        }
+        if (kind === "chevron") {
+            return '<path d="m6 9 6 6 6-6"/>'
+        }
+        if (kind === "up") {
+            return '<path d="m18 15-6-6-6 6"/>'
+        }
+        if (kind === "back") {
+            return '<path d="M19 12H5M11 6l-6 6 6 6"/>'
+        }
+        if (kind === "search") {
+            return '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>'
+        }
+        return ""
+    }
+
+    function iconDataUri(kind, col) {
+        if (kind === "") {
+            return ""
+        }
+        var hex = col.toString()
+        var body = svgBody(kind).split("currentColor").join(hex)
+        var svg = '<svg xmlns="http:\x2f\x2fwww.w3.org\x2f2000\x2fsvg" viewBox="0 0 24 24" fill="none" stroke="' +
+                  hex + '" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">' +
+                  body + '</svg>'
+        return "data:image/svg+xml;utf8," + encodeURIComponent(svg)
+    }
 
     implicitHeight: buttonHeight
     implicitWidth: iconOnly ? buttonHeight : (contentRow.implicitWidth + horizontalPadding * 2)
@@ -42,17 +109,31 @@ Item {
         anchors.fill: parent
         radius: root.cornerRadius
         color: {
+            if (primaryFill) {
+                if (pressed) return darkMode ? "#c8ccd4" : "#2e323b"
+                if (hovered) return darkMode ? "#dcdde2" : "#22252c"
+                return fgNormal
+            }
             if (pressed) {
                 return dangerHover ? fillDanger : fillPress
             }
             if (hovered) {
                 return dangerHover ? fillDanger : fillHover
             }
-            return (accent || activeChip) ? fillAccent : "transparent"
+            if (activeChip) {
+                return fillChip
+            }
+            return accent ? fillAccent : "transparent"
         }
-        border.width: (accent || activeChip) ? 1.5 : (ghost && !hovered && !pressed ? 0 : 1)
+        border.width: {
+            if (primaryFill) return 0
+            if (accent) return 1.25
+            if (activeChip) return 1
+            if (ghost && !hovered && !pressed) return 0
+            return 1
+        }
         border.color: {
-            if (dangerHover && hovered) {
+            if (dangerHover && (hovered || pressed)) {
                 return borderDanger
             }
             if (accent || activeChip) {
@@ -65,13 +146,13 @@ Item {
         transformOrigin: Item.Center
 
         Behavior on color {
-            ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 80; easing.type: Easing.OutCubic }
         }
         Behavior on border.color {
-            ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 80; easing.type: Easing.OutCubic }
         }
         Behavior on scale {
-            NumberAnimation { duration: 65; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 60; easing.type: Easing.OutCubic }
         }
 
         Row {
@@ -79,99 +160,40 @@ Item {
             anchors.centerIn: parent
             spacing: 6
 
-            Canvas {
-                id: iconCanvas
-                visible: root.iconKind !== ""
-                width: 14
-                height: 14
+            Rectangle {
+                visible: root.showDot
+                width: 6
+                height: 6
+                radius: 3
                 anchors.verticalCenter: parent.verticalCenter
+                color: root.primaryFill ? root.fgOnPrimary : root.fgNormal
+            }
 
-                property color strokeColor: (root.dangerHover && root.hovered)
-                                            ? root.borderDanger
-                                            : ((root.accent || root.activeChip || root.hovered) ? root.fgNormal : root.fgMuted)
-
-                onStrokeColorChanged: requestPaint()
-                onVisibleChanged: if (visible) requestPaint()
-
-                onPaint: {
-                    var ctx = getContext("2d")
-                    ctx.reset()
-                    ctx.strokeStyle = strokeColor
-                    ctx.fillStyle = strokeColor
-                    ctx.lineWidth = 1.5
-                    ctx.lineCap = "round"
-                    ctx.lineJoin = "round"
-
-                    if (root.iconKind === "plus") {
-                        ctx.beginPath()
-                        ctx.moveTo(7, 2.5)
-                        ctx.lineTo(7, 11.5)
-                        ctx.moveTo(2.5, 7)
-                        ctx.lineTo(11.5, 7)
-                        ctx.stroke()
-                    } else if (root.iconKind === "minus") {
-                        ctx.beginPath()
-                        ctx.moveTo(3, 7)
-                        ctx.lineTo(11, 7)
-                        ctx.stroke()
-                    } else if (root.iconKind === "close") {
-                        ctx.beginPath()
-                        ctx.moveTo(3.5, 3.5)
-                        ctx.lineTo(10.5, 10.5)
-                        ctx.moveTo(10.5, 3.5)
-                        ctx.lineTo(3.5, 10.5)
-                        ctx.stroke()
-                    } else if (root.iconKind === "max") {
-                        ctx.strokeRect(3.2, 3.2, 7.6, 7.6)
-                    } else if (root.iconKind === "dots") {
-                        ctx.beginPath()
-                        ctx.arc(3, 7, 1.15, 0, Math.PI * 2)
-                        ctx.arc(7, 7, 1.15, 0, Math.PI * 2)
-                        ctx.arc(11, 7, 1.15, 0, Math.PI * 2)
-                        ctx.fill()
-                    } else if (root.iconKind === "gear") {
-                        ctx.beginPath()
-                        ctx.arc(7, 7, 2.2, 0, Math.PI * 2)
-                        ctx.stroke()
-                        for (var i = 0; i < 6; i++) {
-                            var a = i * Math.PI / 3
-                            ctx.beginPath()
-                            ctx.moveTo(7 + Math.cos(a) * 3.6, 7 + Math.sin(a) * 3.6)
-                            ctx.lineTo(7 + Math.cos(a) * 5.2, 7 + Math.sin(a) * 5.2)
-                            ctx.stroke()
-                        }
-                    } else if (root.iconKind === "chevron") {
-                        ctx.beginPath()
-                        ctx.moveTo(3.5, 5.5)
-                        ctx.lineTo(7, 9)
-                        ctx.lineTo(10.5, 5.5)
-                        ctx.stroke()
-                    } else if (root.iconKind === "up") {
-                        ctx.beginPath()
-                        ctx.moveTo(3.5, 8.5)
-                        ctx.lineTo(7, 5)
-                        ctx.lineTo(10.5, 8.5)
-                        ctx.stroke()
-                    } else if (root.iconKind === "search") {
-                        ctx.beginPath()
-                        ctx.arc(6.2, 6.2, 3.4, 0, Math.PI * 2)
-                        ctx.moveTo(8.8, 8.8)
-                        ctx.lineTo(11.5, 11.5)
-                        ctx.stroke()
-                    }
-                }
+            Image {
+                visible: root.iconKind !== ""
+                width: root.iconSize
+                height: root.iconSize
+                sourceSize: Qt.size(root.iconSize * 2, root.iconSize * 2)
+                smooth: true
+                anchors.verticalCenter: parent.verticalCenter
+                source: root.iconDataUri(root.iconKind, root.iconColor)
             }
 
             Text {
                 visible: root.text !== ""
                 text: root.text
-                color: (root.accent || root.activeChip || root.hovered) ? root.fgNormal : root.fgMuted
+                color: {
+                    if (root.primaryFill) return root.fgOnPrimary
+                    if (root.dangerHover && (root.hovered || root.pressed)) return root.borderDanger
+                    if (root.accent || root.activeChip || root.hovered || root.pressed) return root.fgNormal
+                    return root.fgMuted
+                }
                 font.pixelSize: root.fontPixelSize
-                font.weight: (root.accent || root.activeChip) ? Font.DemiBold : Font.Medium
+                font.weight: (root.primaryFill || root.accent || root.activeChip) ? Font.DemiBold : Font.Medium
                 anchors.verticalCenter: parent.verticalCenter
 
                 Behavior on color {
-                    ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
+                    ColorAnimation { duration: 80; easing.type: Easing.OutCubic }
                 }
             }
         }
@@ -187,18 +209,18 @@ Item {
 
     ToolTip {
         visible: root.tooltipText !== "" && ma.containsMouse
-        delay: 500
+        delay: 520
         text: root.tooltipText
         contentItem: Text {
             text: root.tooltipText
-            color: root.darkMode ? "#e6e8ec" : "#16181d"
-            font.pixelSize: 12
+            color: root.darkMode ? "#eceef2" : "#14161a"
+            font.pixelSize: 11
         }
         background: Rectangle {
-            radius: 7
-            color: root.darkMode ? "#20232a" : "#ffffff"
+            radius: 6
+            color: root.darkMode ? "#1c1e24" : "#ffffff"
             border.width: 1
-            border.color: root.darkMode ? "#353945" : "#d0d5de"
+            border.color: root.darkMode ? "#2e313b" : "#d0d4de"
         }
     }
 }

@@ -78,6 +78,15 @@ void LineNumberGutter::setActiveTextColor(const QColor &c) {
     update();
 }
 
+void LineNumberGutter::setActiveLineColor(const QColor &c) {
+    if (m_activeLineColor == c) {
+        return;
+    }
+    m_activeLineColor = c;
+    emit activeLineColorChanged();
+    update();
+}
+
 void LineNumberGutter::setTopPadding(qreal p) {
     if (qFuzzyCompare(m_topPadding, p)) {
         return;
@@ -106,7 +115,7 @@ void LineNumberGutter::updateMetricsWidth() {
     }
     digits = qMax(2, count);
     const QFontMetricsF fm(m_font);
-    const qreal w = fm.horizontalAdvance(QString(digits, QLatin1Char('9'))) + 16.0;
+    const qreal w = fm.horizontalAdvance(QString(digits, QLatin1Char('9'))) + 22.0;
     if (!qFuzzyCompare(implicitWidth(), w)) {
         setImplicitWidth(qCeil(w));
     }
@@ -127,7 +136,7 @@ void LineNumberGutter::paint(QPainter *painter) {
 
     const qreal viewTop = m_contentY - m_topPadding;
     const qreal viewBottom = m_contentY + height();
-    const qreal rightMargin = 8.0;
+    const qreal rightMargin = 11.0;
 
     QTextBlock block = td->begin();
     int lineNum = 1;
@@ -139,9 +148,12 @@ void LineNumberGutter::paint(QPainter *painter) {
                 break;
             }
             const bool isCurrent = (lineNum == m_currentLine);
-            painter->setPen(isCurrent ? m_activeTextColor : m_textColor);
             const QFontMetricsF fm(m_font);
             const qreal lineH = fm.height();
+            if (isCurrent && m_activeLineColor.alpha() > 0) {
+                painter->fillRect(QRectF(0.0, y, width(), lineH), m_activeLineColor);
+            }
+            painter->setPen(isCurrent ? m_activeTextColor : m_textColor);
             const QRectF drawRect(0.0, y, width() - rightMargin, lineH);
             painter->drawText(drawRect, Qt::AlignRight | Qt::AlignVCenter, QString::number(lineNum));
         } else if (rect.top() > viewBottom && rect.top() > viewTop + height() + 100.0) {
