@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/nulla.svg" alt="Nulla" width="128">
+</p>
+
 # Nulla
 
 Minimalist text editor for scripts and configs built with C, GTK4, and GtkSourceView 5.
