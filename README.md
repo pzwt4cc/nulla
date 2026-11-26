@@ -6,6 +6,28 @@
 
 Minimalist text editor for scripts and configs built with C, GTK4, and GtkSourceView 5.
 
+## Project Structure
+
+```
+.
+├── assets/
+│   ├── nulla.desktop
+│   ├── nulla.png
+│   └── nulla.svg
+├── include/
+│   └── nulla.h
+├── packaging/
+│   └── arch/
+│       └── PKGBUILD
+├── src/
+│   ├── file.c
+│   ├── main.c
+│   ├── settings.c
+│   └── window.c
+├── Makefile
+└── README.md
+```
+
 ## Features
 
 - Open, edit, and save files (`Ctrl+O`, `Ctrl+S`, `Ctrl+Shift+S`, `Ctrl+N`)
@@ -32,4 +54,11 @@ make
 
 ```sh
 sudo make install
+```
+
+## Arch Linux Package
+
+```sh
+cd packaging/arch
+makepkg -si
 ```

@@ -1,0 +1,19 @@
+pkgname=nulla
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Minimalist script and config editor"
+arch=('x86_64' 'aarch64')
+url="https://github.com/pzwt4cc/nulla"
+license=('custom')
+depends=('gtk4' 'gtksourceview5')
+makedepends=('gcc' 'make' 'pkgconf')
+
+build() {
+  cd "$startdir/../.."
+  make
+}
+
+package() {
+  cd "$startdir/../.."
+  make DESTDIR="$pkgdir" PREFIX=/usr install
+}
