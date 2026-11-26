@@ -25,7 +25,7 @@ Rectangle {
 
     height: 36
     clip: true
-    color: bgShell
+    color: "transparent"
 
     Behavior on color {
         ColorAnimation {

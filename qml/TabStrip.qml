@@ -25,7 +25,7 @@ Rectangle {
     visible: tabCount > 1
     height: visible ? 36 : 0
     clip: true
-    color: bgShell
+    color: "transparent"
 
     Behavior on color {
         ColorAnimation {
@@ -47,6 +47,13 @@ Rectangle {
         clip: true
         interactive: false
         boundsBehavior: Flickable.StopAtBounds
+
+        onWidthChanged: {
+            var maxX = Math.max(0, contentWidth - width);
+            if (contentX > maxX) {
+                contentX = maxX;
+            }
+        }
 
         MouseArea {
             anchors.fill: parent

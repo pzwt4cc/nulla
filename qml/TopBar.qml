@@ -31,7 +31,7 @@ Rectangle {
 
     height: 48
     clip: true
-    color: bgHeader
+    color: "transparent"
 
     Behavior on color {
         ColorAnimation {
@@ -52,7 +52,9 @@ Rectangle {
         anchors.leftMargin: 10
         anchors.verticalCenter: parent.verticalCenter
         height: 32
-        width: groupRow.implicitWidth + 4
+        width: Math.min(groupRow.implicitWidth + 4, Math.max(0, root.width - rightControls.width - 30))
+        visible: width > 8
+        clip: true
         radius: 6
         color: root.bgSurfaceElev
         border.width: 1
@@ -84,7 +86,9 @@ Rectangle {
 
         Row {
             id: groupRow
-            anchors.centerIn: parent
+            anchors.left: parent.left
+            anchors.leftMargin: 2
+            anchors.verticalCenter: parent.verticalCenter
             spacing: 0
 
             M3Button {
@@ -154,19 +158,26 @@ Rectangle {
         readonly property bool dirty: root.activeTab ? root.activeTab.modified : false
         readonly property real fixedContentWidth: 16 + 8 + (dirty ? 14 : 0)
         readonly property string displayTitle: (root.activeTab && root.activeTab.filePath !== "") ? root.activeTab.fileName : (root.ui.untitled || "Untitled")
+        readonly property real leftBound: actionGroup.visible ? (actionGroup.x + actionGroup.width + 10) : 10
+        readonly property real rightBound: root.width - rightControls.width - 20
 
-        anchors.left: actionGroup.right
-        anchors.leftMargin: 10
-        anchors.right: rightControls.left
-        anchors.rightMargin: 10
+        x: leftBound
+        width: Math.max(0, rightBound - leftBound)
         anchors.verticalCenter: parent.verticalCenter
         height: 28
-        visible: width > 12
+        visible: width >= 24
         clip: true
+
+        TextMetrics {
+            id: titleMetrics
+            font.pixelSize: 13
+            font.weight: Font.DemiBold
+            text: centerBadge.displayTitle
+        }
 
         Item {
             id: titleRow
-            readonly property real naturalTitleW: Math.ceil(titleLabel.implicitWidth)
+            readonly property real naturalTitleW: Math.ceil(Math.max(titleMetrics.advanceWidth, titleMetrics.width)) + 4
             readonly property real maxRowW: Math.max(0, centerBadge.width - 8)
             readonly property real idealW: centerBadge.fixedContentWidth + naturalTitleW
             readonly property real rowW: Math.min(idealW, maxRowW)

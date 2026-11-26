@@ -420,6 +420,7 @@ ApplicationWindow {
 
         Item {
             anchors.fill: parent
+            anchors.margins: shell.edgeToEdge ? 0 : 1
             clip: true
 
             TopBar {
