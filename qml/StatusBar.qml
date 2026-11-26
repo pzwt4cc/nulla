@@ -7,6 +7,7 @@ Rectangle {
     property var activeTab: null
     property int zoomPercent: 100
     property int selectedChars: 0
+    property var ui: ({})
     property color bgShell: "#0d0e11"
     property color bgSurfaceElev: "#1c1f27"
     property color borderSubtle: "#222630"
@@ -80,14 +81,14 @@ Rectangle {
 
             M3Button {
                 anchors.verticalCenter: parent.verticalCenter
-                text: "Ln " + (root.activeTab ? root.activeTab.cursorLine : 1) + ", Col " + (root.activeTab ? root.activeTab.cursorColumn : 1) + (root.selectedChars > 0 ? (" · " + root.selectedChars + " sel") : "")
+                text: (root.ui.statusLn || "Ln") + " " + (root.activeTab ? root.activeTab.cursorLine : 1) + ", " + (root.ui.statusCol || "Col") + " " + (root.activeTab ? root.activeTab.cursorColumn : 1) + (root.selectedChars > 0 ? (" · " + root.selectedChars + " " + (root.ui.statusSel || "sel")) : "")
                 ghost: true
                 darkMode: root.darkMode
                 buttonHeight: 22
                 horizontalPadding: 9
                 fontPixelSize: 12
                 cornerRadius: 4
-                tooltipText: "Go to Line (Ctrl+G)"
+                tooltipText: root.ui.statusGotoTip || "Go to Line (Ctrl+G)"
                 onClicked: root.gotoLineClicked()
             }
 
@@ -101,7 +102,7 @@ Rectangle {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 readonly property int lines: root.activeTab ? root.activeTab.lineCount : 1
-                text: lines + (lines === 1 ? " line" : " lines")
+                text: lines + " " + (lines === 1 ? (root.ui.statusLineOne || "line") : (root.ui.statusLineMany || "lines"))
                 color: root.fgMuted
                 font.pixelSize: 12
                 leftPadding: 9
@@ -133,7 +134,7 @@ Rectangle {
 
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Unsaved"
+                    text: root.ui.statusUnsaved || "Unsaved"
                     color: root.fgMain
                     font.pixelSize: 12
                     font.weight: Font.Medium
@@ -150,7 +151,7 @@ Rectangle {
 
         M3Button {
             anchors.verticalCenter: parent.verticalCenter
-            text: root.activeTab ? root.activeTab.statusLanguage : "Plain Text"
+            text: root.activeTab ? (root.activeTab.statusLanguage === "Plain" ? (root.ui.langPlain || "Plain") : root.activeTab.statusLanguage) : (root.ui.langPlain || "Plain")
             iconKind: "chevron"
             iconOnRight: true
             iconSize: 12
@@ -160,7 +161,7 @@ Rectangle {
             horizontalPadding: 11
             fontPixelSize: 12
             cornerRadius: 6
-            tooltipText: "Change syntax language"
+            tooltipText: root.ui.statusLangTip || "Change syntax language"
             onClicked: root.languageClicked()
         }
 
@@ -211,7 +212,7 @@ Rectangle {
                     buttonWidth: 24
                     iconSize: 12
                     cornerRadius: 4
-                    tooltipText: "Zoom Out (Ctrl+-)"
+                    tooltipText: root.ui.statusZoomOutTip || "Zoom Out (Ctrl+-)"
                     onClicked: root.zoomOutRequested()
                 }
 
@@ -230,7 +231,7 @@ Rectangle {
                     horizontalPadding: 9
                     fontPixelSize: 12
                     cornerRadius: 4
-                    tooltipText: "Reset Zoom (Ctrl+0)"
+                    tooltipText: root.ui.statusZoomResetTip || "Reset Zoom (Ctrl+0)"
                     onClicked: root.zoomResetRequested()
                 }
 
@@ -250,7 +251,7 @@ Rectangle {
                     buttonWidth: 24
                     iconSize: 12
                     cornerRadius: 4
-                    tooltipText: "Zoom In (Ctrl++)"
+                    tooltipText: root.ui.statusZoomInTip || "Zoom In (Ctrl++)"
                     onClicked: root.zoomInRequested()
                 }
             }

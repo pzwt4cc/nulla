@@ -6,8 +6,9 @@ Item {
     property bool open: false
     property bool darkMode: true
     property var backend: null
+    property var ui: ({})
 
-    signal closed()
+    signal closed
 
     readonly property color bgCard: darkMode ? "#17191e" : "#ffffff"
     readonly property color bgGroup: darkMode ? "#131418" : "#f7f8fa"
@@ -23,7 +24,10 @@ Item {
     z: 150
 
     Behavior on opacity {
-        NumberAnimation { duration: 95; easing.type: Easing.OutCubic }
+        NumberAnimation {
+            duration: 95
+            easing.type: Easing.OutCubic
+        }
     }
 
     Rectangle {
@@ -38,7 +42,7 @@ Item {
 
     Rectangle {
         id: card
-        width: Math.min(parent.width - 40, 428)
+        width: Math.min(parent.width - 40, 444)
         height: Math.min(parent.height - 40, mainCol.implicitHeight + 36)
         anchors.centerIn: parent
         radius: 12
@@ -49,7 +53,10 @@ Item {
         clip: true
 
         Behavior on scale {
-            NumberAnimation { duration: 95; easing.type: Easing.OutCubic }
+            NumberAnimation {
+                duration: 95
+                easing.type: Easing.OutCubic
+            }
         }
 
         MouseArea {
@@ -82,7 +89,7 @@ Item {
                 Text {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Settings"
+                    text: root.ui.settingsTitle || "Settings"
                     color: root.fgTitle
                     font.pixelSize: 15
                     font.weight: Font.DemiBold
@@ -112,7 +119,7 @@ Item {
                 spacing: 12
 
                 Text {
-                    text: "APPEARANCE"
+                    text: root.ui.secAppearance || "APPEARANCE"
                     color: root.fgSub
                     font.pixelSize: 10
                     font.weight: Font.DemiBold
@@ -140,7 +147,7 @@ Item {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 14
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "Theme"
+                                text: root.ui.lblTheme || "Theme"
                                 color: root.fgLabel
                                 font.pixelSize: 13
                             }
@@ -162,34 +169,37 @@ Item {
                                     spacing: 2
 
                                     M3Button {
-                                        text: "System"
+                                        text: root.ui.themeSystem || "System"
                                         ghost: !(root.backend && root.backend.themeMode === 0)
                                         activeChip: root.backend && root.backend.themeMode === 0
                                         darkMode: root.darkMode
                                         buttonHeight: 26
                                         horizontalPadding: 11
                                         cornerRadius: 9
-                                        onClicked: if (root.backend) root.backend.themeMode = 0
+                                        onClicked: if (root.backend)
+                                            root.backend.themeMode = 0
                                     }
                                     M3Button {
-                                        text: "Dark"
+                                        text: root.ui.themeDark || "Dark"
                                         ghost: !(root.backend && root.backend.themeMode === 2)
                                         activeChip: root.backend && root.backend.themeMode === 2
                                         darkMode: root.darkMode
                                         buttonHeight: 26
                                         horizontalPadding: 11
                                         cornerRadius: 9
-                                        onClicked: if (root.backend) root.backend.themeMode = 2
+                                        onClicked: if (root.backend)
+                                            root.backend.themeMode = 2
                                     }
                                     M3Button {
-                                        text: "Light"
+                                        text: root.ui.themeLight || "Light"
                                         ghost: !(root.backend && root.backend.themeMode === 1)
                                         activeChip: root.backend && root.backend.themeMode === 1
                                         darkMode: root.darkMode
                                         buttonHeight: 26
                                         horizontalPadding: 11
                                         cornerRadius: 9
-                                        onClicked: if (root.backend) root.backend.themeMode = 1
+                                        onClicked: if (root.backend)
+                                            root.backend.themeMode = 1
                                     }
                                 }
                             }
@@ -210,7 +220,62 @@ Item {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 14
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "Zoom"
+                                text: root.ui.lblUiLanguage || "Language"
+                                color: root.fgLabel
+                                font.pixelSize: 13
+                            }
+
+                            Rectangle {
+                                anchors.right: parent.right
+                                anchors.rightMargin: 10
+                                anchors.verticalCenter: parent.verticalCenter
+                                height: 30
+                                width: uiLangRow.implicitWidth + 4
+                                radius: 10
+                                color: darkMode ? "#1a1c22" : "#eceef3"
+                                border.width: 1
+                                border.color: root.borderGroup
+
+                                Row {
+                                    id: uiLangRow
+                                    anchors.centerIn: parent
+                                    spacing: 2
+
+                                    Repeater {
+                                        model: root.backend ? root.backend.uiLanguagesModel : []
+
+                                        delegate: M3Button {
+                                            text: modelData.name
+                                            ghost: !(root.backend && root.backend.uiLanguage === modelData.id)
+                                            activeChip: root.backend && root.backend.uiLanguage === modelData.id
+                                            darkMode: root.darkMode
+                                            buttonHeight: 26
+                                            horizontalPadding: 11
+                                            cornerRadius: 9
+                                            onClicked: if (root.backend)
+                                                root.backend.uiLanguage = modelData.id
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: parent.width - 24
+                            height: 1
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            color: root.borderDivider
+                        }
+
+                        Item {
+                            width: parent.width
+                            height: 48
+
+                            Text {
+                                anchors.left: parent.left
+                                anchors.leftMargin: 14
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: root.ui.lblZoom || "Zoom"
                                 color: root.fgLabel
                                 font.pixelSize: 13
                             }
@@ -239,7 +304,8 @@ Item {
                                         buttonHeight: 26
                                         buttonWidth: 28
                                         cornerRadius: 9
-                                        onClicked: if (root.backend) root.backend.zoomOut()
+                                        onClicked: if (root.backend)
+                                            root.backend.zoomOut()
                                     }
 
                                     Rectangle {
@@ -256,8 +322,9 @@ Item {
                                         buttonHeight: 26
                                         horizontalPadding: 12
                                         cornerRadius: 9
-                                        tooltipText: "Reset (Ctrl+0)"
-                                        onClicked: if (root.backend) root.backend.zoomReset()
+                                        tooltipText: root.ui.resetZoomTip || "Reset (Ctrl+0)"
+                                        onClicked: if (root.backend)
+                                            root.backend.zoomReset()
                                     }
 
                                     Rectangle {
@@ -275,7 +342,8 @@ Item {
                                         buttonHeight: 26
                                         buttonWidth: 28
                                         cornerRadius: 9
-                                        onClicked: if (root.backend) root.backend.zoomIn()
+                                        onClicked: if (root.backend)
+                                            root.backend.zoomIn()
                                     }
                                 }
                             }
@@ -284,7 +352,7 @@ Item {
                 }
 
                 Text {
-                    text: "EDITOR"
+                    text: root.ui.secEditor || "EDITOR"
                     color: root.fgSub
                     font.pixelSize: 10
                     font.weight: Font.DemiBold
@@ -312,7 +380,7 @@ Item {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 14
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "Line numbers"
+                                text: root.ui.lblLineNumbers || "Line numbers"
                                 color: root.fgLabel
                                 font.pixelSize: 13
                             }
@@ -323,9 +391,9 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 darkMode: root.darkMode
                                 checked: root.backend ? root.backend.showLineNumbers : true
-                                onToggled: function(v) {
+                                onToggled: function (v) {
                                     if (root.backend) {
-                                        root.backend.showLineNumbers = v
+                                        root.backend.showLineNumbers = v;
                                     }
                                 }
                             }
@@ -346,7 +414,7 @@ Item {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 14
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "Syntax highlighting"
+                                text: root.ui.lblSyntax || "Syntax highlighting"
                                 color: root.fgLabel
                                 font.pixelSize: 13
                             }
@@ -357,9 +425,9 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 darkMode: root.darkMode
                                 checked: root.backend ? root.backend.syntaxEnabled : true
-                                onToggled: function(v) {
+                                onToggled: function (v) {
                                     if (root.backend) {
-                                        root.backend.syntaxEnabled = v
+                                        root.backend.syntaxEnabled = v;
                                     }
                                 }
                             }

@@ -8,6 +8,7 @@ Rectangle {
     property bool showWindowControls: false
     property bool isMaximized: false
     property bool menuOpened: false
+    property var ui: ({})
 
     property color bgHeader: "#0d0e11"
     property color bgSurfaceElev: "#1c1f27"
@@ -16,22 +17,25 @@ Rectangle {
     property color fgMain: "#f0f2f6"
     property color fgMuted: "#9ca3b4"
 
-    signal moveWindowRequested()
-    signal toggleMaximizeRequested()
-    signal minimizeRequested()
-    signal closeWindowRequested()
-    signal newTabRequested()
-    signal openFileRequested()
-    signal saveFileRequested()
-    signal findRequested()
-    signal settingsRequested()
+    signal moveWindowRequested
+    signal toggleMaximizeRequested
+    signal minimizeRequested
+    signal closeWindowRequested
+    signal newTabRequested
+    signal openFileRequested
+    signal saveFileRequested
+    signal findRequested
+    signal settingsRequested
     signal menuToggleRequested(real anchorX)
 
     height: 48
     color: bgHeader
 
     Behavior on color {
-        ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+        ColorAnimation {
+            duration: 110
+            easing.type: Easing.OutCubic
+        }
     }
 
     MouseArea {
@@ -53,10 +57,16 @@ Rectangle {
         border.color: root.borderControl
 
         Behavior on color {
-            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+            ColorAnimation {
+                duration: 110
+                easing.type: Easing.OutCubic
+            }
         }
         Behavior on border.color {
-            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+            ColorAnimation {
+                duration: 110
+                easing.type: Easing.OutCubic
+            }
         }
 
         Rectangle {
@@ -84,7 +94,7 @@ Rectangle {
                 iconSize: 15
                 cornerRadius: 4
                 darkMode: root.darkMode
-                tooltipText: "New Tab (Ctrl+T)"
+                tooltipText: root.ui.newTabTip || "New Tab (Ctrl+T)"
                 onClicked: root.newTabRequested()
             }
 
@@ -97,7 +107,7 @@ Rectangle {
 
             M3Button {
                 iconKind: "folder"
-                text: "Open"
+                text: root.ui.open || "Open"
                 ghost: true
                 buttonHeight: 28
                 horizontalPadding: 11
@@ -105,7 +115,7 @@ Rectangle {
                 fontPixelSize: 12
                 cornerRadius: 4
                 darkMode: root.darkMode
-                tooltipText: "Open File (Ctrl+O)"
+                tooltipText: root.ui.openFileTip || "Open File (Ctrl+O)"
                 onClicked: root.openFileRequested()
             }
 
@@ -119,7 +129,7 @@ Rectangle {
             M3Button {
                 readonly property bool isDirty: root.activeTab ? root.activeTab.modified : false
                 iconKind: "save"
-                text: "Save"
+                text: root.ui.save || "Save"
                 ghost: !isDirty
                 primaryFill: isDirty
                 buttonHeight: 28
@@ -128,7 +138,7 @@ Rectangle {
                 fontPixelSize: 12
                 cornerRadius: 4
                 darkMode: root.darkMode
-                tooltipText: "Save File (Ctrl+S)"
+                tooltipText: root.ui.saveFileTip || "Save File (Ctrl+S)"
                 onClicked: root.saveFileRequested()
             }
         }
@@ -142,8 +152,7 @@ Rectangle {
         readonly property real naturalWidth: 16 + fixedContentWidth + titleLabel.implicitWidth
 
         y: (parent.height - height) * 0.5
-        x: Math.max(actionGroup.x + actionGroup.width + 10,
-                    Math.min(rightControls.x - width - 10, (root.width - width) * 0.5))
+        x: Math.max(actionGroup.x + actionGroup.width + 10, Math.min(rightControls.x - width - 10, (root.width - width) * 0.5))
         height: 28
         width: Math.min(naturalWidth, availableSpan)
         clip: true
@@ -166,7 +175,7 @@ Rectangle {
                 id: titleLabel
                 width: Math.max(12, Math.min(implicitWidth, centerBadge.width - 16 - centerBadge.fixedContentWidth))
                 elide: Text.ElideMiddle
-                text: root.activeTab ? root.activeTab.fileName : "Untitled"
+                text: (root.activeTab && root.activeTab.filePath !== "") ? root.activeTab.fileName : (root.ui.untitled || "Untitled")
                 color: root.fgMain
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
@@ -201,10 +210,16 @@ Rectangle {
             border.color: root.borderControl
 
             Behavior on color {
-                ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+                ColorAnimation {
+                    duration: 110
+                    easing.type: Easing.OutCubic
+                }
             }
             Behavior on border.color {
-                ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+                ColorAnimation {
+                    duration: 110
+                    easing.type: Easing.OutCubic
+                }
             }
 
             Rectangle {
@@ -232,7 +247,7 @@ Rectangle {
                     iconSize: 15
                     cornerRadius: 4
                     darkMode: root.darkMode
-                    tooltipText: "Find (Ctrl+F)"
+                    tooltipText: root.ui.findTip || "Find (Ctrl+F)"
                     onClicked: root.findRequested()
                 }
 
@@ -252,7 +267,7 @@ Rectangle {
                     iconSize: 15
                     cornerRadius: 4
                     darkMode: root.darkMode
-                    tooltipText: "Settings (Ctrl+,)"
+                    tooltipText: root.ui.settingsTip || "Settings (Ctrl+,)"
                     onClicked: root.settingsRequested()
                 }
 
@@ -274,7 +289,7 @@ Rectangle {
                     iconSize: 15
                     cornerRadius: 4
                     darkMode: root.darkMode
-                    tooltipText: "Menu"
+                    tooltipText: root.ui.menuTip || "Menu"
                     onClicked: root.menuToggleRequested(rightControls.x + utilityGroup.x + utilRow.x + menuBtn.x + menuBtn.width)
                 }
             }
@@ -290,10 +305,16 @@ Rectangle {
             border.color: root.borderControl
 
             Behavior on color {
-                ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+                ColorAnimation {
+                    duration: 110
+                    easing.type: Easing.OutCubic
+                }
             }
             Behavior on border.color {
-                ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+                ColorAnimation {
+                    duration: 110
+                    easing.type: Easing.OutCubic
+                }
             }
 
             Rectangle {
@@ -321,7 +342,7 @@ Rectangle {
                     iconSize: 14
                     cornerRadius: 4
                     darkMode: root.darkMode
-                    tooltipText: "Minimize"
+                    tooltipText: root.ui.minimizeTip || "Minimize"
                     onClicked: root.minimizeRequested()
                 }
 
@@ -341,7 +362,7 @@ Rectangle {
                     iconSize: 14
                     cornerRadius: 4
                     darkMode: root.darkMode
-                    tooltipText: root.isMaximized ? "Restore" : "Maximize"
+                    tooltipText: root.isMaximized ? (root.ui.restoreTip || "Restore") : (root.ui.maximizeTip || "Maximize")
                     onClicked: root.toggleMaximizeRequested()
                 }
 
@@ -362,7 +383,7 @@ Rectangle {
                     cornerRadius: 4
                     darkMode: root.darkMode
                     dangerHover: true
-                    tooltipText: "Close"
+                    tooltipText: root.ui.closeTip || "Close"
                     onClicked: root.closeWindowRequested()
                 }
             }

@@ -7,6 +7,7 @@ Rectangle {
     property var tabModel: null
     property int tabCount: 1
     property int activeIndex: 0
+    property var ui: ({})
     property color bgShell: "#0d0e11"
     property color bgEditor: "#16181e"
     property color bgHover: "#252934"
@@ -18,7 +19,7 @@ Rectangle {
 
     signal tabActivated(int index)
     signal tabClosed(int index)
-    signal newTabRequested()
+    signal newTabRequested
 
     visible: tabCount > 1
     height: visible ? 36 : 0
@@ -26,7 +27,10 @@ Rectangle {
     color: bgShell
 
     Behavior on color {
-        ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+        ColorAnimation {
+            duration: 110
+            easing.type: Easing.OutCubic
+        }
     }
 
     Flickable {
@@ -46,13 +50,13 @@ Rectangle {
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.NoButton
-            onWheel: function(wheel) {
-                var d = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+            onWheel: function (wheel) {
+                var d = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x;
                 if (d !== 0) {
-                    var maxX = Math.max(0, tabFlick.contentWidth - tabFlick.width)
-                    tabFlick.contentX = Math.max(0, Math.min(maxX, tabFlick.contentX - (d / 120.0) * 90))
+                    var maxX = Math.max(0, tabFlick.contentWidth - tabFlick.width);
+                    tabFlick.contentX = Math.max(0, Math.min(maxX, tabFlick.contentX - (d / 120.0) * 90));
                 }
-                wheel.accepted = true
+                wheel.accepted = true;
             }
         }
 
@@ -77,9 +81,9 @@ Rectangle {
                     onIsActiveChanged: {
                         if (isActive) {
                             if (x < tabFlick.contentX) {
-                                tabFlick.contentX = x
+                                tabFlick.contentX = x;
                             } else if (x + width > tabFlick.contentX + tabFlick.width) {
-                                tabFlick.contentX = Math.max(0, x + width - tabFlick.width)
+                                tabFlick.contentX = Math.max(0, x + width - tabFlick.width);
                             }
                         }
                     }
@@ -87,24 +91,29 @@ Rectangle {
                     Rectangle {
                         anchors.fill: parent
                         radius: 6
-                        color: tabItem.isActive
-                               ? root.bgEditor
-                               : (tabMa.pressed ? root.borderSubtle : (tabItem.hovered ? root.bgHover : "transparent"))
+                        color: tabItem.isActive ? root.bgEditor : (tabMa.pressed ? root.borderSubtle : (tabItem.hovered ? root.bgHover : "transparent"))
                         border.width: 1
-                        border.color: tabItem.isActive
-                                      ? root.borderControl
-                                      : (tabItem.hovered ? root.borderControl : "transparent")
+                        border.color: tabItem.isActive ? root.borderControl : (tabItem.hovered ? root.borderControl : "transparent")
                         scale: tabMa.pressed ? 0.975 : 1.0
                         transformOrigin: Item.Center
 
                         Behavior on color {
-                            ColorAnimation { duration: 95; easing.type: Easing.OutCubic }
+                            ColorAnimation {
+                                duration: 95
+                                easing.type: Easing.OutCubic
+                            }
                         }
                         Behavior on border.color {
-                            ColorAnimation { duration: 95; easing.type: Easing.OutCubic }
+                            ColorAnimation {
+                                duration: 95
+                                easing.type: Easing.OutCubic
+                            }
                         }
                         Behavior on scale {
-                            NumberAnimation { duration: 75; easing.type: Easing.OutCubic }
+                            NumberAnimation {
+                                duration: 75
+                                easing.type: Easing.OutCubic
+                            }
                         }
 
                         Rectangle {
@@ -138,11 +147,11 @@ Rectangle {
                         hoverEnabled: true
                         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: function(mouse) {
+                        onClicked: function (mouse) {
                             if (mouse.button === Qt.MiddleButton) {
-                                root.tabClosed(index)
+                                root.tabClosed(index);
                             } else {
-                                root.tabActivated(index)
+                                root.tabActivated(index);
                             }
                         }
                     }
@@ -168,14 +177,16 @@ Rectangle {
                             id: labelText
                             width: Math.max(20, parent.width - (tabItem.isDirty ? 13 : 0))
                             elide: Text.ElideMiddle
-                            text: session ? session.fileName : "Untitled"
+                            text: (session && session.filePath !== "") ? session.fileName : (root.ui.untitled || "Untitled")
                             color: tabItem.isActive || tabItem.hovered ? root.fgMain : root.fgMuted
                             font.pixelSize: 12
                             font.weight: tabItem.isActive ? Font.DemiBold : Font.Normal
                             anchors.verticalCenter: parent.verticalCenter
 
                             Behavior on color {
-                                ColorAnimation { duration: 95 }
+                                ColorAnimation {
+                                    duration: 95
+                                }
                             }
                         }
                     }
@@ -198,7 +209,9 @@ Rectangle {
                         onClicked: root.tabClosed(index)
 
                         Behavior on opacity {
-                            NumberAnimation { duration: 85 }
+                            NumberAnimation {
+                                duration: 85
+                            }
                         }
                     }
                 }
@@ -219,7 +232,7 @@ Rectangle {
         iconSize: 15
         cornerRadius: 6
         darkMode: root.darkMode
-        tooltipText: "New Tab (Ctrl+T)"
+        tooltipText: root.ui.newTabTip || "New Tab (Ctrl+T)"
         onClicked: root.newTabRequested()
     }
 

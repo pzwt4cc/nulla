@@ -7,8 +7,9 @@ Item {
     property bool open: false
     property bool darkMode: true
     property var backend: null
+    property var ui: ({})
 
-    signal closed()
+    signal closed
 
     property string langFilter: ""
 
@@ -20,19 +21,21 @@ Item {
     readonly property color fgSub: darkMode ? "#787f8e" : "#6a7180"
 
     function selectFirstMatch() {
-        var m = langList.model
+        var m = langList.model;
         if (m && m.length > 0 && root.backend) {
-            root.backend.languageId = m[0].id
-            root.closed()
+            root.backend.languageId = m[0].id;
+            root.closed();
         }
     }
 
     onOpenChanged: {
         if (open) {
-            langFilter = ""
-            Qt.callLater(function() { langSearch.forceActiveFocus() })
+            langFilter = "";
+            Qt.callLater(function () {
+                langSearch.forceActiveFocus();
+            });
         } else {
-            langFilter = ""
+            langFilter = "";
         }
     }
 
@@ -42,7 +45,10 @@ Item {
     z: 160
 
     Behavior on opacity {
-        NumberAnimation { duration: 95; easing.type: Easing.OutCubic }
+        NumberAnimation {
+            duration: 95
+            easing.type: Easing.OutCubic
+        }
     }
 
     Rectangle {
@@ -68,7 +74,10 @@ Item {
         clip: true
 
         Behavior on scale {
-            NumberAnimation { duration: 95; easing.type: Easing.OutCubic }
+            NumberAnimation {
+                duration: 95
+                easing.type: Easing.OutCubic
+            }
         }
 
         MouseArea {
@@ -101,7 +110,7 @@ Item {
                 Text {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Syntax Language"
+                    text: root.ui.langModalTitle || "Syntax Language"
                     color: root.fgTitle
                     font.pixelSize: 15
                     font.weight: Font.DemiBold
@@ -132,9 +141,7 @@ Item {
                 radius: 10
                 color: root.bgGroup
                 border.width: 1
-                border.color: langSearch.activeFocus
-                              ? (darkMode ? "#6e7687" : "#687082")
-                              : root.borderGroup
+                border.color: langSearch.activeFocus ? (darkMode ? "#6e7687" : "#687082") : root.borderGroup
 
                 TextInput {
                     id: langSearch
@@ -150,11 +157,11 @@ Item {
                     onTextChanged: root.langFilter = text
                     Keys.onEscapePressed: root.closed()
                     Keys.onReturnPressed: root.selectFirstMatch()
-                    Keys.onEnterPressed: root.selectFirstMatch()
+                    Keys.onEnterPressed: rootroot.selectFirstMatch()
 
                     Text {
                         visible: langSearch.text === ""
-                        text: "Filter languages..."
+                        text: root.ui.langFilterPlaceholder || "Filter languages..."
                         color: root.fgSub
                         font.pixelSize: 13
                         anchors.verticalCenter: parent.verticalCenter
@@ -169,17 +176,21 @@ Item {
                 clip: true
                 spacing: 4
                 model: {
-                    if (!root.backend) return []
-                    var raw = root.backend.languagesModel
-                    var q = root.langFilter.trim().toLowerCase()
-                    if (q === "") return raw
-                    var out = []
+                    if (!root.backend)
+                        return [];
+                    var raw = root.backend.languagesModel;
+                    var q = root.langFilter.trim().toLowerCase();
+                    var out = [];
                     for (var i = 0; i < raw.length; i++) {
-                        if (raw[i].name.toLowerCase().indexOf(q) !== -1) {
-                            out.push(raw[i])
+                        var disp = raw[i].id === "auto" ? (root.ui.langAuto || raw[i].name) : raw[i].name;
+                        if (q === "" || disp.toLowerCase().indexOf(q) !== -1 || raw[i].name.toLowerCase().indexOf(q) !== -1) {
+                            out.push({
+                                id: raw[i].id,
+                                name: disp
+                            });
                         }
                     }
-                    return out
+                    return out;
                 }
 
                 ScrollBar.vertical: ScrollBar {
@@ -203,9 +214,9 @@ Item {
                     activeChip: root.backend && root.backend.languageId === modelData.id
                     onClicked: {
                         if (root.backend) {
-                            root.backend.languageId = modelData.id
+                            root.backend.languageId = modelData.id;
                         }
-                        root.closed()
+                        root.closed();
                     }
                 }
             }

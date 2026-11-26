@@ -12,7 +12,8 @@ ApplicationWindow {
     minimumHeight: 360
     flags: Qt.Window | Qt.FramelessWindowHint
     color: "transparent"
-    title: ((backend.activeTab && backend.activeTab.modified) ? "* " : "") + (backend.activeTab ? backend.activeTab.fileName : "Untitled") + " — Nulla"
+    title: ((backend.activeTab && backend.activeTab.modified) ? "* " : "") + ((backend.activeTab && backend.activeTab.filePath !== "") ? backend.activeTab.fileName : (win.ui.untitled || "Untitled")) +
+           " — Nulla"
 
     property bool forceClose: false
     property string pendingAction: ""
@@ -20,6 +21,7 @@ ApplicationWindow {
     property real menuAnchorX: 0
 
     readonly property bool dark: backend.effectiveDark
+    readonly property var ui: backend.ui
     readonly property color bgShell: dark ? "#0d0e11" : "#ebedf2"
     readonly property color bgHeader: dark ? "#0d0e11" : "#ebedf2"
     readonly property color bgEditor: dark ? "#16181e" : "#ffffff"
@@ -135,6 +137,11 @@ ApplicationWindow {
         updateMatchStats();
     }
 
+    function localizedTabName(index) {
+        var name = backend.tabFileName(index)
+        return name === "Untitled" ? (win.ui.untitled || "Untitled") : name
+    }
+
     function requestCloseTab(index) {
         if (backend.tabCount === 1 && backend.isActivePristineUntitled()) {
             win.close();
@@ -144,8 +151,10 @@ ApplicationWindow {
             win.pendingAction = "closeTab";
             win.pendingTabIndex = index;
             confirmModal.errorOnly = false;
-            confirmModal.title = "Unsaved changes";
-            confirmModal.message = 'Save changes to "' + backend.tabFileName(index) + '" before closing?';
+            confirmModal.title = win.ui.confirmUnsavedTitle || "Unsaved changes";
+            confirmModal.message = (win.ui.confirmClosePrefix || 'Save changes to "') +
+                                   localizedTabName(index) +
+                                   (win.ui.confirmCloseSuffix || '" before closing?')
             confirmModal.open = true;
             return;
         }
@@ -159,8 +168,10 @@ ApplicationWindow {
             win.pendingAction = "quitApp";
             win.pendingTabIndex = dirtyIdx;
             confirmModal.errorOnly = false;
-            confirmModal.title = "Unsaved changes";
-            confirmModal.message = 'Save changes to "' + backend.tabFileName(dirtyIdx) + '" before exiting?';
+            confirmModal.title = win.ui.confirmUnsavedTitle || "Unsaved changes";
+            confirmModal.message = (win.ui.confirmClosePrefix || 'Save changes to "') +
+                                   localizedTabName(dirtyIdx) +
+                                   (win.ui.confirmExitSuffix || '" before exiting?')
             confirmModal.open = true;
             return;
         }
@@ -371,7 +382,7 @@ ApplicationWindow {
             } else if (menuPopup.opened) {
                 menuPopup.close();
             } else if (activePane && activePane.contextMenuOpen) {
-                activePane.closeContextMenu();
+                activePane.closeContextMenu()
             } else if (findBar.open) {
                 closeFindBar();
                 return;
@@ -415,6 +426,7 @@ ApplicationWindow {
                 showWindowControls: backend.showWindowControls
                 isMaximized: win.visibility === Window.Maximized
                 menuOpened: menuPopup.opened
+                ui: win.ui
                 bgHeader: win.bgHeader
                 bgSurfaceElev: win.bgSurfaceElev
                 borderSubtle: win.borderSubtle
@@ -454,6 +466,7 @@ ApplicationWindow {
                 tabModel: backend.tabModel
                 tabCount: backend.tabCount
                 activeIndex: backend.activeTabIndex
+                ui: win.ui
                 bgShell: win.bgShell
                 bgEditor: win.bgEditor
                 bgHover: win.bgHover
@@ -477,6 +490,7 @@ ApplicationWindow {
                 width: parent.width
                 darkMode: win.dark
                 totalLines: backend.activeTab ? backend.activeTab.lineCount : 1
+                ui: win.ui
                 bgGutter: win.bgGutter
                 bgEditor: win.bgEditor
                 bgSurfaceElev: win.bgSurfaceElev
@@ -524,6 +538,7 @@ ApplicationWindow {
                         showLineNumbers: backend.showLineNumbers
                         zoomPercent: backend.zoomPercent
                         monoFontFamily: backend.monoFontFamily
+                        ui: win.ui
                         bgEditor: win.bgEditor
                         bgGutter: win.bgGutter
                         bgSurfaceElev: win.bgSurfaceElev
@@ -560,6 +575,7 @@ ApplicationWindow {
                 activeTab: backend.activeTab
                 zoomPercent: backend.zoomPercent
                 selectedChars: activePane ? activePane.selectedLength : 0
+                ui: win.ui
                 bgShell: win.bgShell
                 bgSurfaceElev: win.bgSurfaceElev
                 borderSubtle: win.borderSubtle
@@ -580,7 +596,7 @@ ApplicationWindow {
             id: menuPopup
             x: win.menuAnchorX > 0 ? Math.max(8, win.menuAnchorX - width) : (win.width - width - 10)
             y: topbar.height - 2
-            width: 224
+            width: 240
             padding: 6
             modal: true
             focus: true
@@ -632,88 +648,23 @@ ApplicationWindow {
 
                 Repeater {
                     model: [
-                        {
-                            label: "New Tab",
-                            shortcut: "Ctrl+T",
-                            act: "new",
-                            sep: false
-                        },
-                        {
-                            label: "Open...",
-                            shortcut: "Ctrl+O",
-                            act: "open",
-                            sep: false
-                        },
-                        {
-                            label: "Save",
-                            shortcut: "Ctrl+S",
-                            act: "save",
-                            sep: false
-                        },
-                        {
-                            label: "Save As...",
-                            shortcut: "Ctrl+Shift+S",
-                            act: "saveas",
-                            sep: false
-                        },
-                        {
-                            label: "Close Tab",
-                            shortcut: "Ctrl+W",
-                            act: "closetab",
-                            sep: true
-                        },
-                        {
-                            label: "Find...",
-                            shortcut: "Ctrl+F",
-                            act: "find",
-                            sep: false
-                        },
-                        {
-                            label: "Replace...",
-                            shortcut: "Ctrl+H",
-                            act: "replace",
-                            sep: false
-                        },
-                        {
-                            label: "Go to Line...",
-                            shortcut: "Ctrl+G",
-                            act: "goto",
-                            sep: true
-                        },
-                        {
-                            label: "Zoom In",
-                            shortcut: "Ctrl++",
-                            act: "zoomin",
-                            sep: false
-                        },
-                        {
-                            label: "Zoom Out",
-                            shortcut: "Ctrl+-",
-                            act: "zoomout",
-                            sep: false
-                        },
-                        {
-                            label: "Reset Zoom",
-                            shortcut: "Ctrl+0",
-                            act: "zoomreset",
-                            sep: true
-                        },
-                        {
-                            label: "Settings",
-                            shortcut: "Ctrl+,",
-                            act: "settings",
-                            sep: false
-                        },
-                        {
-                            label: "Quit",
-                            shortcut: "Ctrl+Q",
-                            act: "quit",
-                            sep: false
-                        }
+                        { label: win.ui.menuNewTab || "New Tab", shortcut: "Ctrl+T", act: "new", sep: false },
+                        { label: win.ui.menuOpen || "Open...", shortcut: "Ctrl+O", act: "open", sep: false },
+                        { label: win.ui.menuSave || "Save", shortcut: "Ctrl+S", act: "save", sep: false },
+                        { label: win.ui.menuSaveAs || "Save As...", shortcut: "Ctrl+Shift+S", act: "saveas", sep: false },
+                        { label: win.ui.menuCloseTab || "Close Tab", shortcut: "Ctrl+W", act: "closetab", sep: true },
+                        { label: win.ui.menuFind || "Find...", shortcut: "Ctrl+F", act: "find", sep: false },
+                        { label: win.ui.menuReplace || "Replace...", shortcut: "Ctrl+H", act: "replace", sep: false },
+                        { label: win.ui.menuGoto || "Go to Line...", shortcut: "Ctrl+G", act: "goto", sep: true },
+                        { label: win.ui.menuZoomIn || "Zoom In", shortcut: "Ctrl++", act: "zoomin", sep: false },
+                        { label: win.ui.menuZoomOut || "Zoom Out", shortcut: "Ctrl+-", act: "zoomout", sep: false },
+                        { label: win.ui.menuZoomReset || "Reset Zoom", shortcut: "Ctrl+0", act: "zoomreset", sep: true },
+                        { label: win.ui.menuSettings || "Settings", shortcut: "Ctrl+,", act: "settings", sep: false },
+                        { label: win.ui.menuQuit || "Quit", shortcut: "Ctrl+Q", act: "quit", sep: false }
                     ]
 
                     delegate: Column {
-                        width: 212
+                        width: 228
                         spacing: 2
 
                         Rectangle {
@@ -813,6 +764,7 @@ ApplicationWindow {
             id: settingsModal
             darkMode: win.dark
             backend: backend
+            ui: win.ui
             onClosed: {
                 open = false;
                 focusActiveEditor();
@@ -823,6 +775,7 @@ ApplicationWindow {
             id: languageModal
             darkMode: win.dark
             backend: backend
+            ui: win.ui
             onClosed: {
                 open = false;
                 focusActiveEditor();
@@ -832,6 +785,7 @@ ApplicationWindow {
         ConfirmModal {
             id: confirmModal
             darkMode: win.dark
+            ui: win.ui
             onCancelled: {
                 open = false;
                 win.pendingAction = "";

@@ -5,6 +5,7 @@ Popup {
     id: root
 
     property bool darkMode: true
+    property var ui: ({})
     property bool canUndo: false
     property bool canRedo: false
     property bool canPaste: false
@@ -31,7 +32,7 @@ Popup {
         open();
     }
 
-    width: 222
+    width: 234
     padding: 6
     modal: true
     focus: true
@@ -91,76 +92,16 @@ Popup {
 
         Repeater {
             model: [
-                {
-                    label: "Undo",
-                    shortcut: "Ctrl+Z",
-                    act: "undo",
-                    enabled: root.canUndo,
-                    sep: false
-                },
-                {
-                    label: "Redo",
-                    shortcut: "Ctrl+Shift+Z",
-                    act: "redo",
-                    enabled: root.canRedo,
-                    sep: true
-                },
-                {
-                    label: root.hasSelection ? "Cut" : "Cut Line",
-                    shortcut: "Ctrl+X",
-                    act: "cut",
-                    enabled: root.hasSelection || root.hasText,
-                    sep: false
-                },
-                {
-                    label: root.hasSelection ? "Copy" : "Copy Line",
-                    shortcut: "Ctrl+C",
-                    act: "copy",
-                    enabled: root.hasSelection || root.hasText,
-                    sep: false
-                },
-                {
-                    label: "Paste",
-                    shortcut: "Ctrl+V",
-                    act: "paste",
-                    enabled: root.canPaste,
-                    sep: false
-                },
-                {
-                    label: "Delete",
-                    shortcut: "Del",
-                    act: "delete",
-                    enabled: root.hasSelection,
-                    sep: true
-                },
-                {
-                    label: "Duplicate Line",
-                    shortcut: "Ctrl+D",
-                    act: "duplicate",
-                    enabled: true,
-                    sep: false
-                },
-                {
-                    label: "Toggle Comment",
-                    shortcut: "Ctrl+\x2f",
-                    act: "comment",
-                    enabled: root.canComment,
-                    sep: true
-                },
-                {
-                    label: "Select All",
-                    shortcut: "Ctrl+A",
-                    act: "selectall",
-                    enabled: root.hasText,
-                    sep: false
-                },
-                {
-                    label: root.hasSingleLineSelection ? "Find Selection" : "Find...",
-                    shortcut: "Ctrl+F",
-                    act: "find",
-                    enabled: true,
-                    sep: false
-                }
+                { label: root.ui.ctxUndo || "Undo", shortcut: "Ctrl+Z", act: "undo", enabled: root.canUndo, sep: false },
+                { label: root.ui.ctxRedo || "Redo", shortcut: "Ctrl+Shift+Z", act: "redo", enabled: root.canRedo, sep: true },
+                { label: root.hasSelection ? (root.ui.ctxCut || "Cut") : (root.ui.ctxCutLine || "Cut Line"), shortcut: "Ctrl+X", act: "cut", enabled: root.hasSelection || root.hasText, sep: false },
+                { label: root.hasSelection ? (root.ui.ctxCopy || "Copy") : (root.ui.ctxCopyLine || "Copy Line"), shortcut: "Ctrl+C", act: "copy", enabled: root.hasSelection || root.hasText, sep: false },
+                { label: root.ui.ctxPaste || "Paste", shortcut: "Ctrl+V", act: "paste", enabled: root.canPaste, sep: false },
+                { label: root.ui.ctxDelete || "Delete", shortcut: "Del", act: "delete", enabled: root.hasSelection, sep: true },
+                { label: root.ui.ctxDuplicateLine || "Duplicate Line", shortcut: "Ctrl+D", act: "duplicate", enabled: true, sep: false },
+                { label: root.ui.ctxComment || "Toggle Comment", shortcut: "Ctrl+\x2f", act: "comment", enabled: root.canComment, sep: true },
+                { label: root.ui.ctxSelectAll || "Select All", shortcut: "Ctrl+A", act: "selectall", enabled: root.hasText, sep: false },
+                { label: root.hasSingleLineSelection ? (root.ui.ctxFindSelection || "Find Selection") : (root.ui.ctxFind || "Find..."), shortcut: "Ctrl+F", act: "find", enabled: true, sep: false }
             ]
 
             delegate: Column {

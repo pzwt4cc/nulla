@@ -8,10 +8,11 @@ Item {
     property bool errorOnly: false
     property string title: ""
     property string message: ""
+    property var ui: ({})
 
-    signal cancelled()
-    signal discarded()
-    signal saved()
+    signal cancelled
+    signal discarded
+    signal saved
 
     visible: opacity > 0.01
     opacity: open ? 1.0 : 0.0
@@ -19,7 +20,10 @@ Item {
     z: 200
 
     Behavior on opacity {
-        NumberAnimation { duration: 95; easing.type: Easing.OutCubic }
+        NumberAnimation {
+            duration: 95
+            easing.type: Easing.OutCubic
+        }
     }
 
     Rectangle {
@@ -45,7 +49,10 @@ Item {
         scale: root.open ? 1.0 : 0.985
 
         Behavior on scale {
-            NumberAnimation { duration: 95; easing.type: Easing.OutCubic }
+            NumberAnimation {
+                duration: 95
+                easing.type: Easing.OutCubic
+            }
         }
 
         MouseArea {
@@ -87,7 +94,10 @@ Item {
                 wrapMode: Text.WordWrap
             }
 
-            Item { width: 1; height: 8 }
+            Item {
+                width: 1
+                height: 8
+            }
 
             Row {
                 anchors.right: parent.right
@@ -95,7 +105,7 @@ Item {
 
                 M3Button {
                     visible: !root.errorOnly
-                    text: "Cancel"
+                    text: root.ui.btnCancel || "Cancel"
                     ghost: true
                     darkMode: root.darkMode
                     buttonHeight: 32
@@ -106,7 +116,7 @@ Item {
 
                 M3Button {
                     visible: !root.errorOnly
-                    text: "Discard"
+                    text: root.ui.btnDiscard || "Discard"
                     elevated: true
                     darkMode: root.darkMode
                     dangerHover: true
@@ -117,7 +127,7 @@ Item {
                 }
 
                 M3Button {
-                    text: root.errorOnly ? "OK" : "Save"
+                    text: root.errorOnly ? (root.ui.btnOk || "OK") : (root.ui.btnSave || "Save")
                     darkMode: root.darkMode
                     primaryFill: true
                     buttonHeight: 32

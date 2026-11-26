@@ -13,5 +13,7 @@
         <file>qml/LanguageModal.qml</file>
         <file>qml/ConfirmModal.qml</file>
         <file>assets/nulla.svg</file>
+        <file>i18n/en.json</file>
+        <file>i18n/ru.json</file>
     </qresource>
 </RCC>

@@ -10,6 +10,7 @@ Item {
     property bool showLineNumbers: true
     property int zoomPercent: 100
     property string monoFontFamily: "monospace"
+    property var ui: ({})
 
     property color bgEditor: "#16171b"
     property color bgGutter: "#131418"
@@ -53,13 +54,15 @@ Item {
     }
 
     function closeContextMenu() {
-        if (contextMenu.visible) {
+        if (contextMenu.opened) {
             contextMenu.close();
         }
     }
 
     function updateHoverGuide(vx, vy) {
-        if (vx < 0 || vy < 0 || vx >= editorViewport.width - 8 || vy >= editorViewport.height - 8) {
+        var rightLimit = (vScroll.visible && vScroll.size < 1.0) ? (editorViewport.width - 8) : editorViewport.width;
+        var bottomLimit = (hScroll.visible && hScroll.size < 1.0) ? (editorViewport.height - 8) : editorViewport.height;
+        if (vx < 0 || vy < 0 || vx >= rightLimit || vy >= bottomLimit) {
             hoverInsideTextArea = false;
             return;
         }
@@ -372,15 +375,22 @@ Item {
             width: parent.width - gutterContainer.width
             height: parent.height
 
-            HoverHandler {
-                id: editorHover
-                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-                onPointChanged: pane.updateHoverGuide(point.position.x, point.position.y)
-                onHoveredChanged: {
-                    if (!hovered) {
-                        pane.hoverInsideTextArea = false;
-                    } else {
-                        pane.updateHoverGuide(point.position.x, point.position.y);
+            Item {
+                anchors.fill: parent
+                anchors.rightMargin: (vScroll.visible && vScroll.size < 1.0) ? 8 : 0
+                anchors.bottomMargin: (hScroll.visible && hScroll.size < 1.0) ? 8 : 0
+
+                HoverHandler {
+                    id: editorHover
+                    cursorShape: Qt.IBeamCursor
+                    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                    onPointChanged: pane.updateHoverGuide(point.position.x, point.position.y)
+                    onHoveredChanged: {
+                        if (!hovered) {
+                            pane.hoverInsideTextArea = false;
+                        } else {
+                            pane.updateHoverGuide(point.position.x, point.position.y);
+                        }
                     }
                 }
             }
@@ -488,6 +498,7 @@ Item {
                 }
 
                 ScrollBar.vertical: ScrollBar {
+                    id: vScroll
                     policy: ScrollBar.AsNeeded
                     width: 8
                     onPressedChanged: if (pressed)
@@ -505,6 +516,7 @@ Item {
                 }
 
                 ScrollBar.horizontal: ScrollBar {
+                    id: hScroll
                     policy: ScrollBar.AsNeeded
                     height: 8
                     onPressedChanged: if (pressed)
@@ -650,9 +662,17 @@ Item {
                     height: Math.max(flick.height, flick.contentHeight)
                     acceptedButtons: Qt.LeftButton
                     cursorShape: Qt.IBeamCursor
+                    property int dragAnchor: 0
                     onPressed: function (mouse) {
                         editor.forceActiveFocus();
-                        editor.cursorPosition = editor.positionAt(mouse.x - editor.x, mouse.y - editor.y);
+                        dragAnchor = editor.positionAt(mouse.x - editor.x, mouse.y - editor.y);
+                        editor.cursorPosition = dragAnchor;
+                    }
+                    onPositionChanged: function (mouse) {
+                        if ((mouse.buttons & Qt.LeftButton) !== 0) {
+                            var pos = editor.positionAt(mouse.x - editor.x, mouse.y - editor.y);
+                            editor.select(dragAnchor, pos);
+                        }
                     }
                 }
 
@@ -660,6 +680,8 @@ Item {
                     id: editor
                     x: 10
                     y: 8
+                    width: Math.max(flick.width - 10, contentWidth + 10)
+                    height: Math.max(flick.height - 8, contentHeight + 8)
                     textFormat: TextEdit.PlainText
                     selectByMouse: true
                     persistentSelection: true
@@ -942,12 +964,22 @@ Item {
                     mouse.accepted = true;
                 }
             }
+
+            MouseArea {
+                anchors.fill: parent
+                anchors.rightMargin: (vScroll.visible && vScroll.size < 1.0) ? 8 : 0
+                anchors.bottomMargin: (hScroll.visible && hScroll.size < 1.0) ? 8 : 0
+                acceptedButtons: Qt.NoButton
+                hoverEnabled: true
+                cursorShape: Qt.IBeamCursor
+            }
         }
     }
 
     EditorContextMenu {
         id: contextMenu
         darkMode: pane.darkMode
+        ui: pane.ui
         canUndo: editor.canUndo
         canRedo: editor.canRedo
         canPaste: editor.canPaste
@@ -997,9 +1029,8 @@ Item {
         }
     }
 
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.NoButton
+    WheelHandler {
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
 
         property real zoomAccum: 0
 

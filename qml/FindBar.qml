@@ -12,6 +12,7 @@ Rectangle {
     property int matchCurrent: 0
     property int matchTotal: 0
     property int totalLines: 1
+    property var ui: ({})
 
     property color bgGutter: "#131418"
     property color bgEditor: "#16171b"
@@ -29,18 +30,18 @@ Rectangle {
     signal replaceOneRequested(string replacement)
     signal replaceAllRequested(string replacement)
     signal gotoLineRequested(int lineNumber)
-    signal closed()
+    signal closed
 
     function focusInput(initialText, isGoto) {
         if (isGoto) {
-            findInput.text = ""
+            findInput.text = "";
         } else if (initialText !== undefined && initialText !== "") {
-            findInput.text = initialText
+            findInput.text = initialText;
         } else {
-            findInput.text = root.query
+            findInput.text = root.query;
         }
-        findInput.forceActiveFocus()
-        findInput.selectAll()
+        findInput.forceActiveFocus();
+        findInput.selectAll();
     }
 
     visible: open
@@ -75,7 +76,9 @@ Rectangle {
                     border.color: findInput.activeFocus ? root.borderFocus : root.borderControl
 
                     Behavior on border.color {
-                        ColorAnimation { duration: 100 }
+                        ColorAnimation {
+                            duration: 100
+                        }
                     }
 
                     TextInput {
@@ -90,31 +93,31 @@ Rectangle {
                         clip: true
                         onTextChanged: {
                             if (!root.gotoMode) {
-                                root.query = text
-                                root.queryEdited(text)
+                                root.query = text;
+                                root.queryEdited(text);
                             }
                         }
-                        Keys.onPressed: function(event) {
+                        Keys.onPressed: function (event) {
                             if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                                 if (root.gotoMode) {
-                                    var ln = parseInt(text.trim(), 10)
+                                    var ln = parseInt(text.trim(), 10);
                                     if (!isNaN(ln) && ln >= 1) {
-                                        root.gotoLineRequested(ln)
+                                        root.gotoLineRequested(ln);
                                     }
-                                    root.closed()
+                                    root.closed();
                                 } else {
-                                    root.findNextRequested((event.modifiers & Qt.ShiftModifier) !== 0)
+                                    root.findNextRequested((event.modifiers & Qt.ShiftModifier) !== 0);
                                 }
-                                event.accepted = true
+                                event.accepted = true;
                             } else if (event.key === Qt.Key_Escape) {
-                                root.closed()
-                                event.accepted = true
+                                root.closed();
+                                event.accepted = true;
                             }
                         }
 
                         Text {
                             visible: findInput.text === ""
-                            text: root.gotoMode ? ("Go to line (1–" + root.totalLines + ")...") : "Find in file..."
+                            text: root.gotoMode ? ((root.ui.gotoPlaceholderPrefix || "Go to line (1–") + root.totalLines + (root.ui.gotoPlaceholderSuffix || ")...")) : (root.ui.findPlaceholder || "Find in file...")
                             color: root.fgGutter
                             font.pixelSize: 12
                             anchors.verticalCenter: parent.verticalCenter
@@ -125,10 +128,9 @@ Rectangle {
                 Text {
                     visible: !root.gotoMode
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 64
-                    text: root.query === ""
-                          ? ""
-                          : (root.matchTotal > 0 ? (root.matchCurrent + " / " + root.matchTotal) : "0 found")
+                    width: 82
+                    elide: Text.ElideRight
+                    text: root.query === "" ? "" : (root.matchTotal > 0 ? (root.matchCurrent + " / " + root.matchTotal) : (root.ui.zeroFound || "0 found"))
                     color: root.fgMuted
                     font.pixelSize: 12
                 }
@@ -155,7 +157,7 @@ Rectangle {
                             buttonHeight: 24
                             cornerRadius: 5
                             darkMode: root.darkMode
-                            tooltipText: "Previous (Shift+Enter)"
+                            tooltipText: root.ui.prevMatchTip || "Previous (Shift+Enter)"
                             onClicked: root.findNextRequested(true)
                         }
 
@@ -173,7 +175,7 @@ Rectangle {
                             buttonHeight: 24
                             cornerRadius: 5
                             darkMode: root.darkMode
-                            tooltipText: "Next (Enter)"
+                            tooltipText: root.ui.nextMatchTip || "Next (Enter)"
                             onClicked: root.findNextRequested(false)
                         }
                     }
@@ -182,17 +184,16 @@ Rectangle {
                 M3Button {
                     visible: !root.gotoMode
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Replace"
+                    text: root.ui.replaceBtn || "Replace"
                     ghost: !root.replaceMode
                     activeChip: root.replaceMode
                     buttonHeight: 26
                     horizontalPadding: 9
                     cornerRadius: 5
                     darkMode: root.darkMode
-                    tooltipText: "Toggle Replace (Ctrl+H)"
+                    tooltipText: root.ui.toggleReplaceTip || "Toggle Replace (Ctrl+H)"
                     onClicked: root.replaceMode = !root.replaceMode
                 }
-
             }
 
             M3Button {
@@ -206,7 +207,7 @@ Rectangle {
                 buttonHeight: 26
                 cornerRadius: 5
                 darkMode: root.darkMode
-                tooltipText: "Close (Esc)"
+                tooltipText: root.ui.closeEscTip || "Close (Esc)"
                 onClicked: root.closed()
             }
         }
@@ -242,19 +243,19 @@ Rectangle {
                         font.pixelSize: 12
                         clip: true
                         onTextChanged: root.replaceQuery = text
-                        Keys.onPressed: function(event) {
+                        Keys.onPressed: function (event) {
                             if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                                root.replaceOneRequested(text)
-                                event.accepted = true
+                                root.replaceOneRequested(text);
+                                event.accepted = true;
                             } else if (event.key === Qt.Key_Escape) {
-                                root.closed()
-                                event.accepted = true
+                                root.closed();
+                                event.accepted = true;
                             }
                         }
 
                         Text {
                             visible: replaceInput.text === ""
-                            text: "Replace with..."
+                            text: root.ui.replacePlaceholder || "Replace with..."
                             color: root.fgGutter
                             font.pixelSize: 12
                             anchors.verticalCenter: parent.verticalCenter
@@ -264,7 +265,7 @@ Rectangle {
 
                 M3Button {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Replace"
+                    text: root.ui.replaceBtn || "Replace"
                     ghost: true
                     buttonHeight: 26
                     horizontalPadding: 10
@@ -275,7 +276,7 @@ Rectangle {
 
                 M3Button {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "All"
+                    text: root.ui.replaceAllBtn || "All"
                     ghost: true
                     buttonHeight: 26
                     horizontalPadding: 10
