@@ -27,7 +27,7 @@ Rectangle {
     signal settingsRequested()
     signal menuToggleRequested(real anchorX)
 
-    height: 44
+    height: 50
     color: bgHeader
 
     Behavior on color {
@@ -43,15 +43,18 @@ Rectangle {
     Rectangle {
         id: actionGroup
         anchors.left: parent.left
-        anchors.leftMargin: 10
+        anchors.leftMargin: 12
         anchors.verticalCenter: parent.verticalCenter
-        height: 28
-        width: groupRow.implicitWidth + 2
-        radius: 8
+        height: 34
+        width: groupRow.implicitWidth + 4
+        radius: 9
         color: root.bgSurfaceElev
         border.width: 1
         border.color: root.borderControl
 
+        Behavior on color {
+            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+        }
         Behavior on border.color {
             ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
         }
@@ -65,7 +68,9 @@ Rectangle {
                 iconKind: "plus"
                 iconOnly: true
                 ghost: true
-                buttonHeight: 26
+                buttonHeight: 30
+                buttonWidth: 32
+                iconSize: 15
                 cornerRadius: 7
                 darkMode: root.darkMode
                 tooltipText: "New Tab (Ctrl+T)"
@@ -74,7 +79,7 @@ Rectangle {
 
             Rectangle {
                 width: 1
-                height: 14
+                height: 16
                 anchors.verticalCenter: parent.verticalCenter
                 color: root.borderSubtle
             }
@@ -82,8 +87,9 @@ Rectangle {
             M3Button {
                 text: "Open"
                 ghost: true
-                buttonHeight: 26
-                horizontalPadding: 10
+                buttonHeight: 30
+                horizontalPadding: 13
+                fontPixelSize: 13
                 cornerRadius: 7
                 darkMode: root.darkMode
                 tooltipText: "Open File (Ctrl+O)"
@@ -92,7 +98,7 @@ Rectangle {
 
             Rectangle {
                 width: 1
-                height: 14
+                height: 16
                 anchors.verticalCenter: parent.verticalCenter
                 color: root.borderSubtle
             }
@@ -103,8 +109,9 @@ Rectangle {
                 ghost: !isDirty
                 accent: isDirty
                 showDot: isDirty
-                buttonHeight: 26
-                horizontalPadding: 10
+                buttonHeight: 30
+                horizontalPadding: 13
+                fontPixelSize: 13
                 cornerRadius: 7
                 darkMode: root.darkMode
                 tooltipText: "Save File (Ctrl+S)"
@@ -113,123 +120,227 @@ Rectangle {
         }
     }
 
-    Row {
-        id: centerTitle
-        anchors.centerIn: parent
-        spacing: 7
+    Rectangle {
+        id: centerBadge
         readonly property bool dirty: root.activeTab ? root.activeTab.modified : false
-        width: Math.min(24 + titleLabel.implicitWidth + (dirty ? 12 : 0),
-                        Math.max(80, root.width - actionGroup.width - rightControls.width - 48))
+        readonly property real fixedContentWidth: 15 + 8 + (dirty ? 14 : 0)
+        readonly property real availableSpan: Math.max(64, root.width - actionGroup.width - rightControls.width - 44)
+        readonly property real naturalWidth: 24 + fixedContentWidth + titleLabel.implicitWidth
 
-        Image {
-            source: "qrc:/assets/nulla.svg"
-            width: 14
-            height: 14
-            sourceSize: Qt.size(28, 28)
-            anchors.verticalCenter: parent.verticalCenter
-            opacity: root.darkMode ? 0.88 : 0.82
+        y: (parent.height - height) * 0.5
+        x: Math.max(actionGroup.x + actionGroup.width + 10,
+                    Math.min(rightControls.x - width - 10, (root.width - width) * 0.5))
+        height: 32
+        width: Math.min(naturalWidth, availableSpan)
+        radius: 9
+        clip: true
+        color: root.bgSurfaceElev
+        border.width: 1
+        border.color: dirty ? root.borderControl : root.borderSubtle
+
+        Behavior on color {
+            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+        }
+        Behavior on border.color {
+            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
         }
 
-        Text {
-            id: titleLabel
-            width: Math.min(implicitWidth, centerTitle.width - 24 - (centerTitle.dirty ? 12 : 0))
-            elide: Text.ElideMiddle
-            text: root.activeTab ? root.activeTab.fileName : "Untitled"
-            color: centerTitle.dirty ? root.fgMain : root.fgMuted
-            font.pixelSize: 13
-            font.weight: centerTitle.dirty ? Font.DemiBold : Font.Medium
-            anchors.verticalCenter: parent.verticalCenter
-        }
+        Row {
+            id: titleRow
+            anchors.centerIn: parent
+            spacing: 8
 
-        Rectangle {
-            visible: centerTitle.dirty
-            width: 6
-            height: 6
-            radius: 3
-            anchors.verticalCenter: parent.verticalCenter
-            color: root.fgMain
+            Image {
+                source: "qrc:/assets/nulla.svg"
+                width: 15
+                height: 15
+                sourceSize: Qt.size(30, 30)
+                anchors.verticalCenter: parent.verticalCenter
+                opacity: root.darkMode ? 0.90 : 0.85
+            }
+
+            Text {
+                id: titleLabel
+                width: Math.max(12, Math.min(implicitWidth, centerBadge.width - 24 - centerBadge.fixedContentWidth))
+                elide: Text.ElideMiddle
+                text: root.activeTab ? root.activeTab.fileName : "Untitled"
+                color: centerBadge.dirty ? root.fgMain : root.fgMuted
+                font.pixelSize: 13
+                font.weight: centerBadge.dirty ? Font.DemiBold : Font.Medium
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            Rectangle {
+                visible: centerBadge.dirty
+                width: 6
+                height: 6
+                radius: 3
+                anchors.verticalCenter: parent.verticalCenter
+                color: root.fgMain
+            }
         }
     }
 
     Row {
         id: rightControls
         anchors.right: parent.right
-        anchors.rightMargin: 10
+        anchors.rightMargin: 12
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 3
+        spacing: 8
 
-        M3Button {
-            iconKind: "search"
-            iconOnly: true
-            ghost: true
-            buttonHeight: 28
-            darkMode: root.darkMode
-            tooltipText: "Find (Ctrl+F)"
-            onClicked: root.findRequested()
-        }
+        Rectangle {
+            id: utilityGroup
+            height: 34
+            width: utilRow.implicitWidth + 4
+            radius: 9
+            color: root.bgSurfaceElev
+            border.width: 1
+            border.color: root.borderControl
 
-        M3Button {
-            iconKind: "gear"
-            iconOnly: true
-            ghost: true
-            buttonHeight: 28
-            darkMode: root.darkMode
-            tooltipText: "Settings (Ctrl+,)"
-            onClicked: root.settingsRequested()
-        }
+            Behavior on color {
+                ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+            }
+            Behavior on border.color {
+                ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+            }
 
-        M3Button {
-            id: menuBtn
-            iconKind: "dots"
-            iconOnly: true
-            ghost: !root.menuOpened
-            activeChip: root.menuOpened
-            buttonHeight: 28
-            darkMode: root.darkMode
-            tooltipText: "Menu"
-            onClicked: root.menuToggleRequested(rightControls.x + menuBtn.x + menuBtn.width)
+            Row {
+                id: utilRow
+                anchors.centerIn: parent
+                spacing: 0
+
+                M3Button {
+                    iconKind: "search"
+                    iconOnly: true
+                    ghost: true
+                    buttonHeight: 30
+                    buttonWidth: 32
+                    iconSize: 15
+                    cornerRadius: 7
+                    darkMode: root.darkMode
+                    tooltipText: "Find (Ctrl+F)"
+                    onClicked: root.findRequested()
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 16
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: root.borderSubtle
+                }
+
+                M3Button {
+                    iconKind: "gear"
+                    iconOnly: true
+                    ghost: true
+                    buttonHeight: 30
+                    buttonWidth: 32
+                    iconSize: 15
+                    cornerRadius: 7
+                    darkMode: root.darkMode
+                    tooltipText: "Settings (Ctrl+,)"
+                    onClicked: root.settingsRequested()
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 16
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: root.borderSubtle
+                }
+
+                M3Button {
+                    id: menuBtn
+                    iconKind: "dots"
+                    iconOnly: true
+                    ghost: !root.menuOpened
+                    activeChip: root.menuOpened
+                    buttonHeight: 30
+                    buttonWidth: 32
+                    iconSize: 15
+                    cornerRadius: 7
+                    darkMode: root.darkMode
+                    tooltipText: "Menu"
+                    onClicked: root.menuToggleRequested(rightControls.x + utilityGroup.x + utilRow.x + menuBtn.x + menuBtn.width)
+                }
+            }
         }
 
         Rectangle {
             visible: root.showWindowControls
-            width: 1
-            height: 14
-            anchors.verticalCenter: parent.verticalCenter
-            color: root.borderSubtle
-        }
+            height: 34
+            width: winRow.implicitWidth + 4
+            radius: 9
+            color: root.bgSurfaceElev
+            border.width: 1
+            border.color: root.borderControl
 
-        M3Button {
-            visible: root.showWindowControls
-            iconKind: "minus"
-            iconOnly: true
-            ghost: true
-            buttonHeight: 28
-            darkMode: root.darkMode
-            tooltipText: "Minimize"
-            onClicked: root.minimizeRequested()
-        }
+            Behavior on color {
+                ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+            }
+            Behavior on border.color {
+                ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+            }
 
-        M3Button {
-            visible: root.showWindowControls
-            iconKind: root.isMaximized ? "restore" : "max"
-            iconOnly: true
-            ghost: true
-            buttonHeight: 28
-            darkMode: root.darkMode
-            tooltipText: root.isMaximized ? "Restore" : "Maximize"
-            onClicked: root.toggleMaximizeRequested()
-        }
+            Row {
+                id: winRow
+                anchors.centerIn: parent
+                spacing: 0
 
-        M3Button {
-            visible: root.showWindowControls
-            iconKind: "close"
-            iconOnly: true
-            ghost: true
-            buttonHeight: 28
-            darkMode: root.darkMode
-            dangerHover: true
-            tooltipText: "Close"
-            onClicked: root.closeWindowRequested()
+                M3Button {
+                    iconKind: "minus"
+                    iconOnly: true
+                    ghost: true
+                    buttonHeight: 30
+                    buttonWidth: 32
+                    iconSize: 14
+                    cornerRadius: 7
+                    darkMode: root.darkMode
+                    tooltipText: "Minimize"
+                    onClicked: root.minimizeRequested()
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 16
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: root.borderSubtle
+                }
+
+                M3Button {
+                    iconKind: root.isMaximized ? "restore" : "max"
+                    iconOnly: true
+                    ghost: true
+                    buttonHeight: 30
+                    buttonWidth: 32
+                    iconSize: 14
+                    cornerRadius: 7
+                    darkMode: root.darkMode
+                    tooltipText: root.isMaximized ? "Restore" : "Maximize"
+                    onClicked: root.toggleMaximizeRequested()
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 16
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: root.borderSubtle
+                }
+
+                M3Button {
+                    iconKind: "close"
+                    iconOnly: true
+                    ghost: true
+                    buttonHeight: 30
+                    buttonWidth: 32
+                    iconSize: 14
+                    cornerRadius: 7
+                    darkMode: root.darkMode
+                    dangerHover: true
+                    tooltipText: "Close"
+                    onClicked: root.closeWindowRequested()
+                }
+            }
         }
     }
 

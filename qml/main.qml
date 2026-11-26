@@ -411,14 +411,20 @@ ApplicationWindow {
                 activeTab: backend.activeTab
                 zoomPercent: backend.zoomPercent
                 bgShell: win.bgShell
+                bgSurfaceElev: win.bgSurfaceElev
                 borderSubtle: win.borderSubtle
+                borderControl: win.borderControl
+                fgMain: win.fgMain
                 fgMuted: win.fgMuted
                 fgGutter: win.fgGutter
 
+                onGotoLineClicked: openFindBar(false, true)
                 onLanguageClicked: {
                     settingsModal.open = true
                     settingsModal.langPickerOpen = true
                 }
+                onZoomInRequested: backend.zoomIn()
+                onZoomOutRequested: backend.zoomOut()
                 onZoomResetRequested: backend.zoomReset()
             }
         }

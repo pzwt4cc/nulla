@@ -416,6 +416,7 @@ Item {
                                 horizontalPadding: 11
                                 fontPixelSize: 12
                                 iconKind: "chevron"
+                                iconOnRight: true
                                 text: {
                                     if (!root.backend) return "Auto"
                                     var list = root.backend.languagesModel

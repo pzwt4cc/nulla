@@ -6,15 +6,18 @@ Item {
 
     property string text: ""
     property string iconKind: ""
+    property bool iconOnRight: false
     property bool darkMode: true
     property bool accent: false
     property bool activeChip: false
     property bool primaryFill: false
+    property bool elevated: false
     property bool ghost: false
     property bool iconOnly: false
     property bool dangerHover: false
     property bool showDot: false
     property real buttonHeight: 28
+    property real buttonWidth: 0
     property real horizontalPadding: 10
     property string tooltipText: ""
     property int fontPixelSize: 12
@@ -102,7 +105,7 @@ Item {
     }
 
     implicitHeight: buttonHeight
-    implicitWidth: iconOnly ? buttonHeight : (contentRow.implicitWidth + horizontalPadding * 2)
+    implicitWidth: buttonWidth > 0 ? buttonWidth : (iconOnly ? buttonHeight : (contentRow.implicitWidth + horizontalPadding * 2))
 
     Rectangle {
         id: pill
@@ -123,7 +126,13 @@ Item {
             if (activeChip) {
                 return fillChip
             }
-            return accent ? fillAccent : "transparent"
+            if (accent) {
+                return fillAccent
+            }
+            if (elevated) {
+                return darkMode ? "#181a20" : "#ffffff"
+            }
+            return "transparent"
         }
         border.width: primaryFill ? 0 : (accent ? 1.25 : 1)
         border.color: {
@@ -167,13 +176,13 @@ Item {
             }
 
             Image {
-                visible: root.iconKind !== ""
+                visible: root.iconKind !== "" && !root.iconOnRight
                 width: root.iconSize
                 height: root.iconSize
                 sourceSize: Qt.size(root.iconSize * 2, root.iconSize * 2)
                 smooth: true
                 anchors.verticalCenter: parent.verticalCenter
-                source: root.iconDataUri(root.iconKind, root.iconColor)
+                source: visible ? root.iconDataUri(root.iconKind, root.iconColor) : ""
             }
 
             Text {
@@ -192,6 +201,16 @@ Item {
                 Behavior on color {
                     ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
                 }
+            }
+
+            Image {
+                visible: root.iconKind !== "" && root.iconOnRight
+                width: root.iconSize
+                height: root.iconSize
+                sourceSize: Qt.size(root.iconSize * 2, root.iconSize * 2)
+                smooth: true
+                anchors.verticalCenter: parent.verticalCenter
+                source: visible ? root.iconDataUri(root.iconKind, root.iconColor) : ""
             }
         }
     }
