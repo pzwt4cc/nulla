@@ -87,41 +87,24 @@
     </Component>
 
     <Component Id="FileAssocComp" Directory="INSTALLFOLDER" Guid="BD405163-7E8F-4091-AC34-445566778899">
-      <RegistryValue Root="HKLM"
-                     Key="Software\Nulla\Installer"
-                     Name="FileAssoc"
-                     Type="integer"
-                     Value="1"
-                     KeyPath="yes" />
-      <ProgId Id="Nulla.Document" Description="Nulla Text Document" Icon="NullaExeFile" IconIndex="0">
-        <Extension Id="txt" ContentType="text/plain">
-          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
-        </Extension>
-        <Extension Id="md" ContentType="text/markdown">
-          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
-        </Extension>
-        <Extension Id="json" ContentType="application/json">
-          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
-        </Extension>
-        <Extension Id="yaml" ContentType="text/plain">
-          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
-        </Extension>
-        <Extension Id="yml" ContentType="text/plain">
-          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
-        </Extension>
-        <Extension Id="toml" ContentType="text/plain">
-          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
-        </Extension>
-        <Extension Id="ini" ContentType="text/plain">
-          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
-        </Extension>
-        <Extension Id="conf" ContentType="text/plain">
-          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
-        </Extension>
-        <Extension Id="log" ContentType="text/plain">
-          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
-        </Extension>
-      </ProgId>
+      <RegistryKey Root="HKLM" Key="Software\Classes\Nulla.Document">
+        <RegistryValue Type="string" Value="Nulla Text Document" KeyPath="yes" />
+        <RegistryKey Key="DefaultIcon">
+          <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]nulla.exe&quot;,0" />
+        </RegistryKey>
+        <RegistryKey Key="shell\open\command">
+          <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]nulla.exe&quot; &quot;%1&quot;" />
+        </RegistryKey>
+      </RegistryKey>
+      <RegistryValue Root="HKLM" Key="Software\Classes\.txt\OpenWithProgids" Name="Nulla.Document" Type="string" Value="" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\.md\OpenWithProgids" Name="Nulla.Document" Type="string" Value="" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\.json\OpenWithProgids" Name="Nulla.Document" Type="string" Value="" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\.yaml\OpenWithProgids" Name="Nulla.Document" Type="string" Value="" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\.yml\OpenWithProgids" Name="Nulla.Document" Type="string" Value="" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\.toml\OpenWithProgids" Name="Nulla.Document" Type="string" Value="" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\.ini\OpenWithProgids" Name="Nulla.Document" Type="string" Value="" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\.conf\OpenWithProgids" Name="Nulla.Document" Type="string" Value="" />
+      <RegistryValue Root="HKLM" Key="Software\Classes\.log\OpenWithProgids" Name="Nulla.Document" Type="string" Value="" />
     </Component>
 
     <Feature Id="ProductFeature"
@@ -163,8 +146,8 @@
       </Feature>
 
       <Feature Id="FileAssocFeature"
-               Title="File Associations"
-               Description="Associate .txt, .md, .json, .yaml, .yml, .toml, .ini, .conf, and .log files with Nulla."
+               Title="Open With Registration"
+               Description="Register Nulla in Windows Open With and Default Apps for .txt, .md, .json, .yaml, .yml, .toml, .ini, .conf, and .log files."
                Level="2">
         <ComponentRef Id="FileAssocComp" />
       </Feature>

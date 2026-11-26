@@ -39,6 +39,15 @@ $QmlDir = Join-Path $RootDir "qml"
 & windeployqt --release --no-translations --qmldir $QmlDir $ExePath
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+if ($env:VCToolsRedistDir) {
+    $CrtDirs = Get-ChildItem -Path (Join-Path $env:VCToolsRedistDir "x64") -Directory -Filter "Microsoft.VC*.CRT" -ErrorAction SilentlyContinue
+    foreach ($dir in $CrtDirs) {
+        Get-ChildItem -Path $dir.FullName -File -Filter "*.dll" | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination $StageDir -Force
+        }
+    }
+}
+
 $RuntimeWxs = Join-Path $BuildPath "QtRuntime.wxs"
 $Lines = [System.Collections.Generic.List[string]]::new()
 $Lines.Add('<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">')
