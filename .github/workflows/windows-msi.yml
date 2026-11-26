@@ -6,6 +6,9 @@ on:
     tags: ["v*"]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-msi:
     runs-on: windows-latest
@@ -52,3 +55,9 @@ jobs:
           name: nulla-windows-msi
           path: dist/*.msi
           if-no-files-found: error
+
+      - name: Attach MSI to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.msi

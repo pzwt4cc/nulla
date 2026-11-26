@@ -93,7 +93,6 @@ static QString normalizeFilePath(const QString &rawPath) {
   return QFileInfo(path).absoluteFilePath();
 }
 
-#if !defined(Q_OS_WIN)
 static double linearChannel(double c) {
   return (c <= 0.03928) ? (c / 12.92) : std::pow((c + 0.055) / 1.055, 2.4);
 }
@@ -129,6 +128,70 @@ static QString colorStr(const QColor &c) {
   return (c.alpha() == 255) ? c.name(QColor::HexRgb) : c.name(QColor::HexArgb);
 }
 
+struct AdaptivePaletteSeed {
+  bool valid = false;
+  QColor bgShell;
+  QColor bgEditor;
+  QColor bgSurface;
+  QColor fgMain;
+  QColor accent;
+  QColor accentFg;
+  QColor border;
+  QColor danger;
+};
+
+#if defined(Q_OS_WIN)
+static AdaptivePaletteSeed tryLoadWindowsPalette() {
+  bool sysDark = true;
+  if (QGuiApplication::styleHints() &&
+      QGuiApplication::styleHints()->colorScheme() != Qt::ColorScheme::Unknown) {
+    sysDark = (QGuiApplication::styleHints()->colorScheme() != Qt::ColorScheme::Light);
+  } else {
+    const QSettings pers(
+        QStringLiteral("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"),
+        QSettings::NativeFormat);
+    sysDark = (pers.value(QStringLiteral("AppsUseLightTheme"), 0).toInt() == 0);
+  }
+
+  QColor accent;
+  const QSettings dwm(
+      QStringLiteral("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\DWM"),
+      QSettings::NativeFormat);
+  if (dwm.contains(QStringLiteral("AccentColor"))) {
+    const quint32 abgr = dwm.value(QStringLiteral("AccentColor")).toUInt();
+    accent = QColor(static_cast<int>(abgr & 0xffU),
+                    static_cast<int>((abgr >> 8) & 0xffU),
+                    static_cast<int>((abgr >> 16) & 0xffU));
+  } else if (dwm.contains(QStringLiteral("ColorizationColor"))) {
+    const quint32 argb = dwm.value(QStringLiteral("ColorizationColor")).toUInt();
+    accent = QColor(static_cast<int>((argb >> 16) & 0xffU),
+                    static_cast<int>((argb >> 8) & 0xffU),
+                    static_cast<int>(argb & 0xffU));
+  }
+  if (!accent.isValid()) {
+    const QColor palHi = QGuiApplication::palette().color(QPalette::Highlight);
+    if (palHi.isValid()) {
+      accent = QColor(palHi.rgb());
+    }
+  }
+  if (!accent.isValid()) {
+    return AdaptivePaletteSeed();
+  }
+
+  const QColor baseShell(sysDark ? QStringLiteral("#0d0e11") : QStringLiteral("#ebedf2"));
+  const QColor baseEditor(sysDark ? QStringLiteral("#16181e") : QStringLiteral("#ffffff"));
+  const QColor baseSurface(sysDark ? QStringLiteral("#1c1f27") : QStringLiteral("#f7f8fa"));
+
+  AdaptivePaletteSeed seed;
+  seed.valid = true;
+  seed.bgShell = blendColors(baseShell, accent, sysDark ? 0.06 : 0.045);
+  seed.bgEditor = blendColors(baseEditor, accent, sysDark ? 0.03 : 0.02);
+  seed.bgSurface = blendColors(baseSurface, accent, sysDark ? 0.07 : 0.05);
+  seed.fgMain = QColor(sysDark ? QStringLiteral("#f0f2f6") : QStringLiteral("#14161a"));
+  seed.accent = accent;
+  return seed;
+}
+#else
 static QColor parseCssColorToken(const QString &raw,
                                  const QHash<QString, QString> &vars,
                                  int depth = 0) {
@@ -222,18 +285,6 @@ static void collectGtkCssDefs(const QString &filePath,
     vars.insert(dm.captured(1).trimmed(), dm.captured(2).trimmed());
   }
 }
-
-struct AdaptivePaletteSeed {
-  bool valid = false;
-  QColor bgShell;
-  QColor bgEditor;
-  QColor bgSurface;
-  QColor fgMain;
-  QColor accent;
-  QColor accentFg;
-  QColor border;
-  QColor danger;
-};
 
 static QColor pickFirstCssColor(const QHash<QString, QString> &vars,
                                 const QStringList &keys) {
@@ -606,7 +657,6 @@ static QVariantMap buildFixedTheme(bool dark) {
   return t;
 }
 
-#if !defined(Q_OS_WIN)
 static QVariantMap buildAdaptiveTheme(const AdaptivePaletteSeed &seed) {
   const QColor bgEditor = seed.bgEditor;
   const bool dark = relativeLuminance(bgEditor) < 0.25;
@@ -713,7 +763,6 @@ static QVariantMap buildAdaptiveTheme(const AdaptivePaletteSeed &seed) {
   t.insert(QStringLiteral("hoverLineBand"), colorStr(withAlpha(fgMain, dark ? 14 : 10)));
   return t;
 }
-#endif
 
 TabModel::TabModel(QObject *parent) : QAbstractListModel(parent) {}
 
@@ -867,7 +916,14 @@ void EditorBackend::rebuildThemePalette() {
     return;
   }
 
-#if !defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
+  const AdaptivePaletteSeed seed = tryLoadWindowsPalette();
+  if (seed.valid) {
+    m_theme = buildAdaptiveTheme(seed);
+    m_effectiveDark = m_theme.value(QStringLiteral("dark"), true).toBool();
+    return;
+  }
+#else
   const QString cfgRoot =
       QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
   const QString cacheRoot =
@@ -1256,7 +1312,8 @@ void EditorBackend::setInitialFiles(const QStringList &paths) {
 
 bool EditorBackend::eventFilter(QObject *watched, QEvent *event) {
   if (watched == QCoreApplication::instance() &&
-      event->type() == QEvent::ApplicationPaletteChange) {
+      (event->type() == QEvent::ApplicationPaletteChange ||
+       event->type() == QEvent::ThemeChange)) {
     onSystemColorSchemeChanged();
   }
   return QObject::eventFilter(watched, event);
