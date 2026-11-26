@@ -16,7 +16,7 @@ Minimalist text editor for scripts and configs built with C, GTK4, and GtkSource
 │   └── nulla.svg
 ├── include/
 │   └── nulla.h
-├── packaging/
+├── package/
 │   └── arch/
 │       └── PKGBUILD
 ├── src/
@@ -59,6 +59,6 @@ sudo make install
 ## Arch Linux Package
 
 ```sh
-cd packaging/arch
+cd package/arch
 makepkg -si
 ```
