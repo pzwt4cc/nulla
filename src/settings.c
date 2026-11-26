@@ -117,11 +117,16 @@ static void on_settings_destroy(GtkWidget *widget, gpointer user_data)
 	win->settings_window = NULL;
 }
 
-static void on_line_numbers_changed(GObject *obj, GParamSpec *pspec, gpointer user_data)
+static void on_settings_close_clicked(GtkButton *btn, gpointer user_data)
 {
-	(void)pspec;
+	(void)btn;
+	gtk_window_close(GTK_WINDOW(user_data));
+}
+
+static void on_line_numbers_toggled(GtkToggleButton *btn, gpointer user_data)
+{
 	NullaSettingsUI *ui = user_data;
-	ui->win->config->show_line_numbers = gtk_switch_get_active(GTK_SWITCH(obj));
+	ui->win->config->show_line_numbers = gtk_toggle_button_get_active(btn);
 	nulla_window_apply_settings(ui->win);
 	nulla_config_save(ui->win->config);
 }
@@ -138,11 +143,25 @@ static void on_theme_changed(GObject *obj, GParamSpec *pspec, gpointer user_data
 	}
 }
 
-static void on_syntax_changed(GObject *obj, GParamSpec *pspec, gpointer user_data)
+static GtkWidget *nulla_create_m3_switch(gboolean active)
 {
-	(void)pspec;
+	GtkWidget *btn = gtk_toggle_button_new();
+	gtk_widget_add_css_class(btn, "nulla-m3-switch");
+	gtk_widget_set_halign(btn, GTK_ALIGN_END);
+	gtk_widget_set_valign(btn, GTK_ALIGN_CENTER);
+	GtkWidget *thumb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_widget_add_css_class(thumb, "nulla-m3-thumb");
+	gtk_widget_set_halign(thumb, GTK_ALIGN_START);
+	gtk_widget_set_valign(thumb, GTK_ALIGN_CENTER);
+	gtk_button_set_child(GTK_BUTTON(btn), thumb);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn), active);
+	return btn;
+}
+
+static void on_syntax_toggled(GtkToggleButton *btn, gpointer user_data)
+{
 	NullaSettingsUI *ui = user_data;
-	gboolean active = gtk_switch_get_active(GTK_SWITCH(obj));
+	gboolean active = gtk_toggle_button_get_active(btn);
 	ui->win->config->syntax_enabled = active;
 	gtk_widget_set_sensitive(ui->lang_dropdown, active);
 	nulla_window_apply_language(ui->win);
@@ -192,6 +211,22 @@ void nulla_settings_show(NullaWindow *win)
 	gtk_window_set_modal(GTK_WINDOW(sw), TRUE);
 	gtk_window_set_resizable(GTK_WINDOW(sw), FALSE);
 
+	GtkWidget *handle = gtk_window_handle_new();
+	GtkWidget *topbar = gtk_center_box_new();
+	gtk_widget_add_css_class(topbar, "nulla-topbar");
+
+	GtkWidget *lbl_title = gtk_label_new("Settings");
+	gtk_widget_add_css_class(lbl_title, "nulla-title-pill");
+	gtk_center_box_set_center_widget(GTK_CENTER_BOX(topbar), lbl_title);
+
+	GtkWidget *btn_close = gtk_button_new_from_icon_name("window-close-symbolic");
+	gtk_widget_add_css_class(btn_close, "nulla-icon-pill");
+	g_signal_connect(btn_close, "clicked", G_CALLBACK(on_settings_close_clicked), sw);
+	gtk_center_box_set_end_widget(GTK_CENTER_BOX(topbar), btn_close);
+
+	gtk_window_handle_set_child(GTK_WINDOW_HANDLE(handle), topbar);
+	gtk_window_set_titlebar(GTK_WINDOW(sw), handle);
+
 	NullaSettingsUI *ui = g_new0(NullaSettingsUI, 1);
 	ui->win = win;
 	ui->lang_ids = g_ptr_array_new_with_free_func(g_free);
@@ -203,18 +238,16 @@ void nulla_settings_show(NullaWindow *win)
 	gtk_widget_add_css_class(grid, "nulla-settings-card");
 	gtk_grid_set_row_spacing(GTK_GRID(grid), 14);
 	gtk_grid_set_column_spacing(GTK_GRID(grid), 24);
-	gtk_widget_set_margin_top(grid, 20);
-	gtk_widget_set_margin_bottom(grid, 20);
-	gtk_widget_set_margin_start(grid, 20);
-	gtk_widget_set_margin_end(grid, 20);
+	gtk_widget_set_margin_top(grid, 6);
+	gtk_widget_set_margin_bottom(grid, 16);
+	gtk_widget_set_margin_start(grid, 16);
+	gtk_widget_set_margin_end(grid, 16);
 	gtk_window_set_child(GTK_WINDOW(sw), grid);
 
 	GtkWidget *lbl_lines = gtk_label_new("Line numbers");
 	gtk_widget_set_halign(lbl_lines, GTK_ALIGN_START);
-	GtkWidget *switch_lines = gtk_switch_new();
-	gtk_widget_set_halign(switch_lines, GTK_ALIGN_END);
-	gtk_switch_set_active(GTK_SWITCH(switch_lines), win->config->show_line_numbers);
-	g_signal_connect(switch_lines, "notify::active", G_CALLBACK(on_line_numbers_changed), ui);
+	GtkWidget *switch_lines = nulla_create_m3_switch(win->config->show_line_numbers);
+	g_signal_connect(switch_lines, "toggled", G_CALLBACK(on_line_numbers_toggled), ui);
 	gtk_grid_attach(GTK_GRID(grid), lbl_lines, 0, 0, 1, 1);
 	gtk_grid_attach(GTK_GRID(grid), switch_lines, 1, 0, 1, 1);
 
@@ -229,9 +262,7 @@ void nulla_settings_show(NullaWindow *win)
 
 	GtkWidget *lbl_syntax = gtk_label_new("Syntax highlighting");
 	gtk_widget_set_halign(lbl_syntax, GTK_ALIGN_START);
-	GtkWidget *switch_syntax = gtk_switch_new();
-	gtk_widget_set_halign(switch_syntax, GTK_ALIGN_END);
-	gtk_switch_set_active(GTK_SWITCH(switch_syntax), win->config->syntax_enabled);
+	GtkWidget *switch_syntax = nulla_create_m3_switch(win->config->syntax_enabled);
 	gtk_grid_attach(GTK_GRID(grid), lbl_syntax, 0, 2, 1, 1);
 	gtk_grid_attach(GTK_GRID(grid), switch_syntax, 1, 2, 1, 1);
 
@@ -280,7 +311,7 @@ void nulla_settings_show(NullaWindow *win)
 	g_array_free(items, TRUE);
 
 	g_signal_connect(dd_lang, "notify::selected", G_CALLBACK(on_language_changed), ui);
-	g_signal_connect(switch_syntax, "notify::active", G_CALLBACK(on_syntax_changed), ui);
+	g_signal_connect(switch_syntax, "toggled", G_CALLBACK(on_syntax_toggled), ui);
 	gtk_grid_attach(GTK_GRID(grid), lbl_lang, 0, 3, 1, 1);
 	gtk_grid_attach(GTK_GRID(grid), dd_lang, 1, 3, 1, 1);
 
@@ -293,5 +324,6 @@ void nulla_settings_show(NullaWindow *win)
 	gtk_grid_attach(GTK_GRID(grid), spin_zoom, 1, 4, 1, 1);
 
 	win->settings_window = sw;
+	nulla_window_apply_theme(win);
 	gtk_window_present(GTK_WINDOW(sw));
 }

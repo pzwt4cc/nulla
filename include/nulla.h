@@ -33,6 +33,11 @@ typedef struct {
   GtkSourceFile *source_file;
   GtkCssProvider *css_provider;
   GtkWidget *settings_window;
+  GtkWidget *title_label;
+  GtkWidget *save_btn;
+  GtkWidget *status_pos_label;
+  GtkWidget *status_lang_label;
+  GtkWidget *status_zoom_btn;
   GCancellable *cancellable;
   NullaConfig *config;
   gboolean force_close;
@@ -51,6 +56,7 @@ void nulla_window_apply_language(NullaWindow *win);
 void nulla_window_apply_theme(NullaWindow *win);
 void nulla_window_apply_zoom(NullaWindow *win);
 void nulla_window_update_title(NullaWindow *win);
+void nulla_window_update_status(NullaWindow *win);
 void nulla_window_show_error(NullaWindow *win, const char *title,
                              const char *message);
 void nulla_window_run_pending(NullaWindow *win);
