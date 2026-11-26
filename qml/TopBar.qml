@@ -164,17 +164,11 @@ Rectangle {
         visible: width > 12
         clip: true
 
-        TextMetrics {
-            id: titleMetrics
-            font.pixelSize: 13
-            font.weight: Font.DemiBold
-            text: centerBadge.displayTitle
-        }
-
         Item {
             id: titleRow
+            readonly property real naturalTitleW: Math.ceil(titleLabel.implicitWidth)
             readonly property real maxRowW: Math.max(0, centerBadge.width - 8)
-            readonly property real idealW: centerBadge.fixedContentWidth + Math.ceil(titleMetrics.width)
+            readonly property real idealW: centerBadge.fixedContentWidth + naturalTitleW
             readonly property real rowW: Math.min(idealW, maxRowW)
             width: rowW
             height: parent.height
@@ -196,7 +190,7 @@ Rectangle {
                 anchors.left: titleIcon.right
                 anchors.leftMargin: 8
                 anchors.verticalCenter: parent.verticalCenter
-                width: Math.max(0, Math.min(Math.ceil(titleMetrics.width), titleRow.maxRowW - centerBadge.fixedContentWidth))
+                width: Math.max(0, Math.min(titleRow.naturalTitleW, titleRow.maxRowW - centerBadge.fixedContentWidth))
                 elide: Text.ElideMiddle
                 text: centerBadge.displayTitle
                 color: root.fgMain

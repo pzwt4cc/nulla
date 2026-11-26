@@ -83,7 +83,7 @@ Rectangle {
                     }
 
                     height: 28
-                    width: Math.min(220, Math.max(116, Math.ceil(tabMetrics.width) + 56))
+                    width: Math.min(220, Math.max(116, Math.ceil(Math.max(tabMetrics.advanceWidth, tabMetrics.width)) + 56))
                     anchors.verticalCenter: parent.verticalCenter
 
                     onIsActiveChanged: {
