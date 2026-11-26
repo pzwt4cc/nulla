@@ -2,6 +2,7 @@ CC = gcc
 TARGET = nulla
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
+ICONDIR = $(PREFIX)/share/icons/hicolor/scalable/apps
 
 PKGS = gtk4 gtksourceview-5
 CFLAGS = -std=c17 -O2 -Wall -Wextra -Werror -Wpedantic $(shell pkg-config --cflags $(PKGS))
@@ -29,9 +30,11 @@ debug: clean
 
 install: $(TARGET)
 	install -Dm755 $(TARGET) $(DESTDIR)$(BINDIR)/$(TARGET)
+	install -Dm644 assets/nulla.svg $(DESTDIR)$(ICONDIR)/nulla.svg
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/$(TARGET)
+	rm -f $(DESTDIR)$(ICONDIR)/nulla.svg
 
 clean:
 	rm -rf build $(TARGET)

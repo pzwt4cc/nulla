@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <clipPath id="ring-clip">
+      <circle cx="256" cy="256" r="132"/>
+    </clipPath>
+  </defs>
+  <rect width="512" height="512" fill="#000000"/>
+  <rect x="44" y="44" width="424" height="424" rx="88" fill="#FFFFFF"/>
+  <g clip-path="url(#ring-clip)">
+    <path d="M 192 370 L 192 142 L 320 370 L 320 142" fill="none" stroke="#000000" stroke-width="26" stroke-linecap="butt" stroke-linejoin="miter"/>
+  </g>
+  <circle cx="256" cy="256" r="132" fill="none" stroke="#000000" stroke-width="26"/>
+  <line x1="138" y1="374" x2="374" y2="138" stroke="#FFFFFF" stroke-width="46" stroke-linecap="butt"/>
+  <line x1="134" y1="378" x2="378" y2="134" stroke="#000000" stroke-width="26" stroke-linecap="butt"/>
+  <rect x="348" y="384" width="64" height="22" fill="#000000"/>
+</svg>
