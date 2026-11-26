@@ -4,6 +4,7 @@
 #include "highlighter.h"
 
 #include <QObject>
+#include <QPointer>
 #include <QQuickTextDocument>
 #include <QString>
 #include <QTimer>
@@ -23,6 +24,7 @@ class TabSession : public QObject {
 
 public:
     explicit TabSession(QObject *parent = nullptr);
+    ~TabSession() override;
 
     QString filePath() const { return m_filePath; }
     QString fileName() const;
@@ -70,8 +72,8 @@ private:
     QString computeResolvedLanguageId() const;
     void applyHighlighter(bool forceRehighlight = false);
 
-    QQuickTextDocument *m_quickDoc = nullptr;
-    NullaHighlighter *m_highlighter = nullptr;
+    QPointer<QQuickTextDocument> m_quickDoc;
+    QPointer<NullaHighlighter> m_highlighter;
     QTimer m_autoDetectTimer;
 
     QString m_filePath;

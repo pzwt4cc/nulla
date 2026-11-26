@@ -24,7 +24,6 @@ void LineNumberGutter::setDocument(QQuickTextDocument *doc) {
     if (m_document && m_document->textDocument()) {
         QTextDocument *td = m_document->textDocument();
         connect(td, &QTextDocument::blockCountChanged, this, &LineNumberGutter::refresh);
-        connect(td, &QTextDocument::contentsChanged, this, &LineNumberGutter::refresh);
         connect(td->documentLayout(), &QAbstractTextDocumentLayout::documentSizeChanged,
                 this, &LineNumberGutter::refresh);
     }
@@ -55,6 +54,7 @@ void LineNumberGutter::setFont(const QFont &f) {
         return;
     }
     m_font = f;
+    m_lastDigits = -1;
     emit fontChanged();
     updateMetricsWidth();
     update();
@@ -113,6 +113,10 @@ void LineNumberGutter::updateMetricsWidth() {
         count++;
     }
     const int digits = qMax(2, count);
+    if (digits == m_lastDigits) {
+        return;
+    }
+    m_lastDigits = digits;
     const QFontMetricsF fm(m_font);
     m_lineHeight = fm.height();
     const qreal w = fm.horizontalAdvance(QString(digits, QLatin1Char('9'))) + 22.0;

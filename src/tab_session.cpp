@@ -15,6 +15,13 @@ TabSession::TabSession(QObject *parent) : QObject(parent) {
           &TabSession::runAutoDetect);
 }
 
+TabSession::~TabSession() {
+  m_autoDetectTimer.stop();
+  if (m_quickDoc && m_quickDoc->textDocument()) {
+    disconnect(m_quickDoc->textDocument(), nullptr, this, nullptr);
+  }
+}
+
 QString TabSession::fileName() const {
   if (m_filePath.isEmpty()) {
     return QStringLiteral("Untitled");

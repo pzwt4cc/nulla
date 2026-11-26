@@ -1010,8 +1010,8 @@ Item {
         canRedo: editor.canRedo
         canPaste: editor.canPaste
         hasSelection: pane.hasSelection
-        hasText: editor.text.length > 0
-        hasSingleLineSelection: pane.hasSelection && editor.selectedText.indexOf("\n") === -1
+        hasText: editor.length > 0
+        hasSingleLineSelection: pane.hasSelection && (!contextMenu.visible || editor.selectedText.indexOf("\n") === -1)
         canComment: pane.session ? (pane.session.commentPrefix !== "") : true
         bgSurfaceElev: pane.bgSurfaceElev
         bgHover: pane.bgHover

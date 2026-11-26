@@ -3,6 +3,7 @@
 
 #include <QColor>
 #include <QFont>
+#include <QPointer>
 #include <QQuickPaintedItem>
 #include <QQuickTextDocument>
 
@@ -62,7 +63,7 @@ signals:
 private:
     void updateMetricsWidth();
 
-    QQuickTextDocument *m_document = nullptr;
+    QPointer<QQuickTextDocument> m_document;
     qreal m_contentY = 0.0;
     int m_currentLine = 1;
     QFont m_font;
@@ -71,6 +72,7 @@ private:
     QColor m_activeLineColor = QColor(QStringLiteral("#1c1e24"));
     qreal m_topPadding = 8.0;
     qreal m_lineHeight = 16.0;
+    int m_lastDigits = -1;
 };
 
 #endif
