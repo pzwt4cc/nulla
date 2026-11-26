@@ -122,7 +122,65 @@ void nulla_window_apply_zoom(NullaWindow *win) {
   g_ascii_formatd(buf, sizeof(buf), "%.2f", pt);
 
   char *css = g_strdup_printf(
-      ".nulla-editor { font-family: monospace; font-size: %spt; }", buf);
+      "window.nulla-window { border-radius: 16px; }\n"
+      "headerbar.nulla-header { border-bottom: 1px solid alpha(currentColor, "
+      "0.08); padding: 4px 8px; min-height: 48px; background: transparent; }\n"
+      "button.nulla-icon-btn { border-radius: 20px; min-width: 38px; "
+      "min-height: 38px; padding: 6px; margin: 2px 4px; border: none; "
+      "background-color: transparent; transition: background-color 160ms "
+      "cubic-bezier(0.2, 0, 0, 1), transform 120ms cubic-bezier(0.2, 0, 0, 1); "
+      "}\n"
+      "button.nulla-icon-btn:hover { background-color: alpha(currentColor, "
+      "0.09); transform: scale(1.04); }\n"
+      "button.nulla-icon-btn:active { background-color: alpha(currentColor, "
+      "0.18); transform: scale(0.90); }\n"
+      "scrolledwindow.nulla-scroller { border-radius: 14px; margin: 6px 10px "
+      "10px 10px; border: 1px solid alpha(currentColor, 0.10); transition: "
+      "border-color 200ms ease; }\n"
+      "scrolledwindow.nulla-scroller:focus-within { border-color: "
+      "alpha(currentColor, 0.28); }\n"
+      ".nulla-editor { font-family: monospace; font-size: %spt; border-radius: "
+      "12px; padding: 8px; }\n"
+      "scrollbar { background: transparent; border: none; }\n"
+      "scrollbar trough { background: transparent; border: none; }\n"
+      "scrollbar slider { min-width: 6px; min-height: 6px; border-radius: "
+      "10px; background-color: alpha(currentColor, 0.25); margin: 3px; "
+      "transition: all 180ms cubic-bezier(0.2, 0, 0, 1); }\n"
+      "scrollbar slider:hover { background-color: alpha(currentColor, 0.45); "
+      "min-width: 9px; min-height: 9px; }\n"
+      "scrollbar slider:active { background-color: alpha(currentColor, 0.65); "
+      "}\n"
+      "popover > contents { border-radius: 16px; padding: 6px; box-shadow: 0 "
+      "6px 20px rgba(0, 0, 0, 0.20); border: 1px solid alpha(currentColor, "
+      "0.12); }\n"
+      "popover modelbutton { border-radius: 10px; padding: 8px 14px; margin: "
+      "2px 0; transition: background-color 140ms ease, transform 100ms ease; "
+      "}\n"
+      "popover modelbutton:hover { background-color: alpha(currentColor, "
+      "0.10); }\n"
+      "popover modelbutton:active { transform: scale(0.96); background-color: "
+      "alpha(currentColor, 0.18); }\n"
+      "window.nulla-settings-window { border-radius: 20px; }\n"
+      ".nulla-settings-card { background-color: alpha(currentColor, 0.04); "
+      "border-radius: 16px; padding: 18px 22px; border: 1px solid "
+      "alpha(currentColor, 0.08); }\n"
+      "switch { border-radius: 16px; min-width: 46px; min-height: 26px; "
+      "outline: none; transition: background-color 200ms cubic-bezier(0.2, 0, "
+      "0, 1), transform 120ms ease; }\n"
+      "switch:active { transform: scale(0.92); }\n"
+      "switch slider { border-radius: 13px; min-width: 20px; min-height: 20px; "
+      "transition: all 180ms cubic-bezier(0.2, 0, 0, 1); }\n"
+      "dropdown > button { border-radius: 12px; padding: 6px 14px; border: 1px "
+      "solid alpha(currentColor, 0.14); transition: all 140ms ease; }\n"
+      "dropdown > button:hover { background-color: alpha(currentColor, 0.08); "
+      "}\n"
+      "dropdown > button:active { transform: scale(0.95); }\n"
+      "spinbutton { border-radius: 12px; border: 1px solid alpha(currentColor, "
+      "0.14); padding: 2px; }\n"
+      "spinbutton button { border-radius: 8px; min-width: 28px; min-height: "
+      "28px; transition: all 120ms ease; }\n"
+      "spinbutton button:active { transform: scale(0.88); }\n",
+      buf);
   gtk_css_provider_load_from_string(win->css_provider, css);
   g_free(css);
 }
@@ -343,7 +401,8 @@ NullaWindow *nulla_window_new(GtkApplication *app, NullaConfig *cfg) {
   win->source_file = gtk_source_file_new();
 
   win->window = gtk_application_window_new(app);
-  gtk_window_set_default_size(GTK_WINDOW(win->window), 760, 540);
+  gtk_widget_add_css_class(win->window, "nulla-window");
+  gtk_window_set_default_size(GTK_WINDOW(win->window), 780, 560);
 
   static const GActionEntry actions[] = {
       {"new", act_new, NULL, NULL, NULL, {0}},
@@ -358,14 +417,17 @@ NullaWindow *nulla_window_new(GtkApplication *app, NullaConfig *cfg) {
                                   G_N_ELEMENTS(actions), win);
 
   GtkWidget *header = gtk_header_bar_new();
+  gtk_widget_add_css_class(header, "nulla-header");
   gtk_window_set_titlebar(GTK_WINDOW(win->window), header);
 
   GtkWidget *btn_open = gtk_button_new_from_icon_name("document-open-symbolic");
+  gtk_widget_add_css_class(btn_open, "nulla-icon-btn");
   gtk_widget_set_tooltip_text(btn_open, "Open (Ctrl+O)");
   gtk_actionable_set_action_name(GTK_ACTIONABLE(btn_open), "win.open");
   gtk_header_bar_pack_start(GTK_HEADER_BAR(header), btn_open);
 
   GtkWidget *btn_menu = gtk_menu_button_new();
+  gtk_widget_add_css_class(btn_menu, "nulla-icon-btn");
   gtk_menu_button_set_icon_name(GTK_MENU_BUTTON(btn_menu),
                                 "open-menu-symbolic");
   gtk_widget_set_tooltip_text(btn_menu, "Menu");
@@ -375,6 +437,7 @@ NullaWindow *nulla_window_new(GtkApplication *app, NullaConfig *cfg) {
   gtk_header_bar_pack_end(GTK_HEADER_BAR(header), btn_menu);
 
   GtkWidget *btn_save = gtk_button_new_from_icon_name("document-save-symbolic");
+  gtk_widget_add_css_class(btn_save, "nulla-icon-btn");
   gtk_widget_set_tooltip_text(btn_save, "Save (Ctrl+S)");
   gtk_actionable_set_action_name(GTK_ACTIONABLE(btn_save), "win.save");
   gtk_header_bar_pack_end(GTK_HEADER_BAR(header), btn_save);
@@ -385,15 +448,16 @@ NullaWindow *nulla_window_new(GtkApplication *app, NullaConfig *cfg) {
 
   gtk_widget_add_css_class(win->view, "nulla-editor");
   gtk_text_view_set_monospace(GTK_TEXT_VIEW(win->view), TRUE);
-  gtk_text_view_set_left_margin(GTK_TEXT_VIEW(win->view), 6);
-  gtk_text_view_set_right_margin(GTK_TEXT_VIEW(win->view), 6);
-  gtk_text_view_set_top_margin(GTK_TEXT_VIEW(win->view), 6);
-  gtk_text_view_set_bottom_margin(GTK_TEXT_VIEW(win->view), 6);
+  gtk_text_view_set_left_margin(GTK_TEXT_VIEW(win->view), 10);
+  gtk_text_view_set_right_margin(GTK_TEXT_VIEW(win->view), 10);
+  gtk_text_view_set_top_margin(GTK_TEXT_VIEW(win->view), 8);
+  gtk_text_view_set_bottom_margin(GTK_TEXT_VIEW(win->view), 8);
   gtk_source_view_set_highlight_current_line(GTK_SOURCE_VIEW(win->view), TRUE);
   gtk_source_view_set_tab_width(GTK_SOURCE_VIEW(win->view), 4);
   gtk_source_view_set_auto_indent(GTK_SOURCE_VIEW(win->view), TRUE);
 
   GtkWidget *scroll = gtk_scrolled_window_new();
+  gtk_widget_add_css_class(scroll, "nulla-scroller");
   gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), win->view);
   gtk_window_set_child(GTK_WINDOW(win->window), scroll);
 

@@ -186,6 +186,7 @@ void nulla_settings_show(NullaWindow *win)
 	}
 
 	GtkWidget *sw = gtk_window_new();
+	gtk_widget_add_css_class(sw, "nulla-settings-window");
 	gtk_window_set_title(GTK_WINDOW(sw), "Settings");
 	gtk_window_set_transient_for(GTK_WINDOW(sw), GTK_WINDOW(win->window));
 	gtk_window_set_modal(GTK_WINDOW(sw), TRUE);
@@ -199,12 +200,13 @@ void nulla_settings_show(NullaWindow *win)
 	g_signal_connect(sw, "destroy", G_CALLBACK(on_settings_destroy), win);
 
 	GtkWidget *grid = gtk_grid_new();
-	gtk_grid_set_row_spacing(GTK_GRID(grid), 12);
-	gtk_grid_set_column_spacing(GTK_GRID(grid), 20);
-	gtk_widget_set_margin_top(grid, 18);
-	gtk_widget_set_margin_bottom(grid, 18);
-	gtk_widget_set_margin_start(grid, 18);
-	gtk_widget_set_margin_end(grid, 18);
+	gtk_widget_add_css_class(grid, "nulla-settings-card");
+	gtk_grid_set_row_spacing(GTK_GRID(grid), 14);
+	gtk_grid_set_column_spacing(GTK_GRID(grid), 24);
+	gtk_widget_set_margin_top(grid, 20);
+	gtk_widget_set_margin_bottom(grid, 20);
+	gtk_widget_set_margin_start(grid, 20);
+	gtk_widget_set_margin_end(grid, 20);
 	gtk_window_set_child(GTK_WINDOW(sw), grid);
 
 	GtkWidget *lbl_lines = gtk_label_new("Line numbers");
