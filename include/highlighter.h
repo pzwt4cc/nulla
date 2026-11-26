@@ -19,7 +19,7 @@ public:
 
     void configure(bool enabled, const QString &languageId, bool darkMode);
 
-    static QVector<NullaLangDef> supportedLanguages();
+    static const QVector<NullaLangDef> &supportedLanguages();
     static QString languageDisplayName(const QString &id);
     static QString detectLanguage(const QString &filePath, const QString &contentSample);
     static QString commentPrefix(const QString &languageId);

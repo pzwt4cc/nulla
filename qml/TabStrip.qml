@@ -5,21 +5,24 @@ Rectangle {
 
     property bool darkMode: true
     property var tabModel: null
+    property int tabCount: 1
     property int activeIndex: 0
-    property color bgShell: "#111215"
-    property color bgEditor: "#16171b"
-    property color bgHover: "#20222a"
-    property color borderSubtle: "#22242c"
-    property color borderControl: "#2c2f38"
-    property color borderHover: "#484e5e"
-    property color fgMain: "#eceef2"
-    property color fgMuted: "#8c92a0"
+    property color bgShell: "#0d0e11"
+    property color bgEditor: "#16181e"
+    property color bgHover: "#252934"
+    property color borderSubtle: "#222630"
+    property color borderControl: "#313644"
+    property color borderHover: "#52596d"
+    property color fgMain: "#f0f2f6"
+    property color fgMuted: "#9ca3b4"
 
     signal tabActivated(int index)
     signal tabClosed(int index)
     signal newTabRequested()
 
-    height: 38
+    visible: tabCount > 1
+    height: visible ? 36 : 0
+    clip: true
     color: bgShell
 
     Behavior on color {
@@ -29,7 +32,7 @@ Rectangle {
     Flickable {
         id: tabFlick
         anchors.left: parent.left
-        anchors.leftMargin: 12
+        anchors.leftMargin: 10
         anchors.right: addTabBtn.left
         anchors.rightMargin: 8
         anchors.top: parent.top
@@ -56,7 +59,7 @@ Rectangle {
         Row {
             id: tabRow
             height: parent.height
-            spacing: 6
+            spacing: 5
 
             Repeater {
                 model: root.tabModel
@@ -67,8 +70,8 @@ Rectangle {
                     readonly property bool hovered: tabMa.containsMouse || closeBtn.hovered
                     readonly property bool isDirty: session ? session.modified : false
 
-                    height: 30
-                    width: Math.min(220, Math.max(114, labelText.implicitWidth + 58))
+                    height: 28
+                    width: Math.min(220, Math.max(116, labelText.implicitWidth + 56))
                     anchors.verticalCenter: parent.verticalCenter
 
                     onIsActiveChanged: {
@@ -83,7 +86,7 @@ Rectangle {
 
                     Rectangle {
                         anchors.fill: parent
-                        radius: 8
+                        radius: 6
                         color: tabItem.isActive
                                ? root.bgEditor
                                : (tabMa.pressed ? root.borderSubtle : (tabItem.hovered ? root.bgHover : "transparent"))
@@ -110,8 +113,8 @@ Rectangle {
                             anchors.topMargin: 1
                             anchors.left: parent.left
                             anchors.right: parent.right
-                            anchors.leftMargin: 7
-                            anchors.rightMargin: 7
+                            anchors.leftMargin: 5
+                            anchors.rightMargin: 5
                             height: 1
                             color: root.darkMode ? "#12ffffff" : "#90ffffff"
                         }
@@ -125,7 +128,7 @@ Rectangle {
                             height: 2
                             radius: 1
                             color: root.fgMain
-                            opacity: 0.72
+                            opacity: 0.78
                         }
                     }
 
@@ -146,7 +149,7 @@ Rectangle {
 
                     Row {
                         anchors.left: parent.left
-                        anchors.leftMargin: 12
+                        anchors.leftMargin: 11
                         anchors.right: closeBtn.left
                         anchors.rightMargin: 4
                         anchors.verticalCenter: parent.verticalCenter
@@ -187,10 +190,10 @@ Rectangle {
                         iconOnly: true
                         ghost: true
                         dangerHover: true
-                        buttonHeight: 22
-                        buttonWidth: 22
-                        iconSize: 12
-                        cornerRadius: 6
+                        buttonHeight: 20
+                        buttonWidth: 20
+                        iconSize: 11
+                        cornerRadius: 4
                         darkMode: root.darkMode
                         onClicked: root.tabClosed(index)
 
@@ -206,15 +209,15 @@ Rectangle {
     M3Button {
         id: addTabBtn
         anchors.right: parent.right
-        anchors.rightMargin: 12
+        anchors.rightMargin: 10
         anchors.verticalCenter: parent.verticalCenter
         iconKind: "plus"
         iconOnly: true
         ghost: true
-        buttonHeight: 30
-        buttonWidth: 30
+        buttonHeight: 28
+        buttonWidth: 28
         iconSize: 15
-        cornerRadius: 8
+        cornerRadius: 6
         darkMode: root.darkMode
         tooltipText: "New Tab (Ctrl+T)"
         onClicked: root.newTabRequested()

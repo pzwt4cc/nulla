@@ -8,20 +8,20 @@ Item {
 
     signal toggled(bool newValue)
 
-    implicitWidth: 42
+    implicitWidth: 44
     implicitHeight: 24
 
     readonly property color trackBorderOff: darkMode ? (ma.containsMouse ? "#565d6e" : "#383c47") : (ma.containsMouse ? "#788092" : "#b5bac6")
-    readonly property color trackBorderOn: darkMode ? "#eceef2" : "#14161a"
+    readonly property color trackBorderOn: darkMode ? "#f0f2f6" : "#14161a"
     readonly property color trackFillOff: darkMode ? "#131418" : "#eceef2"
-    readonly property color trackFillOn: darkMode ? "#eceef2" : "#14161a"
+    readonly property color trackFillOn: darkMode ? "#f0f2f6" : "#14161a"
     readonly property color thumbOff: darkMode ? (ma.containsMouse ? "#a8b0bf" : "#7f8694") : (ma.containsMouse ? "#454b57" : "#6b7280")
     readonly property color thumbOn: darkMode ? "#111215" : "#ffffff"
 
     Rectangle {
         id: track
         anchors.fill: parent
-        radius: 8
+        radius: 10
         color: root.checked ? root.trackFillOn : root.trackFillOff
         border.width: 1.25
         border.color: root.checked ? root.trackBorderOn : root.trackBorderOff
@@ -41,7 +41,7 @@ Item {
             id: thumb
             width: 16
             height: 16
-            radius: 5
+            radius: 7
             anchors.verticalCenter: parent.verticalCenter
             x: root.checked ? (parent.width - width - 4) : 4
             color: root.checked ? root.thumbOn : root.thumbOff

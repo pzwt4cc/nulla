@@ -184,16 +184,25 @@ bool TabSession::loadFile(const QString &rawPath, bool allowMissing) {
     const QString text = QString::fromUtf8(bytes);
 
     m_loading = true;
+    td->clear();
+    m_filePath = absPath;
+    if (m_highlighter) {
+        const QString resolved = !m_syntaxEnabled
+                                     ? QStringLiteral("plain")
+                                     : (m_languageId != QStringLiteral("auto")
+                                            ? m_languageId
+                                            : NullaHighlighter::detectLanguage(absPath, text.left(4096)));
+        m_resolvedLanguageId = resolved;
+        m_highlighter->configure(m_syntaxEnabled, m_resolvedLanguageId, m_darkMode);
+    }
     td->setPlainText(text);
     td->clearUndoRedoStacks();
     td->setModified(false);
     m_loading = false;
 
-    m_filePath = absPath;
     m_modified = false;
     m_cursorLine = 1;
     m_cursorColumn = 1;
-    applyHighlighter(true);
     emit fileInfoChanged();
     emit modifiedChanged();
     emit languageStatusChanged();

@@ -21,7 +21,7 @@ Item {
     property real horizontalPadding: 10
     property string tooltipText: ""
     property int fontPixelSize: 12
-    property int cornerRadius: 8
+    property int cornerRadius: 5
     property int iconSize: 14
 
     signal clicked()
@@ -89,6 +89,12 @@ Item {
         if (kind === "search") {
             return '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>'
         }
+        if (kind === "folder") {
+            return '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'
+        }
+        if (kind === "save") {
+            return '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>'
+        }
         return ""
     }
 
@@ -130,7 +136,7 @@ Item {
                 return fillAccent
             }
             if (elevated) {
-                return darkMode ? "#181a20" : "#ffffff"
+                return darkMode ? "#1c1f27" : "#ffffff"
             }
             return "transparent"
         }

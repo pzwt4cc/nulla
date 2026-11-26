@@ -96,7 +96,7 @@ Item {
                     ghost: true
                     darkMode: root.darkMode
                     buttonHeight: 28
-                    cornerRadius: 8
+                    cornerRadius: 9
                     onClicked: root.closed()
                 }
             }
@@ -122,7 +122,7 @@ Item {
                 Rectangle {
                     width: parent.width
                     height: appearanceCol.implicitHeight
-                    radius: 9
+                    radius: 10
                     color: root.bgGroup
                     border.width: 1
                     border.color: root.borderGroup
@@ -151,7 +151,7 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 height: 30
                                 width: themeRow.implicitWidth + 4
-                                radius: 8
+                                radius: 10
                                 color: darkMode ? "#1a1c22" : "#eceef3"
                                 border.width: 1
                                 border.color: root.borderGroup
@@ -168,7 +168,7 @@ Item {
                                         darkMode: root.darkMode
                                         buttonHeight: 26
                                         horizontalPadding: 11
-                                        cornerRadius: 6
+                                        cornerRadius: 9
                                         onClicked: if (root.backend) root.backend.themeMode = 0
                                     }
                                     M3Button {
@@ -178,7 +178,7 @@ Item {
                                         darkMode: root.darkMode
                                         buttonHeight: 26
                                         horizontalPadding: 11
-                                        cornerRadius: 6
+                                        cornerRadius: 9
                                         onClicked: if (root.backend) root.backend.themeMode = 2
                                     }
                                     M3Button {
@@ -188,7 +188,7 @@ Item {
                                         darkMode: root.darkMode
                                         buttonHeight: 26
                                         horizontalPadding: 11
-                                        cornerRadius: 6
+                                        cornerRadius: 9
                                         onClicked: if (root.backend) root.backend.themeMode = 1
                                     }
                                 }
@@ -221,7 +221,7 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 height: 30
                                 width: zoomRow.implicitWidth + 4
-                                radius: 8
+                                radius: 10
                                 color: darkMode ? "#1a1c22" : "#eceef3"
                                 border.width: 1
                                 border.color: root.borderGroup
@@ -238,7 +238,7 @@ Item {
                                         darkMode: root.darkMode
                                         buttonHeight: 26
                                         buttonWidth: 28
-                                        cornerRadius: 6
+                                        cornerRadius: 9
                                         onClicked: if (root.backend) root.backend.zoomOut()
                                     }
 
@@ -255,7 +255,7 @@ Item {
                                         darkMode: root.darkMode
                                         buttonHeight: 26
                                         horizontalPadding: 12
-                                        cornerRadius: 6
+                                        cornerRadius: 9
                                         tooltipText: "Reset (Ctrl+0)"
                                         onClicked: if (root.backend) root.backend.zoomReset()
                                     }
@@ -274,7 +274,7 @@ Item {
                                         darkMode: root.darkMode
                                         buttonHeight: 26
                                         buttonWidth: 28
-                                        cornerRadius: 6
+                                        cornerRadius: 9
                                         onClicked: if (root.backend) root.backend.zoomIn()
                                     }
                                 }
@@ -294,7 +294,7 @@ Item {
                 Rectangle {
                     width: parent.width
                     height: editorCol.implicitHeight
-                    radius: 9
+                    radius: 10
                     color: root.bgGroup
                     border.width: 1
                     border.color: root.borderGroup

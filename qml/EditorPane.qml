@@ -530,7 +530,7 @@ Item {
 
                     onCursorRectangleChanged: {
                         syncCursorBand()
-                        if (suppressCursorScroll) {
+                        if (suppressCursorScroll || flick.height <= 24 || flick.width <= 24) {
                             return
                         }
                         var r = cursorRectangle

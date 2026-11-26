@@ -6,13 +6,13 @@ Rectangle {
     property bool darkMode: true
     property var activeTab: null
     property int zoomPercent: 100
-    property color bgShell: "#111215"
-    property color bgSurfaceElev: "#181a20"
-    property color borderSubtle: "#22242c"
-    property color borderControl: "#2c2f38"
-    property color fgMain: "#eceef2"
-    property color fgMuted: "#8c92a0"
-    property color fgGutter: "#4a4f5c"
+    property color bgShell: "#0d0e11"
+    property color bgSurfaceElev: "#1c1f27"
+    property color borderSubtle: "#222630"
+    property color borderControl: "#313644"
+    property color fgMain: "#f0f2f6"
+    property color fgMuted: "#9ca3b4"
+    property color fgGutter: "#565d6e"
 
     signal gotoLineClicked()
     signal languageClicked()
@@ -20,7 +20,7 @@ Rectangle {
     signal zoomOutRequested()
     signal zoomResetRequested()
 
-    height: 38
+    height: 36
     color: bgShell
 
     Behavior on color {
@@ -36,11 +36,11 @@ Rectangle {
 
     Rectangle {
         anchors.left: parent.left
-        anchors.leftMargin: 12
+        anchors.leftMargin: 10
         anchors.verticalCenter: parent.verticalCenter
-        height: 28
+        height: 26
         width: leftInfoRow.implicitWidth + 4
-        radius: 8
+        radius: 6
         color: root.bgSurfaceElev
         border.width: 1
         border.color: root.borderControl
@@ -57,8 +57,8 @@ Rectangle {
             anchors.topMargin: 1
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.leftMargin: 7
-            anchors.rightMargin: 7
+            anchors.leftMargin: 5
+            anchors.rightMargin: 5
             height: 1
             color: root.darkMode ? "#12ffffff" : "#80ffffff"
         }
@@ -74,17 +74,17 @@ Rectangle {
                       ", Col " + (root.activeTab ? root.activeTab.cursorColumn : 1)
                 ghost: true
                 darkMode: root.darkMode
-                buttonHeight: 24
-                horizontalPadding: 10
+                buttonHeight: 22
+                horizontalPadding: 9
                 fontPixelSize: 12
-                cornerRadius: 6
+                cornerRadius: 4
                 tooltipText: "Go to Line (Ctrl+G)"
                 onClicked: root.gotoLineClicked()
             }
 
             Rectangle {
                 width: 1
-                height: 14
+                height: 12
                 anchors.verticalCenter: parent.verticalCenter
                 color: root.borderSubtle
             }
@@ -95,14 +95,14 @@ Rectangle {
                 text: lines + (lines === 1 ? " line" : " lines")
                 color: root.fgMuted
                 font.pixelSize: 12
-                leftPadding: 10
-                rightPadding: 10
+                leftPadding: 9
+                rightPadding: 9
             }
 
             Rectangle {
                 visible: root.activeTab ? root.activeTab.modified : false
                 width: 1
-                height: 14
+                height: 12
                 anchors.verticalCenter: parent.verticalCenter
                 color: root.borderSubtle
             }
@@ -111,8 +111,8 @@ Rectangle {
                 visible: root.activeTab ? root.activeTab.modified : false
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 6
-                leftPadding: 10
-                rightPadding: 10
+                leftPadding: 9
+                rightPadding: 9
 
                 Rectangle {
                     width: 6
@@ -135,7 +135,7 @@ Rectangle {
 
     Row {
         anchors.right: parent.right
-        anchors.rightMargin: 12
+        anchors.rightMargin: 10
         anchors.verticalCenter: parent.verticalCenter
         spacing: 8
 
@@ -147,19 +147,19 @@ Rectangle {
             iconSize: 12
             elevated: true
             darkMode: root.darkMode
-            buttonHeight: 28
-            horizontalPadding: 12
+            buttonHeight: 26
+            horizontalPadding: 11
             fontPixelSize: 12
-            cornerRadius: 8
+            cornerRadius: 6
             tooltipText: "Change syntax language"
             onClicked: root.languageClicked()
         }
 
         Rectangle {
             anchors.verticalCenter: parent.verticalCenter
-            height: 28
+            height: 26
             width: zoomPillRow.implicitWidth + 4
-            radius: 8
+            radius: 6
             color: root.bgSurfaceElev
             border.width: 1
             border.color: root.borderControl
@@ -176,8 +176,8 @@ Rectangle {
                 anchors.topMargin: 1
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.leftMargin: 7
-                anchors.rightMargin: 7
+                anchors.leftMargin: 5
+                anchors.rightMargin: 5
                 height: 1
                 color: root.darkMode ? "#12ffffff" : "#80ffffff"
             }
@@ -192,17 +192,17 @@ Rectangle {
                     iconOnly: true
                     ghost: true
                     darkMode: root.darkMode
-                    buttonHeight: 24
-                    buttonWidth: 26
+                    buttonHeight: 22
+                    buttonWidth: 24
                     iconSize: 12
-                    cornerRadius: 6
+                    cornerRadius: 4
                     tooltipText: "Zoom Out (Ctrl+-)"
                     onClicked: root.zoomOutRequested()
                 }
 
                 Rectangle {
                     width: 1
-                    height: 14
+                    height: 12
                     anchors.verticalCenter: parent.verticalCenter
                     color: root.borderSubtle
                 }
@@ -211,17 +211,17 @@ Rectangle {
                     text: root.zoomPercent + "%"
                     ghost: true
                     darkMode: root.darkMode
-                    buttonHeight: 24
-                    horizontalPadding: 10
+                    buttonHeight: 22
+                    horizontalPadding: 9
                     fontPixelSize: 12
-                    cornerRadius: 6
+                    cornerRadius: 4
                     tooltipText: "Reset Zoom (Ctrl+0)"
                     onClicked: root.zoomResetRequested()
                 }
 
                 Rectangle {
                     width: 1
-                    height: 14
+                    height: 12
                     anchors.verticalCenter: parent.verticalCenter
                     color: root.borderSubtle
                 }
@@ -231,10 +231,10 @@ Rectangle {
                     iconOnly: true
                     ghost: true
                     darkMode: root.darkMode
-                    buttonHeight: 24
-                    buttonWidth: 26
+                    buttonHeight: 22
+                    buttonWidth: 24
                     iconSize: 12
-                    cornerRadius: 6
+                    cornerRadius: 4
                     tooltipText: "Zoom In (Ctrl++)"
                     onClicked: root.zoomInRequested()
                 }

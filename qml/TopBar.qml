@@ -9,12 +9,12 @@ Rectangle {
     property bool isMaximized: false
     property bool menuOpened: false
 
-    property color bgHeader: "#111215"
-    property color bgSurfaceElev: "#181a20"
-    property color borderSubtle: "#22242c"
-    property color borderControl: "#2c2f38"
-    property color fgMain: "#eceef2"
-    property color fgMuted: "#8c92a0"
+    property color bgHeader: "#0d0e11"
+    property color bgSurfaceElev: "#1c1f27"
+    property color borderSubtle: "#222630"
+    property color borderControl: "#313644"
+    property color fgMain: "#f0f2f6"
+    property color fgMuted: "#9ca3b4"
 
     signal moveWindowRequested()
     signal toggleMaximizeRequested()
@@ -27,7 +27,7 @@ Rectangle {
     signal settingsRequested()
     signal menuToggleRequested(real anchorX)
 
-    height: 50
+    height: 48
     color: bgHeader
 
     Behavior on color {
@@ -43,11 +43,11 @@ Rectangle {
     Rectangle {
         id: actionGroup
         anchors.left: parent.left
-        anchors.leftMargin: 12
+        anchors.leftMargin: 10
         anchors.verticalCenter: parent.verticalCenter
-        height: 34
+        height: 32
         width: groupRow.implicitWidth + 4
-        radius: 10
+        radius: 6
         color: root.bgSurfaceElev
         border.width: 1
         border.color: root.borderControl
@@ -64,8 +64,8 @@ Rectangle {
             anchors.topMargin: 1
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.leftMargin: 9
-            anchors.rightMargin: 9
+            anchors.leftMargin: 5
+            anchors.rightMargin: 5
             height: 1
             color: root.darkMode ? "#12ffffff" : "#80ffffff"
         }
@@ -79,10 +79,10 @@ Rectangle {
                 iconKind: "plus"
                 iconOnly: true
                 ghost: true
-                buttonHeight: 30
-                buttonWidth: 32
+                buttonHeight: 28
+                buttonWidth: 30
                 iconSize: 15
-                cornerRadius: 7
+                cornerRadius: 4
                 darkMode: root.darkMode
                 tooltipText: "New Tab (Ctrl+T)"
                 onClicked: root.newTabRequested()
@@ -96,12 +96,14 @@ Rectangle {
             }
 
             M3Button {
+                iconKind: "folder"
                 text: "Open"
                 ghost: true
-                buttonHeight: 30
-                horizontalPadding: 13
-                fontPixelSize: 13
-                cornerRadius: 7
+                buttonHeight: 28
+                horizontalPadding: 11
+                iconSize: 14
+                fontPixelSize: 12
+                cornerRadius: 4
                 darkMode: root.darkMode
                 tooltipText: "Open File (Ctrl+O)"
                 onClicked: root.openFileRequested()
@@ -116,14 +118,15 @@ Rectangle {
 
             M3Button {
                 readonly property bool isDirty: root.activeTab ? root.activeTab.modified : false
+                iconKind: "save"
                 text: "Save"
                 ghost: !isDirty
-                accent: isDirty
-                showDot: isDirty
-                buttonHeight: 30
-                horizontalPadding: 13
-                fontPixelSize: 13
-                cornerRadius: 7
+                primaryFill: isDirty
+                buttonHeight: 28
+                horizontalPadding: 11
+                iconSize: 14
+                fontPixelSize: 12
+                cornerRadius: 4
                 darkMode: root.darkMode
                 tooltipText: "Save File (Ctrl+S)"
                 onClicked: root.saveFileRequested()
@@ -131,41 +134,19 @@ Rectangle {
         }
     }
 
-    Rectangle {
+    Item {
         id: centerBadge
         readonly property bool dirty: root.activeTab ? root.activeTab.modified : false
-        readonly property real fixedContentWidth: 15 + 8 + (dirty ? 14 : 0)
-        readonly property real availableSpan: Math.max(64, root.width - actionGroup.width - rightControls.width - 44)
-        readonly property real naturalWidth: 24 + fixedContentWidth + titleLabel.implicitWidth
+        readonly property real fixedContentWidth: 16 + 8 + (dirty ? 14 : 0)
+        readonly property real availableSpan: Math.max(64, root.width - actionGroup.width - rightControls.width - 40)
+        readonly property real naturalWidth: 16 + fixedContentWidth + titleLabel.implicitWidth
 
         y: (parent.height - height) * 0.5
         x: Math.max(actionGroup.x + actionGroup.width + 10,
                     Math.min(rightControls.x - width - 10, (root.width - width) * 0.5))
-        height: 32
+        height: 28
         width: Math.min(naturalWidth, availableSpan)
-        radius: 9
         clip: true
-        color: root.bgSurfaceElev
-        border.width: 1
-        border.color: dirty ? root.borderControl : root.borderSubtle
-
-        Behavior on color {
-            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
-        }
-        Behavior on border.color {
-            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
-        }
-
-        Rectangle {
-            anchors.top: parent.top
-            anchors.topMargin: 1
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.leftMargin: 9
-            anchors.rightMargin: 9
-            height: 1
-            color: root.darkMode ? "#10ffffff" : "#80ffffff"
-        }
 
         Row {
             id: titleRow
@@ -174,21 +155,21 @@ Rectangle {
 
             Image {
                 source: "qrc:/assets/nulla.svg"
-                width: 15
-                height: 15
-                sourceSize: Qt.size(30, 30)
+                width: 16
+                height: 16
+                sourceSize: Qt.size(32, 32)
                 anchors.verticalCenter: parent.verticalCenter
-                opacity: root.darkMode ? 0.90 : 0.85
+                opacity: root.darkMode ? 0.92 : 0.88
             }
 
             Text {
                 id: titleLabel
-                width: Math.max(12, Math.min(implicitWidth, centerBadge.width - 24 - centerBadge.fixedContentWidth))
+                width: Math.max(12, Math.min(implicitWidth, centerBadge.width - 16 - centerBadge.fixedContentWidth))
                 elide: Text.ElideMiddle
                 text: root.activeTab ? root.activeTab.fileName : "Untitled"
-                color: centerBadge.dirty ? root.fgMain : root.fgMuted
+                color: root.fgMain
                 font.pixelSize: 13
-                font.weight: centerBadge.dirty ? Font.DemiBold : Font.Medium
+                font.weight: Font.DemiBold
                 anchors.verticalCenter: parent.verticalCenter
             }
 
@@ -206,15 +187,15 @@ Rectangle {
     Row {
         id: rightControls
         anchors.right: parent.right
-        anchors.rightMargin: 12
+        anchors.rightMargin: 10
         anchors.verticalCenter: parent.verticalCenter
         spacing: 8
 
         Rectangle {
             id: utilityGroup
-            height: 34
+            height: 32
             width: utilRow.implicitWidth + 4
-            radius: 9
+            radius: 6
             color: root.bgSurfaceElev
             border.width: 1
             border.color: root.borderControl
@@ -231,8 +212,8 @@ Rectangle {
                 anchors.topMargin: 1
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.leftMargin: 9
-                anchors.rightMargin: 9
+                anchors.leftMargin: 5
+                anchors.rightMargin: 5
                 height: 1
                 color: root.darkMode ? "#12ffffff" : "#80ffffff"
             }
@@ -246,10 +227,10 @@ Rectangle {
                     iconKind: "search"
                     iconOnly: true
                     ghost: true
-                    buttonHeight: 30
-                    buttonWidth: 32
+                    buttonHeight: 28
+                    buttonWidth: 30
                     iconSize: 15
-                    cornerRadius: 7
+                    cornerRadius: 4
                     darkMode: root.darkMode
                     tooltipText: "Find (Ctrl+F)"
                     onClicked: root.findRequested()
@@ -266,10 +247,10 @@ Rectangle {
                     iconKind: "gear"
                     iconOnly: true
                     ghost: true
-                    buttonHeight: 30
-                    buttonWidth: 32
+                    buttonHeight: 28
+                    buttonWidth: 30
                     iconSize: 15
-                    cornerRadius: 7
+                    cornerRadius: 4
                     darkMode: root.darkMode
                     tooltipText: "Settings (Ctrl+,)"
                     onClicked: root.settingsRequested()
@@ -288,10 +269,10 @@ Rectangle {
                     iconOnly: true
                     ghost: !root.menuOpened
                     activeChip: root.menuOpened
-                    buttonHeight: 30
-                    buttonWidth: 32
+                    buttonHeight: 28
+                    buttonWidth: 30
                     iconSize: 15
-                    cornerRadius: 7
+                    cornerRadius: 4
                     darkMode: root.darkMode
                     tooltipText: "Menu"
                     onClicked: root.menuToggleRequested(rightControls.x + utilityGroup.x + utilRow.x + menuBtn.x + menuBtn.width)
@@ -301,9 +282,9 @@ Rectangle {
 
         Rectangle {
             visible: root.showWindowControls
-            height: 34
+            height: 32
             width: winRow.implicitWidth + 4
-            radius: 9
+            radius: 6
             color: root.bgSurfaceElev
             border.width: 1
             border.color: root.borderControl
@@ -320,8 +301,8 @@ Rectangle {
                 anchors.topMargin: 1
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.leftMargin: 9
-                anchors.rightMargin: 9
+                anchors.leftMargin: 5
+                anchors.rightMargin: 5
                 height: 1
                 color: root.darkMode ? "#12ffffff" : "#80ffffff"
             }
@@ -335,10 +316,10 @@ Rectangle {
                     iconKind: "minus"
                     iconOnly: true
                     ghost: true
-                    buttonHeight: 30
-                    buttonWidth: 32
+                    buttonHeight: 28
+                    buttonWidth: 30
                     iconSize: 14
-                    cornerRadius: 7
+                    cornerRadius: 4
                     darkMode: root.darkMode
                     tooltipText: "Minimize"
                     onClicked: root.minimizeRequested()
@@ -355,10 +336,10 @@ Rectangle {
                     iconKind: root.isMaximized ? "restore" : "max"
                     iconOnly: true
                     ghost: true
-                    buttonHeight: 30
-                    buttonWidth: 32
+                    buttonHeight: 28
+                    buttonWidth: 30
                     iconSize: 14
-                    cornerRadius: 7
+                    cornerRadius: 4
                     darkMode: root.darkMode
                     tooltipText: root.isMaximized ? "Restore" : "Maximize"
                     onClicked: root.toggleMaximizeRequested()
@@ -375,10 +356,10 @@ Rectangle {
                     iconKind: "close"
                     iconOnly: true
                     ghost: true
-                    buttonHeight: 30
-                    buttonWidth: 32
+                    buttonHeight: 28
+                    buttonWidth: 30
                     iconSize: 14
-                    cornerRadius: 7
+                    cornerRadius: 4
                     darkMode: root.darkMode
                     dangerHover: true
                     tooltipText: "Close"

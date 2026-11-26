@@ -7,8 +7,8 @@
 NullaHighlighter::NullaHighlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent) {}
 
-QVector<NullaLangDef> NullaHighlighter::supportedLanguages() {
-    return {
+const QVector<NullaLangDef> &NullaHighlighter::supportedLanguages() {
+    static const QVector<NullaLangDef> langs = {
         {QStringLiteral("plain"), QStringLiteral("Plain Text")},
         {QStringLiteral("bash"), QStringLiteral("Bash / Shell")},
         {QStringLiteral("c"), QStringLiteral("C / C++")},
@@ -25,6 +25,7 @@ QVector<NullaLangDef> NullaHighlighter::supportedLanguages() {
         {QStringLiteral("toml"), QStringLiteral("TOML")},
         {QStringLiteral("yaml"), QStringLiteral("YAML")}
     };
+    return langs;
 }
 
 QString NullaHighlighter::languageDisplayName(const QString &id) {
@@ -286,7 +287,10 @@ void NullaHighlighter::rebuildRules() {
     m_commentFormat.setFontItalic(true);
 
     auto addRule = [&](const QString &expr, const QTextCharFormat &fmt, int group = 0) {
-        QRegularExpression re(expr);
+        QRegularExpression::PatternOptions opts =
+            (group == 0) ? QRegularExpression::DontCaptureOption : QRegularExpression::NoPatternOption;
+        QRegularExpression re(expr, opts);
+        re.optimize();
         m_rules.append({re, fmt, group});
     };
 
@@ -461,6 +465,11 @@ void NullaHighlighter::rebuildRules() {
 void NullaHighlighter::highlightBlock(const QString &text) {
     if (!m_enabled || m_languageId == QStringLiteral("plain")) {
         setCurrentBlockState(0);
+        return;
+    }
+    if (text.isEmpty()) {
+        const int prev = previousBlockState();
+        setCurrentBlockState((prev == 1 || prev == 2) ? prev : 0);
         return;
     }
 

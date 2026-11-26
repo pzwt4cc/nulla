@@ -62,7 +62,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width: Math.min(264, Math.max(120, root.width - 240))
                     height: 26
-                    radius: 7
+                    radius: 6
                     color: root.bgEditor
                     border.width: 1
                     border.color: findInput.activeFocus ? root.borderFocus : root.borderControl
@@ -131,7 +131,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     height: 26
                     width: findNavRow.implicitWidth + 2
-                    radius: 7
+                    radius: 6
                     color: root.bgSurfaceElev
                     border.width: 1
                     border.color: root.borderControl
@@ -146,7 +146,7 @@ Rectangle {
                             iconOnly: true
                             ghost: true
                             buttonHeight: 24
-                            cornerRadius: 6
+                            cornerRadius: 5
                             darkMode: root.darkMode
                             tooltipText: "Previous (Shift+Enter)"
                             onClicked: root.findNextRequested(true)
@@ -164,7 +164,7 @@ Rectangle {
                             iconOnly: true
                             ghost: true
                             buttonHeight: 24
-                            cornerRadius: 6
+                            cornerRadius: 5
                             darkMode: root.darkMode
                             tooltipText: "Next (Enter)"
                             onClicked: root.findNextRequested(false)
@@ -180,7 +180,7 @@ Rectangle {
                     activeChip: root.replaceMode
                     buttonHeight: 26
                     horizontalPadding: 9
-                    cornerRadius: 7
+                    cornerRadius: 5
                     darkMode: root.darkMode
                     tooltipText: "Toggle Replace (Ctrl+H)"
                     onClicked: root.replaceMode = !root.replaceMode
@@ -197,7 +197,7 @@ Rectangle {
                     iconOnly: true
                     ghost: true
                     buttonHeight: 26
-                    cornerRadius: 7
+                    cornerRadius: 5
                     darkMode: root.darkMode
                     tooltipText: "Close (Esc)"
                     onClicked: root.closed()
@@ -220,7 +220,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width: Math.min(264, Math.max(120, root.width - 240))
                     height: 26
-                    radius: 7
+                    radius: 6
                     color: root.bgEditor
                     border.width: 1
                     border.color: replaceInput.activeFocus ? root.borderFocus : root.borderControl
@@ -262,7 +262,7 @@ Rectangle {
                     ghost: true
                     buttonHeight: 26
                     horizontalPadding: 10
-                    cornerRadius: 7
+                    cornerRadius: 5
                     darkMode: root.darkMode
                     onClicked: root.replaceOneRequested(replaceInput.text)
                 }
@@ -273,7 +273,7 @@ Rectangle {
                     ghost: true
                     buttonHeight: 26
                     horizontalPadding: 10
-                    cornerRadius: 7
+                    cornerRadius: 5
                     darkMode: root.darkMode
                     onClicked: root.replaceAllRequested(replaceInput.text)
                 }

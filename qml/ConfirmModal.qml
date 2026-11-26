@@ -98,7 +98,8 @@ Item {
                     text: "Cancel"
                     ghost: true
                     darkMode: root.darkMode
-                    buttonHeight: 30
+                    buttonHeight: 32
+                    cornerRadius: 9
                     horizontalPadding: 12
                     onClicked: root.cancelled()
                 }
@@ -109,7 +110,8 @@ Item {
                     elevated: true
                     darkMode: root.darkMode
                     dangerHover: true
-                    buttonHeight: 30
+                    buttonHeight: 32
+                    cornerRadius: 9
                     horizontalPadding: 12
                     onClicked: root.discarded()
                 }
@@ -118,7 +120,8 @@ Item {
                     text: root.errorOnly ? "OK" : "Save"
                     darkMode: root.darkMode
                     primaryFill: true
-                    buttonHeight: 30
+                    buttonHeight: 32
+                    cornerRadius: 9
                     horizontalPadding: 14
                     onClicked: root.errorOnly ? root.cancelled() : root.saved()
                 }

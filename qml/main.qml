@@ -21,21 +21,21 @@ ApplicationWindow {
     property real menuAnchorX: 0
 
     readonly property bool dark: backend.effectiveDark
-    readonly property color bgShell: dark ? "#111215" : "#f2f3f6"
-    readonly property color bgHeader: dark ? "#111215" : "#f2f3f6"
-    readonly property color bgEditor: dark ? "#16171b" : "#fbfbfc"
-    readonly property color bgGutter: dark ? "#131418" : "#f6f7f9"
-    readonly property color bgSurfaceElev: dark ? "#181a20" : "#ffffff"
-    readonly property color bgHover: dark ? "#20222a" : "#e7e9ef"
-    readonly property color bgLineHighlight: dark ? "#1c1e24" : "#eff1f5"
-    readonly property color borderSubtle: dark ? "#22242c" : "#e0e3eb"
-    readonly property color borderControl: dark ? "#2c2f38" : "#cfd4de"
-    readonly property color borderHover: dark ? "#484e5e" : "#8b93a4"
-    readonly property color borderFocus: dark ? "#687082" : "#737b8c"
-    readonly property color fgMain: dark ? "#eceef2" : "#14161a"
-    readonly property color fgMuted: dark ? "#8c92a0" : "#606674"
-    readonly property color fgGutter: dark ? "#4a4f5c" : "#9ba1ae"
-    readonly property color selBg: dark ? "#2a3347" : "#dbe4f5"
+    readonly property color bgShell: dark ? "#0d0e11" : "#ebedf2"
+    readonly property color bgHeader: dark ? "#0d0e11" : "#ebedf2"
+    readonly property color bgEditor: dark ? "#16181e" : "#ffffff"
+    readonly property color bgGutter: dark ? "#121318" : "#f5f6f9"
+    readonly property color bgSurfaceElev: dark ? "#1c1f27" : "#ffffff"
+    readonly property color bgHover: dark ? "#252934" : "#e2e5ed"
+    readonly property color bgLineHighlight: dark ? "#1f232c" : "#eff2f8"
+    readonly property color borderSubtle: dark ? "#222630" : "#dadde6"
+    readonly property color borderControl: dark ? "#313644" : "#c6ccd8"
+    readonly property color borderHover: dark ? "#52596d" : "#8b93a5"
+    readonly property color borderFocus: dark ? "#6e768b" : "#687183"
+    readonly property color fgMain: dark ? "#f0f2f6" : "#14161a"
+    readonly property color fgMuted: dark ? "#9ca3b4" : "#565e6d"
+    readonly property color fgGutter: dark ? "#565d6e" : "#8c93a3"
+    readonly property color selBg: dark ? "#2a3449" : "#dbe4f5"
 
     readonly property var activePane: tabRepeater.itemAt(backend.activeTabIndex)
 
@@ -255,7 +255,7 @@ ApplicationWindow {
         id: shell
         anchors.fill: parent
         readonly property bool edgeToEdge: win.visibility === Window.Maximized || win.visibility === Window.FullScreen
-        radius: edgeToEdge ? 0 : 10
+        radius: edgeToEdge ? 0 : 7
         color: win.bgShell
         border.width: edgeToEdge ? 0 : 1
         border.color: win.borderSubtle
@@ -317,6 +317,7 @@ ApplicationWindow {
                 width: parent.width
                 darkMode: win.dark
                 tabModel: backend.tabModel
+                tabCount: backend.tabCount
                 activeIndex: backend.activeTabIndex
                 bgShell: win.bgShell
                 bgEditor: win.bgEditor
@@ -443,7 +444,7 @@ ApplicationWindow {
             }
 
             background: Rectangle {
-                radius: 10
+                radius: 7
                 color: win.bgSurfaceElev
                 border.width: 1
                 border.color: win.borderControl
@@ -488,7 +489,7 @@ ApplicationWindow {
                         Rectangle {
                             width: parent.width
                             height: 29
-                            radius: 7
+                            radius: 5
                             color: rowMa.pressed
                                    ? (win.dark ? "#282b34" : "#d8dce5")
                                    : (rowMa.containsMouse ? win.bgHover : "transparent")

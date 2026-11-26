@@ -107,7 +107,7 @@ Item {
                     ghost: true
                     darkMode: root.darkMode
                     buttonHeight: 28
-                    cornerRadius: 8
+                    cornerRadius: 9
                     onClicked: root.closed()
                 }
             }
@@ -121,7 +121,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 36
-                radius: 8
+                radius: 10
                 color: root.bgGroup
                 border.width: 1
                 border.color: langSearch.activeFocus
@@ -185,7 +185,7 @@ Item {
                 delegate: M3Button {
                     width: langList.width - 8
                     buttonHeight: 32
-                    cornerRadius: 8
+                    cornerRadius: 9
                     fontPixelSize: 13
                     text: modelData.name
                     ghost: !(root.backend && root.backend.languageId === modelData.id)
