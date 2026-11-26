@@ -443,13 +443,18 @@ Item {
                     }
                 }
 
+                FontMetrics {
+                    id: editorMetrics
+                    font: editor.font
+                }
+
                 Rectangle {
                     id: currentLineBand
                     visible: editor.activeFocus
                     x: 0
-                    y: editor.y + editor.cursorRectangle.y
+                    y: editor.y + editor.liveCursorRect.y
                     width: Math.max(flick.width, flick.contentWidth)
-                    height: Math.max(18, editor.cursorRectangle.height)
+                    height: Math.max(editorMetrics.height, editor.liveCursorRect.height)
                     color: pane.bgLineHighlight
                 }
 
@@ -482,6 +487,17 @@ Item {
 
                     property bool suppressCursorScroll: false
                     property int lastZoomPercent: pane.zoomPercent
+                    property rect liveCursorRect: Qt.rect(0, 0, 1, 18)
+
+                    function syncCursorBand() {
+                        var r = editor.positionToRectangle(editor.cursorPosition)
+                        if (r.height <= 0) {
+                            r = Qt.rect(r.x, r.y, Math.max(1, r.width), editorMetrics.height)
+                        }
+                        liveCursorRect = r
+                    }
+
+                    Component.onCompleted: Qt.callLater(syncCursorBand)
 
                     onFontChanged: {
                         if (lastZoomPercent !== pane.zoomPercent) {
@@ -489,7 +505,15 @@ Item {
                             suppressCursorScroll = true
                             zoomSuppressTimer.restart()
                         }
+                        Qt.callLater(syncCursorBand)
                     }
+
+                    onContentHeightChanged: {
+                        syncCursorBand()
+                        gutter.refresh()
+                    }
+
+                    onTextChanged: Qt.callLater(syncCursorBand)
 
                     Timer {
                         id: zoomSuppressTimer
@@ -498,12 +522,14 @@ Item {
                     }
 
                     onCursorPositionChanged: {
+                        syncCursorBand()
                         if (pane.session) {
                             pane.session.updateCursorPosition(cursorPosition)
                         }
                     }
 
                     onCursorRectangleChanged: {
+                        syncCursorBand()
                         if (suppressCursorScroll) {
                             return
                         }

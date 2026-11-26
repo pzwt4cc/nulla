@@ -47,7 +47,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         height: 34
         width: groupRow.implicitWidth + 4
-        radius: 9
+        radius: 10
         color: root.bgSurfaceElev
         border.width: 1
         border.color: root.borderControl
@@ -57,6 +57,17 @@ Rectangle {
         }
         Behavior on border.color {
             ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+        }
+
+        Rectangle {
+            anchors.top: parent.top
+            anchors.topMargin: 1
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: 9
+            anchors.rightMargin: 9
+            height: 1
+            color: root.darkMode ? "#12ffffff" : "#80ffffff"
         }
 
         Row {
@@ -145,6 +156,17 @@ Rectangle {
             ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
         }
 
+        Rectangle {
+            anchors.top: parent.top
+            anchors.topMargin: 1
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: 9
+            anchors.rightMargin: 9
+            height: 1
+            color: root.darkMode ? "#10ffffff" : "#80ffffff"
+        }
+
         Row {
             id: titleRow
             anchors.centerIn: parent
@@ -202,6 +224,17 @@ Rectangle {
             }
             Behavior on border.color {
                 ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+            }
+
+            Rectangle {
+                anchors.top: parent.top
+                anchors.topMargin: 1
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.leftMargin: 9
+                anchors.rightMargin: 9
+                height: 1
+                color: root.darkMode ? "#12ffffff" : "#80ffffff"
             }
 
             Row {
@@ -280,6 +313,17 @@ Rectangle {
             }
             Behavior on border.color {
                 ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+            }
+
+            Rectangle {
+                anchors.top: parent.top
+                anchors.topMargin: 1
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.leftMargin: 9
+                anchors.rightMargin: 9
+                height: 1
+                color: root.darkMode ? "#12ffffff" : "#80ffffff"
             }
 
             Row {

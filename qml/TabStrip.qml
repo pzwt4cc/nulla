@@ -86,17 +86,46 @@ Rectangle {
                         radius: 8
                         color: tabItem.isActive
                                ? root.bgEditor
-                               : (tabItem.hovered ? root.bgHover : "transparent")
+                               : (tabMa.pressed ? root.borderSubtle : (tabItem.hovered ? root.bgHover : "transparent"))
                         border.width: 1
                         border.color: tabItem.isActive
                                       ? root.borderControl
-                                      : (tabItem.hovered ? root.borderHover : "transparent")
+                                      : (tabItem.hovered ? root.borderControl : "transparent")
+                        scale: tabMa.pressed ? 0.975 : 1.0
+                        transformOrigin: Item.Center
 
                         Behavior on color {
-                            ColorAnimation { duration: 105; easing.type: Easing.OutCubic }
+                            ColorAnimation { duration: 95; easing.type: Easing.OutCubic }
                         }
                         Behavior on border.color {
-                            ColorAnimation { duration: 105; easing.type: Easing.OutCubic }
+                            ColorAnimation { duration: 95; easing.type: Easing.OutCubic }
+                        }
+                        Behavior on scale {
+                            NumberAnimation { duration: 75; easing.type: Easing.OutCubic }
+                        }
+
+                        Rectangle {
+                            visible: tabItem.isActive
+                            anchors.top: parent.top
+                            anchors.topMargin: 1
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.leftMargin: 7
+                            anchors.rightMargin: 7
+                            height: 1
+                            color: root.darkMode ? "#12ffffff" : "#90ffffff"
+                        }
+
+                        Rectangle {
+                            visible: tabItem.isActive
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 2
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width: 16
+                            height: 2
+                            radius: 1
+                            color: root.fgMain
+                            opacity: 0.72
                         }
                     }
 

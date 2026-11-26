@@ -237,12 +237,10 @@ ApplicationWindow {
                 confirmModal.open = false
                 win.pendingAction = ""
                 win.pendingTabIndex = -1
+            } else if (languageModal.open) {
+                languageModal.open = false
             } else if (settingsModal.open) {
-                if (settingsModal.langPickerOpen) {
-                    settingsModal.langPickerOpen = false
-                } else {
-                    settingsModal.open = false
-                }
+                settingsModal.open = false
             } else if (menuPopup.opened) {
                 menuPopup.close()
             } else if (findBar.open) {
@@ -419,10 +417,7 @@ ApplicationWindow {
                 fgGutter: win.fgGutter
 
                 onGotoLineClicked: openFindBar(false, true)
-                onLanguageClicked: {
-                    settingsModal.open = true
-                    settingsModal.langPickerOpen = true
-                }
+                onLanguageClicked: languageModal.open = true
                 onZoomInRequested: backend.zoomIn()
                 onZoomOutRequested: backend.zoomOut()
                 onZoomResetRequested: backend.zoomReset()
@@ -448,10 +443,22 @@ ApplicationWindow {
             }
 
             background: Rectangle {
-                radius: 9
+                radius: 10
                 color: win.bgSurfaceElev
                 border.width: 1
                 border.color: win.borderControl
+                clip: true
+
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.topMargin: 1
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: 10
+                    anchors.rightMargin: 10
+                    height: 1
+                    color: win.dark ? "#12ffffff" : "#80ffffff"
+                }
             }
 
             contentItem: Column {
@@ -550,6 +557,16 @@ ApplicationWindow {
 
         SettingsModal {
             id: settingsModal
+            darkMode: win.dark
+            backend: backend
+            onClosed: {
+                open = false
+                focusActiveEditor()
+            }
+        }
+
+        LanguageModal {
+            id: languageModal
             darkMode: win.dark
             backend: backend
             onClosed: {

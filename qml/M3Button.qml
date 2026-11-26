@@ -21,7 +21,7 @@ Item {
     property real horizontalPadding: 10
     property string tooltipText: ""
     property int fontPixelSize: 12
-    property int cornerRadius: 7
+    property int cornerRadius: 8
     property int iconSize: 14
 
     signal clicked()
@@ -29,17 +29,17 @@ Item {
     readonly property bool hovered: ma.containsMouse
     readonly property bool pressed: ma.pressed
 
-    readonly property color fgNormal: darkMode ? "#eceef2" : "#14161a"
-    readonly property color fgMuted: darkMode ? "#9ca2b0" : "#5a606e"
+    readonly property color fgNormal: darkMode ? "#f0f2f6" : "#14161a"
+    readonly property color fgMuted: darkMode ? "#9ca3b2" : "#585e6c"
     readonly property color fgOnPrimary: darkMode ? "#111215" : "#ffffff"
-    readonly property color borderNormal: darkMode ? "#2c2f38" : "#d0d4de"
-    readonly property color borderHover: darkMode ? "#565d6e" : "#7e8696"
-    readonly property color borderAccent: darkMode ? "#cfd4df" : "#252932"
-    readonly property color fillHover: darkMode ? "#16ffffff" : "#0e000000"
-    readonly property color fillPress: darkMode ? "#24ffffff" : "#18000000"
-    readonly property color fillAccent: darkMode ? "#12ffffff" : "#0a000000"
-    readonly property color fillChip: darkMode ? "#242730" : "#e5e8ef"
-    readonly property color fillDanger: darkMode ? "#2ee5534b" : "#1fe04840"
+    readonly property color borderNormal: darkMode ? "#2f333d" : "#cdd2dc"
+    readonly property color borderHover: darkMode ? "#61697c" : "#70788a"
+    readonly property color borderAccent: darkMode ? "#d2d7e2" : "#252932"
+    readonly property color fillHover: darkMode ? "#1cffffff" : "#10000000"
+    readonly property color fillPress: darkMode ? "#2cffffff" : "#1b000000"
+    readonly property color fillAccent: darkMode ? "#14ffffff" : "#0b000000"
+    readonly property color fillChip: darkMode ? "#262a34" : "#e3e6ee"
+    readonly property color fillDanger: darkMode ? "#34e5534b" : "#22e04840"
     readonly property color borderDanger: "#e0554d"
 
     readonly property color iconColor: {
@@ -113,8 +113,8 @@ Item {
         radius: root.cornerRadius
         color: {
             if (primaryFill) {
-                if (pressed) return darkMode ? "#c8ccd4" : "#2e323b"
-                if (hovered) return darkMode ? "#dcdde2" : "#22252c"
+                if (pressed) return darkMode ? "#c4c8d1" : "#2e323c"
+                if (hovered) return darkMode ? "#dfe2e8" : "#22252d"
                 return fgNormal
             }
             if (pressed) {
@@ -148,17 +148,31 @@ Item {
             return (hovered || pressed) ? borderHover : borderNormal
         }
 
-        scale: pressed ? 0.97 : 1.0
+        scale: pressed ? 0.955 : 1.0
         transformOrigin: Item.Center
 
         Behavior on color {
-            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
         }
         Behavior on border.color {
-            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
         }
         Behavior on scale {
-            NumberAnimation { duration: 60; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 75; easing.type: Easing.OutCubic }
+        }
+
+        Rectangle {
+            visible: !root.pressed && (root.primaryFill || root.elevated || root.activeChip || root.accent || root.hovered)
+            anchors.top: parent.top
+            anchors.topMargin: 1
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: Math.max(4, root.cornerRadius - 1)
+            anchors.rightMargin: Math.max(4, root.cornerRadius - 1)
+            height: 1
+            color: root.primaryFill
+                   ? (root.darkMode ? "#26ffffff" : "#30ffffff")
+                   : (root.darkMode ? "#12ffffff" : "#80ffffff")
         }
 
         Row {
@@ -199,7 +213,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
 
                 Behavior on color {
-                    ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+                    ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
                 }
             }
 
@@ -233,10 +247,10 @@ Item {
             font.pixelSize: 11
         }
         background: Rectangle {
-            radius: 6
+            radius: 7
             color: root.darkMode ? "#1c1e24" : "#ffffff"
             border.width: 1
-            border.color: root.darkMode ? "#2e313b" : "#d0d4de"
+            border.color: root.darkMode ? "#323642" : "#cdd2dc"
         }
     }
 }

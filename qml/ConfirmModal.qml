@@ -37,10 +37,11 @@ Item {
         width: Math.min(parent.width - 48, 396)
         height: contentCol.implicitHeight + 40
         anchors.centerIn: parent
-        radius: 10
+        radius: 12
         color: darkMode ? "#17191e" : "#ffffff"
         border.width: 1
-        border.color: darkMode ? "#2a2d36" : "#d4d8e2"
+        border.color: darkMode ? "#2c303a" : "#cfd4df"
+        clip: true
         scale: root.open ? 1.0 : 0.985
 
         Behavior on scale {
@@ -49,6 +50,17 @@ Item {
 
         MouseArea {
             anchors.fill: parent
+        }
+
+        Rectangle {
+            anchors.top: parent.top
+            anchors.topMargin: 1
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: 12
+            anchors.rightMargin: 12
+            height: 1
+            color: darkMode ? "#14ffffff" : "#90ffffff"
         }
 
         Column {
@@ -94,6 +106,7 @@ Item {
                 M3Button {
                     visible: !root.errorOnly
                     text: "Discard"
+                    elevated: true
                     darkMode: root.darkMode
                     dangerHover: true
                     buttonHeight: 30
