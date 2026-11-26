@@ -377,6 +377,9 @@ ApplicationWindow {
                 win.pendingTabIndex = -1;
             } else if (languageModal.open) {
                 languageModal.open = false;
+            } else if (settingsModal.open && settingsModal.dropdownOpen) {
+                settingsModal.closeDropdown();
+                return;
             } else if (settingsModal.open) {
                 settingsModal.open = false;
             } else if (menuPopup.opened) {
