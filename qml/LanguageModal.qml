@@ -159,7 +159,7 @@ Item {
                     onTextChanged: root.langFilter = text
                     Keys.onEscapePressed: root.closed()
                     Keys.onReturnPressed: root.selectFirstMatch()
-                    Keys.onEnterPressed: rootroot.selectFirstMatch()
+                    Keys.onEnterPressed: root.selectFirstMatch()
 
                     Text {
                         visible: langSearch.text === ""

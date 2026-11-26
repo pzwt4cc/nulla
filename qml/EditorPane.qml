@@ -100,8 +100,9 @@ Item {
             editor.insert(editor.cursorPosition, "    ");
             return;
         }
+        var adjEnd = (selEnd > selStart && text.charAt(selEnd - 1) === "\n") ? (selEnd - 1) : selEnd;
         var lineStart = selStart === 0 ? 0 : text.lastIndexOf("\n", selStart - 1) + 1;
-        var lineEnd = text.indexOf("\n", selEnd);
+        var lineEnd = text.indexOf("\n", adjEnd);
         if (lineEnd === -1) {
             lineEnd = text.length;
         }
@@ -130,8 +131,9 @@ Item {
         var text = editor.text;
         var selStart = editor.selectionStart;
         var selEnd = editor.selectionEnd;
+        var adjEnd = (selEnd > selStart && text.charAt(selEnd - 1) === "\n") ? (selEnd - 1) : selEnd;
         var first = lineBoundsAt(selStart);
-        var last = lineBoundsAt(selEnd);
+        var last = lineBoundsAt(adjEnd);
         var block = text.slice(first.start, last.end);
         editor.insert(last.end, "\n" + block);
         if (selStart === selEnd) {
@@ -243,8 +245,9 @@ Item {
         var text = editor.text;
         var selStart = editor.selectionStart;
         var selEnd = editor.selectionEnd;
+        var adjEnd = (selEnd > selStart && text.charAt(selEnd - 1) === "\n") ? (selEnd - 1) : selEnd;
         var first = lineBoundsAt(selStart);
-        var last = lineBoundsAt(selEnd);
+        var last = lineBoundsAt(adjEnd);
         var block = text.slice(first.start, last.end);
         var lines = block.split("\n");
         var allCommented = true;
@@ -1011,7 +1014,7 @@ Item {
         canPaste: editor.canPaste
         hasSelection: pane.hasSelection
         hasText: editor.length > 0
-        hasSingleLineSelection: pane.hasSelection && (!contextMenu.visible || editor.selectedText.indexOf("\n") === -1)
+        hasSingleLineSelection: pane.hasSelection && (!contextMenu.visible || (editor.selectedText.indexOf("\n") === -1 && editor.selectedText.indexOf("\u2029") === -1))
         canComment: pane.session ? (pane.session.commentPrefix !== "") : true
         bgSurfaceElev: pane.bgSurfaceElev
         bgHover: pane.bgHover

@@ -156,6 +156,14 @@ bool TabSession::loadFile(const QString &rawPath, bool allowMissing) {
   }
   const QString absPath = QFileInfo(path).absoluteFilePath();
 
+  const QFileInfo fi(absPath);
+  if (fi.isDir()) {
+    emit errorOccurred(
+        QStringLiteral("Failed to open file"),
+        QStringLiteral("Cannot open a directory: %1").arg(absPath));
+    return false;
+  }
+
   QTextDocument *td = m_quickDoc->textDocument();
   QFile file(absPath);
 
@@ -382,7 +390,8 @@ QVariantMap TabSession::findText(const QString &query, int fromPos,
     flags |= QTextDocument::FindBackward;
   }
 
-  QTextCursor found = td->find(query, fromPos, flags);
+  const int safeFrom = qBound(0, fromPos, qMax(0, td->characterCount() - 1));
+  QTextCursor found = td->find(query, safeFrom, flags);
   if (found.isNull()) {
     const int wrapPos = backward ? qMax(0, td->characterCount() - 1) : 0;
     found = td->find(query, wrapPos, flags);

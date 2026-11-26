@@ -554,7 +554,7 @@ void NullaHighlighter::highlightBlock(const QString &text) {
   }
   if (text.isEmpty()) {
     const int prev = previousBlockState();
-    setCurrentBlockState((prev == 1 || prev == 2) ? prev : 0);
+    setCurrentBlockState((prev >= 1 && prev <= 3) ? prev : 0);
     return;
   }
 
@@ -595,26 +595,42 @@ void NullaHighlighter::highlightBlock(const QString &text) {
       startIndex = text.indexOf(startTok, startIndex + commentLen);
     }
   } else if (m_hasTripleQuotes) {
-    static const QRegularExpression tqExpr(QStringLiteral("\"\"\"|'''"));
+    static const QRegularExpression dblRe(QStringLiteral("\"\"\""));
+    static const QRegularExpression sglRe(QStringLiteral("'''"));
+    static const QRegularExpression anyRe(QStringLiteral("\"\"\"|'''"));
+    const int prev = previousBlockState();
+    bool inBlock = (prev == 2 || prev == 3);
+    int delimState = inBlock ? prev : 0;
     int startIndex = 0;
-    int state = previousBlockState();
-    if (state != 2) {
-      startIndex = text.indexOf(tqExpr);
+    if (!inBlock) {
+      const QRegularExpressionMatch m = anyRe.match(text);
+      startIndex = m.capturedStart();
+      if (startIndex >= 0) {
+        delimState = (text.mid(startIndex, 3) == QStringLiteral("\"\"\"")) ? 2 : 3;
+      }
     }
     while (startIndex >= 0) {
-      const int searchFrom = (state == 2) ? startIndex : (startIndex + 3);
-      const QRegularExpressionMatch endMatch = tqExpr.match(text, searchFrom);
-      int endIndex = endMatch.capturedStart();
+      const int searchFrom = inBlock ? 0 : (startIndex + 3);
+      inBlock = false;
+      const QRegularExpression &closeRe = (delimState == 2) ? dblRe : sglRe;
+      const QRegularExpressionMatch endMatch = closeRe.match(text, searchFrom);
+      const int endIndex = endMatch.capturedStart();
       int len = 0;
       if (endIndex == -1) {
-        setCurrentBlockState(2);
+        setCurrentBlockState(delimState);
         len = text.length() - startIndex;
       } else {
         len = endIndex - startIndex + 3;
       }
       setFormat(startIndex, len, m_stringFormat);
-      state = 0;
-      startIndex = text.indexOf(tqExpr, startIndex + len);
+      if (startIndex + len >= text.length()) {
+        break;
+      }
+      const QRegularExpressionMatch nextMatch = anyRe.match(text, startIndex + len);
+      startIndex = nextMatch.capturedStart();
+      if (startIndex >= 0) {
+        delimState = (text.mid(startIndex, 3) == QStringLiteral("\"\"\"")) ? 2 : 3;
+      }
     }
   }
 }

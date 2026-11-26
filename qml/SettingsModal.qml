@@ -101,13 +101,21 @@ Item {
             color: theme.sheenBright || (darkMode ? "#14ffffff" : "#90ffffff")
         }
 
-        Column {
-            id: mainCol
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.margins: 18
-            spacing: 14
+        Flickable {
+            id: cardFlick
+            anchors.fill: parent
+            contentWidth: width
+            contentHeight: mainCol.implicitHeight + 36
+            interactive: contentHeight > height
+            boundsBehavior: Flickable.StopAtBounds
+            clip: true
+
+            Column {
+                id: mainCol
+                x: 18
+                y: 18
+                width: cardFlick.width - 36
+                spacing: 14
 
             Item {
                 width: parent.width
@@ -351,6 +359,7 @@ Item {
                                     y: parent.height + 5
                                     width: 196
                                     padding: 5
+                                    margins: 8
                                     modal: true
                                     focus: true
                                     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
@@ -418,7 +427,7 @@ Item {
                                     contentItem: ListView {
                                         id: langDropList
                                         implicitWidth: langPopup.width - langPopup.padding * 2
-                                        implicitHeight: Math.min(248, contentHeight)
+                                        implicitHeight: Math.min(248, contentHeight, Math.max(88, root.height - 32))
                                         clip: true
                                         spacing: 2
                                         boundsBehavior: Flickable.StopAtBounds
@@ -683,6 +692,7 @@ Item {
                     }
                 }
             }
+        }
         }
     }
 }

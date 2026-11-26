@@ -76,7 +76,7 @@ ApplicationWindow {
         findBar.replaceMode = !gotoMode && !!replaceMode;
         findBar.open = true;
         var sel = (!gotoMode && activePane) ? activePane.editorItem.selectedText : "";
-        if (!gotoMode && sel !== "" && sel.indexOf("\n") === -1) {
+        if (!gotoMode && sel !== "" && sel.indexOf("\n") === -1 && sel.indexOf("\u2029") === -1) {
             findBar.query = sel;
             findBar.focusInput(sel, false);
         } else {
@@ -332,7 +332,18 @@ ApplicationWindow {
     }
     Shortcut {
         sequence: "Ctrl+,"
-        onActivated: settingsModal.open = !settingsModal.open
+        onActivated: {
+            if (confirmModal.open || languageModal.open) {
+                return;
+            }
+            if (menuPopup.opened) {
+                menuPopup.close();
+            }
+            settingsModal.open = !settingsModal.open;
+            if (!settingsModal.open) {
+                focusActiveEditor();
+            }
+        }
     }
     Shortcut {
         enabled: !win.modalOpen
@@ -836,7 +847,10 @@ ApplicationWindow {
             onDropped: function (drop) {
                 if (drop.hasUrls && drop.urls.length > 0) {
                     for (var i = 0; i < drop.urls.length; i++) {
-                        backend.loadFile(drop.urls[i].toString(), true);
+                        var u = drop.urls[i].toString();
+                        if (u.indexOf("file:") === 0 || u.indexOf("/") === 0) {
+                            backend.loadFile(u, true);
+                        }
                     }
                 }
             }

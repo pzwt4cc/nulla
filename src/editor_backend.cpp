@@ -1168,7 +1168,11 @@ bool EditorBackend::loadFile(const QString &path, bool allowMissing) {
   }
   const int idx = newTab();
   TabSession *created = m_tabModel.at(idx);
-  return created ? created->loadFile(absPath, allowMissing) : false;
+  if (!created || !created->loadFile(absPath, allowMissing)) {
+    closeTabImmediate(idx);
+    return false;
+  }
+  return true;
 }
 
 bool EditorBackend::openFileDialog() {
@@ -1243,18 +1247,26 @@ bool EditorBackend::eventFilter(QObject *watched, QEvent *event) {
 
 void EditorBackend::onSystemColorSchemeChanged() {
   if (m_themeMode == ThemeSystem) {
+    const QVariantMap oldTheme = m_theme;
+    const bool oldDark = m_effectiveDark;
     rebuildThemePalette();
-    propagateThemeAndSyntax();
-    emit themeChanged();
+    if (m_theme != oldTheme || m_effectiveDark != oldDark) {
+      propagateThemeAndSyntax();
+      emit themeChanged();
+    }
   }
 }
 
 void EditorBackend::onThemeFilesChanged() {
   if (m_themeMode == ThemeSystem) {
+    const QVariantMap oldTheme = m_theme;
+    const bool oldDark = m_effectiveDark;
     rebuildThemePalette();
     updateThemeWatches();
-    propagateThemeAndSyntax();
-    emit themeChanged();
+    if (m_theme != oldTheme || m_effectiveDark != oldDark) {
+      propagateThemeAndSyntax();
+      emit themeChanged();
+    }
   }
 }
 
