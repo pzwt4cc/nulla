@@ -24,6 +24,7 @@ class EditorBackend : public QObject {
     Q_PROPERTY(int lineCount READ lineCount NOTIFY cursorStatsChanged)
     Q_PROPERTY(int cursorLine READ cursorLine NOTIFY cursorStatsChanged)
     Q_PROPERTY(int cursorColumn READ cursorColumn NOTIFY cursorStatsChanged)
+    Q_PROPERTY(bool showWindowControls READ showWindowControls CONSTANT)
 
 public:
     enum ThemeMode {
@@ -49,6 +50,7 @@ public:
     int lineCount() const;
     int cursorLine() const { return m_cursorLine; }
     int cursorColumn() const { return m_cursorColumn; }
+    bool showWindowControls() const { return m_showWindowControls; }
 
     void setShowLineNumbers(bool show);
     void setThemeMode(int mode);
@@ -61,6 +63,8 @@ public:
     Q_INVOKABLE void zoomIn();
     Q_INVOKABLE void zoomOut();
     Q_INVOKABLE void zoomReset();
+    Q_INVOKABLE QVariantMap findText(const QString &query, int fromPos, bool backward);
+    Q_INVOKABLE QVariantMap matchStats(const QString &query, int selectionStart);
 
     Q_INVOKABLE bool loadFile(const QString &path, bool allowMissing = false);
     Q_INVOKABLE void newFile();
@@ -105,6 +109,7 @@ private:
 
     int m_cursorLine = 1;
     int m_cursorColumn = 1;
+    bool m_showWindowControls = false;
 };
 
 #endif

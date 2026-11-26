@@ -14,8 +14,46 @@
 #include <QTextDocument>
 #include <QUrl>
 
+static bool detectDesktopEnvironment() {
+    if (!qEnvironmentVariableIsEmpty("HYPRLAND_INSTANCE_SIGNATURE") ||
+        !qEnvironmentVariableIsEmpty("SWAYSOCK") ||
+        !qEnvironmentVariableIsEmpty("I3SOCK") ||
+        !qEnvironmentVariableIsEmpty("BSPWM_SOCKET")) {
+        return false;
+    }
+
+    const QString combined = (qEnvironmentVariable("XDG_CURRENT_DESKTOP") + QLatin1Char(' ') +
+                              qEnvironmentVariable("XDG_SESSION_DESKTOP") + QLatin1Char(' ') +
+                              qEnvironmentVariable("DESKTOP_SESSION")).toLower();
+
+    const char * const wms[] = {
+        "hyprland", "sway", "river", "niri", "wayfire", "labwc",
+        "i3", "bspwm", "dwm", "awesome", "qtile", "xmonad",
+        "openbox", "herbstluftwm", "leftwm", "spectrwm", "fluxbox", "icewm", "jwm"
+    };
+    for (const char *wm : wms) {
+        if (combined.contains(QLatin1String(wm))) {
+            return false;
+        }
+    }
+
+    const char * const des[] = {
+        "gnome", "ubuntu", "kde", "plasma", "xfce", "cinnamon",
+        "mate", "lxqt", "lxde", "budgie", "pantheon", "deepin",
+        "cosmic", "unity", "enlightenment", "ukui", "cutefish"
+    };
+    for (const char *de : des) {
+        if (combined.contains(QLatin1String(de))) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 EditorBackend::EditorBackend(QObject *parent)
-    : QObject(parent) {
+    : QObject(parent),
+      m_showWindowControls(detectDesktopEnvironment()) {
     loadSettings();
     if (QGuiApplication::styleHints()) {
         connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged,
@@ -428,4 +466,60 @@ void EditorBackend::saveSettings() const {
     s.setValue(QStringLiteral("zoom"), m_zoomPercent);
     s.endGroup();
     s.sync();
+}
+
+QVariantMap EditorBackend::findText(const QString &query, int fromPos, bool backward) {
+    QVariantMap res;
+    res.insert(QStringLiteral("found"), false);
+    res.insert(QStringLiteral("start"), -1);
+    res.insert(QStringLiteral("end"), -1);
+
+    if (query.isEmpty() || !m_quickDoc || !m_quickDoc->textDocument()) {
+        return res;
+    }
+    QTextDocument *td = m_quickDoc->textDocument();
+    QTextDocument::FindFlags flags;
+    if (backward) {
+        flags |= QTextDocument::FindBackward;
+    }
+
+    QTextCursor found = td->find(query, fromPos, flags);
+    if (found.isNull()) {
+        const int wrapPos = backward ? qMax(0, td->characterCount() - 1) : 0;
+        found = td->find(query, wrapPos, flags);
+    }
+
+    if (!found.isNull()) {
+        res.insert(QStringLiteral("found"), true);
+        res.insert(QStringLiteral("start"), found.selectionStart());
+        res.insert(QStringLiteral("end"), found.selectionEnd());
+    }
+    return res;
+}
+
+QVariantMap EditorBackend::matchStats(const QString &query, int selectionStart) {
+    QVariantMap res;
+    res.insert(QStringLiteral("total"), 0);
+    res.insert(QStringLiteral("current"), 0);
+
+    if (query.isEmpty() || !m_quickDoc || !m_quickDoc->textDocument()) {
+        return res;
+    }
+    QTextDocument *td = m_quickDoc->textDocument();
+    int total = 0;
+    int current = 0;
+    QTextCursor cur(td);
+    while (true) {
+        cur = td->find(query, cur);
+        if (cur.isNull()) {
+            break;
+        }
+        total++;
+        if (cur.selectionStart() == selectionStart) {
+            current = total;
+        }
+    }
+    res.insert(QStringLiteral("total"), total);
+    res.insert(QStringLiteral("current"), current);
+    return res;
 }

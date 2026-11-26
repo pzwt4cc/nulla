@@ -9,6 +9,7 @@ Item {
     property bool darkMode: true
     property bool accent: false
     property bool activeChip: false
+    property bool ghost: false
     property bool iconOnly: false
     property bool dangerHover: false
     property real buttonHeight: 30
@@ -49,7 +50,7 @@ Item {
             }
             return (accent || activeChip) ? fillAccent : "transparent"
         }
-        border.width: (accent || activeChip) ? 1.5 : 1
+        border.width: (accent || activeChip) ? 1.5 : (ghost && !hovered && !pressed ? 0 : 1)
         border.color: {
             if (dangerHover && hovered) {
                 return borderDanger
@@ -144,6 +145,18 @@ Item {
                         ctx.moveTo(3.5, 5.5)
                         ctx.lineTo(7, 9)
                         ctx.lineTo(10.5, 5.5)
+                        ctx.stroke()
+                    } else if (root.iconKind === "up") {
+                        ctx.beginPath()
+                        ctx.moveTo(3.5, 8.5)
+                        ctx.lineTo(7, 5)
+                        ctx.lineTo(10.5, 8.5)
+                        ctx.stroke()
+                    } else if (root.iconKind === "search") {
+                        ctx.beginPath()
+                        ctx.arc(6.2, 6.2, 3.4, 0, Math.PI * 2)
+                        ctx.moveTo(8.8, 8.8)
+                        ctx.lineTo(11.5, 11.5)
                         ctx.stroke()
                     }
                 }

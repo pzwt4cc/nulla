@@ -40,7 +40,8 @@ Minimalist text editor for scripts and configs built with C++17 and Qt 6 Quick (
 ## Features
 
 - Open, edit, and save files (`Ctrl+O`, `Ctrl+S`, `Ctrl+Shift+S`, `Ctrl+N`, drag & drop)
-- Custom monochrome Material 3 outlined UI with smooth micro-transitions
+- Search in file (`Ctrl+F`, `F3`, `Shift+F3`) and editor shortcuts (`Ctrl+Z/Y/Shift+Z`, `Ctrl+C/V/X/A`, `Ctrl+D`, `Tab`/`Shift+Tab`)
+- Custom monochrome Material 3 outlined UI with adaptive DE/WM window controls
 - Line numbers toggle
 - Dark, Light, and System themes
 - Built-in syntax highlighting toggle and searchable language selector (with auto-detection)
