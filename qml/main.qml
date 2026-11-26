@@ -131,7 +131,7 @@ ApplicationWindow {
     function duplicateCurrentLine() {
         var text = editor.text
         var pos = editor.cursorPosition
-        var lineStart = text.lastIndexOf("\n", Math.max(0, pos - 1)) + 1
+        var lineStart = pos === 0 ? 0 : text.lastIndexOf("\n", pos - 1) + 1
         var lineEnd = text.indexOf("\n", pos)
         if (lineEnd === -1) {
             lineEnd = text.length
@@ -139,6 +139,27 @@ ApplicationWindow {
         var line = text.slice(lineStart, lineEnd)
         editor.insert(lineEnd, "\n" + line)
         editor.cursorPosition = pos + line.length + 1
+    }
+
+    function cutCurrentLine() {
+        var text = editor.text
+        if (text.length === 0) {
+            return
+        }
+        var pos = editor.cursorPosition
+        var lineStart = pos === 0 ? 0 : text.lastIndexOf("\n", pos - 1) + 1
+        var lineEnd = text.indexOf("\n", pos)
+        if (lineEnd === -1) {
+            lineEnd = text.length
+        }
+        if (lineEnd < text.length) {
+            editor.select(lineStart, lineEnd + 1)
+        } else if (lineStart > 0) {
+            editor.select(lineStart - 1, lineEnd)
+        } else {
+            editor.select(0, text.length)
+        }
+        editor.cut()
     }
 
     function runPendingAction() {
@@ -587,243 +608,411 @@ ApplicationWindow {
                         }
                     }
 
-                    Row {
+                    Item {
                         width: parent.width
                         height: parent.height - findBar.height
-                        spacing: 0
 
-                        Rectangle {
-                            id: gutterContainer
-                            visible: backend.showLineNumbers
-                            width: visible ? gutter.implicitWidth : 0
-                            height: parent.height
-                            color: win.bgGutter
-
-                            Behavior on color {
-                                ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
-                            }
-
-                            LineNumberGutter {
-                                id: gutter
-                                anchors.fill: parent
-                                document: editor.textDocument
-                                contentY: flick.contentY
-                                currentLine: backend.cursorLine
-                                font: editor.font
-                                textColor: win.fgGutter
-                                activeTextColor: win.fgMain
-                                topPadding: 8
-                            }
+                        Row {
+                            anchors.fill: parent
+                            spacing: 0
 
                             Rectangle {
-                                width: 1
+                                id: gutterContainer
+                                visible: backend.showLineNumbers
+                                width: visible ? gutter.implicitWidth : 0
                                 height: parent.height
-                                anchors.right: parent.right
-                                color: win.borderSubtle
-                            }
-                        }
+                                color: win.bgGutter
 
-                        Item {
-                            width: parent.width - gutterContainer.width
-                            height: parent.height
-
-                            Flickable {
-                                id: flick
-                                anchors.fill: parent
-                                contentWidth: Math.max(width, editor.contentWidth + 20)
-                                contentHeight: Math.max(height, editor.contentHeight + 16)
-                                clip: true
-                                boundsBehavior: Flickable.StopAtBounds
-
-                                ScrollBar.vertical: ScrollBar {
-                                    policy: ScrollBar.AsNeeded
-                                    width: 8
-                                    contentItem: Rectangle {
-                                        implicitWidth: 5
-                                        radius: 3
-                                        color: parent.pressed
-                                               ? (win.dark ? "#7d8594" : "#6c7382")
-                                               : (parent.hovered ? (win.dark ? "#5a606e" : "#8d94a3") : (win.dark ? "#373b46" : "#c1c6d0"))
-                                        Behavior on color { ColorAnimation { duration: 100 } }
-                                    }
+                                Behavior on color {
+                                    ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
                                 }
 
-                                ScrollBar.horizontal: ScrollBar {
-                                    policy: ScrollBar.AsNeeded
-                                    height: 8
-                                    contentItem: Rectangle {
-                                        implicitHeight: 5
-                                        radius: 3
-                                        color: parent.pressed
-                                               ? (win.dark ? "#7d8594" : "#6c7382")
-                                               : (parent.hovered ? (win.dark ? "#5a606e" : "#8d94a3") : (win.dark ? "#373b46" : "#c1c6d0"))
-                                        Behavior on color { ColorAnimation { duration: 100 } }
-                                    }
+                                LineNumberGutter {
+                                    id: gutter
+                                    anchors.fill: parent
+                                    document: editor.textDocument
+                                    contentY: flick.contentY
+                                    currentLine: backend.cursorLine
+                                    font: editor.font
+                                    textColor: win.fgGutter
+                                    activeTextColor: win.fgMain
+                                    topPadding: 8
                                 }
 
                                 Rectangle {
-                                    id: currentLineBand
-                                    visible: editor.activeFocus
-                                    x: 0
-                                    y: editor.y + editor.cursorRectangle.y
-                                    width: Math.max(flick.width, flick.contentWidth)
-                                    height: Math.max(18, editor.cursorRectangle.height)
-                                    color: win.bgLineHighlight
+                                    width: 1
+                                    height: parent.height
+                                    anchors.right: parent.right
+                                    color: win.borderSubtle
                                 }
+                            }
 
-                                MouseArea {
-                                    x: 0
-                                    y: 0
-                                    width: Math.max(flick.width, flick.contentWidth)
-                                    height: Math.max(flick.height, flick.contentHeight)
-                                    cursorShape: Qt.IBeamCursor
-                                    onPressed: function(mouse) {
-                                        editor.forceActiveFocus()
-                                        editor.cursorPosition = editor.positionAt(mouse.x - editor.x, mouse.y - editor.y)
-                                    }
-                                }
+                            Item {
+                                width: parent.width - gutterContainer.width
+                                height: parent.height
 
-                                TextEdit {
-                                    id: editor
-                                    x: 10
-                                    y: 8
-                                    textFormat: TextEdit.PlainText
-                                    selectByMouse: true
-                                    persistentSelection: true
-                                    wrapMode: TextEdit.NoWrap
-                                    color: win.fgMain
-                                    selectionColor: win.selBg
-                                    selectedTextColor: win.fgMain
-                                    cursorVisible: activeFocus
-                                    font.family: "monospace"
-                                    font.pixelSize: Math.round(14 * backend.zoomPercent / 100)
+                                Flickable {
+                                    id: flick
+                                    anchors.fill: parent
+                                    interactive: false
+                                    contentWidth: Math.max(width, editor.contentWidth + 20)
+                                    contentHeight: Math.max(height, editor.contentHeight + 16)
+                                    clip: true
+                                    boundsBehavior: Flickable.StopAtBounds
 
-                                    onCursorPositionChanged: backend.updateCursorPosition(cursorPosition)
+                                    property real targetY: 0
+                                    property real targetX: 0
 
-                                    onCursorRectangleChanged: {
-                                        var r = cursorRectangle
-                                        var cy = r.y + y
-                                        var cx = r.x + x
-                                        if (cy - flick.contentY < 8) {
-                                            flick.contentY = Math.max(0, cy - 8)
-                                        } else if (cy + r.height - flick.contentY > flick.height - 8) {
-                                            flick.contentY = Math.max(0, cy + r.height - flick.height + 8)
-                                        }
-                                        if (cx - flick.contentX < 10) {
-                                            flick.contentX = Math.max(0, cx - 10)
-                                        } else if (cx + r.width - flick.contentX > flick.width - 10) {
-                                            flick.contentX = Math.max(0, cx + r.width - flick.width + 10)
-                                        }
+                                    function clampY(v) {
+                                        return Math.max(0, Math.min(Math.max(0, contentHeight - height), v))
                                     }
 
-                                    Keys.onPressed: function(event) {
-                                        if (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier) === 0) {
-                                            indentSelection(false)
-                                            event.accepted = true
-                                            return
+                                    function clampX(v) {
+                                        return Math.max(0, Math.min(Math.max(0, contentWidth - width), v))
+                                    }
+
+                                    function stopScrollAnims() {
+                                        scrollYAnim.stop()
+                                        scrollXAnim.stop()
+                                        targetY = contentY
+                                        targetX = contentX
+                                    }
+
+                                    function smoothScrollBy(dx, dy, animDuration) {
+                                        if (dy !== 0) {
+                                            var baseY = scrollYAnim.running ? targetY : contentY
+                                            var nextY = clampY(baseY + dy)
+                                            targetY = nextY
+                                            if (animDuration > 0) {
+                                                scrollYAnim.duration = animDuration
+                                                scrollYAnim.to = nextY
+                                                scrollYAnim.restart()
+                                            } else {
+                                                scrollYAnim.stop()
+                                                contentY = nextY
+                                            }
                                         }
-                                        if (event.key === Qt.Key_Backtab ||
-                                            (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier) !== 0)) {
-                                            indentSelection(true)
-                                            event.accepted = true
-                                            return
+                                        if (dx !== 0) {
+                                            var baseX = scrollXAnim.running ? targetX : contentX
+                                            var nextX = clampX(baseX + dx)
+                                            targetX = nextX
+                                            if (animDuration > 0) {
+                                                scrollXAnim.duration = animDuration
+                                                scrollXAnim.to = nextX
+                                                scrollXAnim.restart()
+                                            } else {
+                                                scrollXAnim.stop()
+                                                contentX = nextX
+                                            }
                                         }
-                                        if ((event.modifiers & Qt.ControlModifier) !== 0) {
-                                            var k = event.key
-                                            var shift = (event.modifiers & Qt.ShiftModifier) !== 0
-                                            if (k === Qt.Key_Z && shift) {
-                                                editor.redo()
+                                    }
+
+                                    onContentHeightChanged: {
+                                        var maxY = Math.max(0, contentHeight - height)
+                                        if (contentY > maxY) {
+                                            scrollYAnim.stop()
+                                            contentY = maxY
+                                            targetY = maxY
+                                        }
+                                    }
+
+                                    onContentWidthChanged: {
+                                        var maxX = Math.max(0, contentWidth - width)
+                                        if (contentX > maxX) {
+                                            scrollXAnim.stop()
+                                            contentX = maxX
+                                            targetX = maxX
+                                        }
+                                    }
+
+                                    NumberAnimation {
+                                        id: scrollYAnim
+                                        target: flick
+                                        property: "contentY"
+                                        duration: 240
+                                        easing.type: Easing.OutCubic
+                                    }
+
+                                    NumberAnimation {
+                                        id: scrollXAnim
+                                        target: flick
+                                        property: "contentX"
+                                        duration: 200
+                                        easing.type: Easing.OutCubic
+                                    }
+
+                                    ScrollBar.vertical: ScrollBar {
+                                        policy: ScrollBar.AsNeeded
+                                        width: 8
+                                        onPressedChanged: if (pressed) flick.stopScrollAnims()
+                                        contentItem: Rectangle {
+                                            implicitWidth: 5
+                                            radius: 3
+                                            color: parent.pressed
+                                                   ? (win.dark ? "#7d8594" : "#6c7382")
+                                                   : (parent.hovered ? (win.dark ? "#5a606e" : "#8d94a3") : (win.dark ? "#373b46" : "#c1c6d0"))
+                                            Behavior on color { ColorAnimation { duration: 100 } }
+                                        }
+                                    }
+
+                                    ScrollBar.horizontal: ScrollBar {
+                                        policy: ScrollBar.AsNeeded
+                                        height: 8
+                                        onPressedChanged: if (pressed) flick.stopScrollAnims()
+                                        contentItem: Rectangle {
+                                            implicitHeight: 5
+                                            radius: 3
+                                            color: parent.pressed
+                                                   ? (win.dark ? "#7d8594" : "#6c7382")
+                                                   : (parent.hovered ? (win.dark ? "#5a606e" : "#8d94a3") : (win.dark ? "#373b46" : "#c1c6d0"))
+                                            Behavior on color { ColorAnimation { duration: 100 } }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        id: currentLineBand
+                                        visible: editor.activeFocus
+                                        x: 0
+                                        y: editor.y + editor.cursorRectangle.y
+                                        width: Math.max(flick.width, flick.contentWidth)
+                                        height: Math.max(18, editor.cursorRectangle.height)
+                                        color: win.bgLineHighlight
+                                    }
+
+                                    MouseArea {
+                                        x: 0
+                                        y: 0
+                                        width: Math.max(flick.width, flick.contentWidth)
+                                        height: Math.max(flick.height, flick.contentHeight)
+                                        cursorShape: Qt.IBeamCursor
+                                        onPressed: function(mouse) {
+                                            editor.forceActiveFocus()
+                                            editor.cursorPosition = editor.positionAt(mouse.x - editor.x, mouse.y - editor.y)
+                                        }
+                                    }
+
+                                    TextEdit {
+                                        id: editor
+                                        x: 10
+                                        y: 8
+                                        textFormat: TextEdit.PlainText
+                                        selectByMouse: true
+                                        persistentSelection: true
+                                        wrapMode: TextEdit.NoWrap
+                                        color: win.fgMain
+                                        selectionColor: win.selBg
+                                        selectedTextColor: win.fgMain
+                                        cursorVisible: activeFocus
+                                        font.family: "monospace"
+                                        font.pixelSize: Math.round(14 * backend.zoomPercent / 100)
+
+                                        property bool suppressCursorScroll: false
+                                        property int lastZoomPercent: backend.zoomPercent
+
+                                        Timer {
+                                            id: zoomSuppressTimer
+                                            interval: 60
+                                            onTriggered: editor.suppressCursorScroll = false
+                                        }
+
+                                        Connections {
+                                            target: backend
+                                            function onSettingsChanged() {
+                                                if (editor.lastZoomPercent !== backend.zoomPercent) {
+                                                    editor.lastZoomPercent = backend.zoomPercent
+                                                    editor.suppressCursorScroll = true
+                                                    zoomSuppressTimer.restart()
+                                                }
+                                            }
+                                        }
+
+                                        onCursorPositionChanged: backend.updateCursorPosition(cursorPosition)
+
+                                        onCursorRectangleChanged: {
+                                            if (suppressCursorScroll) {
+                                                return
+                                            }
+                                            var r = cursorRectangle
+                                            var cy = r.y + y
+                                            var cx = r.x + x
+                                            if (cy - flick.contentY < 8) {
+                                                flick.stopScrollAnims()
+                                                flick.contentY = Math.max(0, cy - 8)
+                                                flick.targetY = flick.contentY
+                                            } else if (cy + r.height - flick.contentY > flick.height - 8) {
+                                                flick.stopScrollAnims()
+                                                flick.contentY = Math.max(0, cy + r.height - flick.height + 8)
+                                                flick.targetY = flick.contentY
+                                            }
+                                            if (cx - flick.contentX < 10) {
+                                                flick.stopScrollAnims()
+                                                flick.contentX = Math.max(0, cx - 10)
+                                                flick.targetX = flick.contentX
+                                            } else if (cx + r.width - flick.contentX > flick.width - 10) {
+                                                flick.stopScrollAnims()
+                                                flick.contentX = Math.max(0, cx + r.width - flick.width + 10)
+                                                flick.targetX = flick.contentX
+                                            }
+                                        }
+
+                                        Keys.onPressed: function(event) {
+                                            if (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier) === 0) {
+                                                indentSelection(false)
                                                 event.accepted = true
                                                 return
                                             }
-                                            if (k === Qt.Key_D || k === 0x0412 || k === 0x0432) {
-                                                duplicateCurrentLine()
+                                            if (event.key === Qt.Key_Backtab ||
+                                                (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier) !== 0)) {
+                                                indentSelection(true)
                                                 event.accepted = true
                                                 return
                                             }
-                                            if (k === 0x042f || k === 0x044f) {
-                                                if (shift) editor.redo()
-                                                else editor.undo()
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if (k === 0x041d || k === 0x043d) {
-                                                editor.redo()
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if (k === 0x0421 || k === 0x0441) {
-                                                editor.copy()
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if (k === 0x041c || k === 0x043c) {
-                                                editor.paste()
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if (k === 0x0427 || k === 0x0447) {
-                                                editor.cut()
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if (k === 0x0424 || k === 0x0444) {
-                                                editor.selectAll()
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if (k === 0x0410 || k === 0x0430) {
-                                                openFindBar()
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if (k === 0x042b || k === 0x044b) {
-                                                if (shift) backend.saveFileAsDialog()
-                                                else backend.saveFile()
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if (k === 0x0429 || k === 0x0449) {
-                                                requestGuardedAction("open", "")
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if (k === 0x0422 || k === 0x0442) {
-                                                requestGuardedAction("new", "")
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if (k === 0x0419 || k === 0x0439 || k === 0x0426 || k === 0x0446) {
-                                                win.close()
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if (k === 0x0411 || k === 0x0431) {
-                                                settingsModal.open = !settingsModal.open
-                                                event.accepted = true
-                                                return
+                                            if ((event.modifiers & Qt.ControlModifier) !== 0 &&
+                                                (event.modifiers & (Qt.AltModifier | Qt.MetaModifier)) === 0) {
+                                                var k = event.key
+                                                var shift = (event.modifiers & Qt.ShiftModifier) !== 0
+                                                if (k === Qt.Key_Z && shift) {
+                                                    editor.redo()
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if (k === Qt.Key_D || k === 0x0412 || k === 0x0432) {
+                                                    duplicateCurrentLine()
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if ((k === Qt.Key_X || k === 0x0427 || k === 0x0447) && !shift) {
+                                                    if (editor.selectionStart === editor.selectionEnd) {
+                                                        cutCurrentLine()
+                                                    } else {
+                                                        editor.cut()
+                                                    }
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if (k === 0x042f || k === 0x044f) {
+                                                    if (shift) editor.redo()
+                                                    else editor.undo()
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if (k === 0x041d || k === 0x043d) {
+                                                    editor.redo()
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if (k === 0x0421 || k === 0x0441) {
+                                                    editor.copy()
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if (k === 0x041c || k === 0x043c) {
+                                                    editor.paste()
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if (k === 0x0424 || k === 0x0444) {
+                                                    editor.selectAll()
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if (k === 0x0410 || k === 0x0430) {
+                                                    openFindBar()
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if (k === 0x042b || k === 0x044b) {
+                                                    if (shift) backend.saveFileAsDialog()
+                                                    else backend.saveFile()
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if (k === 0x0429 || k === 0x0449) {
+                                                    requestGuardedAction("open", "")
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if (k === 0x0422 || k === 0x0442) {
+                                                    requestGuardedAction("new", "")
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if (k === 0x0419 || k === 0x0439 || k === 0x0426 || k === 0x0446) {
+                                                    win.close()
+                                                    event.accepted = true
+                                                    return
+                                                }
+                                                if (k === 0x0411 || k === 0x0431) {
+                                                    settingsModal.open = !settingsModal.open
+                                                    event.accepted = true
+                                                    return
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
+                        }
 
-                            MouseArea {
-                                anchors.fill: parent
-                                acceptedButtons: Qt.NoButton
-                                onWheel: function(wheel) {
-                                    if ((wheel.modifiers & Qt.ControlModifier) !== 0) {
-                                        var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.pixelDelta.y
-                                        if (delta > 0) {
-                                            backend.zoomIn()
-                                        } else if (delta < 0) {
-                                            backend.zoomOut()
+                        MouseArea {
+                            anchors.fill: parent
+                            acceptedButtons: Qt.NoButton
+
+                            property real zoomAccum: 0
+
+                            onWheel: function(wheel) {
+                                if ((wheel.modifiers & Qt.ControlModifier) !== 0) {
+                                    var zDelta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.pixelDelta.y
+                                    if (Math.abs(zDelta) >= 120) {
+                                        editor.suppressCursorScroll = true
+                                        zoomSuppressTimer.restart()
+                                        if (zDelta > 0) backend.zoomIn()
+                                        else backend.zoomOut()
+                                        zoomAccum = 0
+                                    } else if (zDelta !== 0) {
+                                        zoomAccum += zDelta
+                                        if (Math.abs(zoomAccum) >= 50) {
+                                            editor.suppressCursorScroll = true
+                                            zoomSuppressTimer.restart()
+                                            if (zoomAccum > 0) backend.zoomIn()
+                                            else backend.zoomOut()
+                                            zoomAccum = 0
                                         }
-                                        wheel.accepted = true
-                                    } else {
-                                        wheel.accepted = false
                                     }
+                                    wheel.accepted = true
+                                    return
                                 }
+
+                                var shiftHeld = (wheel.modifiers & Qt.ShiftModifier) !== 0
+                                var dx = 0
+                                var dy = 0
+                                var animMs = 240
+
+                                if (wheel.pixelDelta.y !== 0 && Math.abs(wheel.angleDelta.y) < 120) {
+                                    dy = -wheel.pixelDelta.y * 1.45
+                                    animMs = 90
+                                } else if (wheel.angleDelta.y !== 0) {
+                                    var stepPx = Math.max(150, editor.font.pixelSize * 10.5)
+                                    dy = -(wheel.angleDelta.y / 120.0) * stepPx
+                                }
+
+                                if (wheel.pixelDelta.x !== 0 && Math.abs(wheel.angleDelta.x) < 120) {
+                                    dx = -wheel.pixelDelta.x * 1.45
+                                    animMs = 90
+                                } else if (wheel.angleDelta.x !== 0) {
+                                    var stepX = Math.max(120, editor.font.pixelSize * 8)
+                                    dx = -(wheel.angleDelta.x / 120.0) * stepX
+                                }
+
+                                if (shiftHeld && dx === 0 && dy !== 0) {
+                                    dx = dy
+                                    dy = 0
+                                }
+
+                                if (dx !== 0 || dy !== 0) {
+                                    flick.smoothScrollBy(dx, dy, animMs)
+                                }
+                                wheel.accepted = true
                             }
                         }
                     }
