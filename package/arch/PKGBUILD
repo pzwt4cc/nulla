@@ -4,7 +4,7 @@ pkgrel=1
 pkgdesc="Minimalist script and config editor"
 arch=('x86_64' 'aarch64')
 url="https://github.com/pzwt4cc/nulla"
-license=('custom')
+license=('WTFPL')
 depends=('qt6-base' 'qt6-declarative')
 makedepends=('gcc' 'make' 'pkgconf')
 

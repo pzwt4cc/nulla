@@ -105,3 +105,7 @@ Requires Qt 6 (`qtdeclarative`, `qtshadertools`, `qtsvg`), MSVC + CMake + Ninja,
 ```
 
 The installer appears in `dist\Nulla-0.2.0-win64.msi` with selectable install location and optional components (Start Menu shortcut, Desktop shortcut, `PATH`, Explorer context menu, and Open With registration).
+
+## License
+
+WTFPL — see [LICENSE](LICENSE).
