@@ -1,0 +1,237 @@
+import QtQuick
+import QtQuick.Controls
+
+Popup {
+    id: root
+
+    property bool darkMode: true
+    property bool canUndo: false
+    property bool canRedo: false
+    property bool canPaste: false
+    property bool hasSelection: false
+    property bool hasText: false
+    property bool hasSingleLineSelection: false
+    property bool canComment: true
+
+    property color bgSurfaceElev: "#1c1f27"
+    property color bgHover: "#252934"
+    property color borderSubtle: "#222630"
+    property color borderControl: "#313644"
+    property color fgMain: "#f0f2f6"
+    property color fgMuted: "#9ca3b4"
+    property color fgGutter: "#565d6e"
+
+    signal actionTriggered(string act)
+
+    function openAt(px, py, maxW, maxH) {
+        var menuW = width;
+        var menuH = contentCol.implicitHeight + padding * 2;
+        x = Math.max(6, Math.min(px, maxW - menuW - 6));
+        y = Math.max(6, Math.min(py, maxH - menuH - 6));
+        open();
+    }
+
+    width: 222
+    padding: 6
+    modal: true
+    focus: true
+    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    Overlay.modal: Rectangle {
+        color: "transparent"
+    }
+
+    enter: Transition {
+        NumberAnimation {
+            property: "opacity"
+            from: 0.0
+            to: 1.0
+            duration: 80
+            easing.type: Easing.OutCubic
+        }
+        NumberAnimation {
+            property: "scale"
+            from: 0.97
+            to: 1.0
+            duration: 80
+            easing.type: Easing.OutCubic
+        }
+    }
+    exit: Transition {
+        NumberAnimation {
+            property: "opacity"
+            from: 1.0
+            to: 0.0
+            duration: 65
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    background: Rectangle {
+        radius: 7
+        color: root.bgSurfaceElev
+        border.width: 1
+        border.color: root.borderControl
+        clip: true
+
+        Rectangle {
+            anchors.top: parent.top
+            anchors.topMargin: 1
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: 10
+            anchors.rightMargin: 10
+            height: 1
+            color: root.darkMode ? "#14ffffff" : "#80ffffff"
+        }
+    }
+
+    contentItem: Column {
+        id: contentCol
+        spacing: 2
+
+        Repeater {
+            model: [
+                {
+                    label: "Undo",
+                    shortcut: "Ctrl+Z",
+                    act: "undo",
+                    enabled: root.canUndo,
+                    sep: false
+                },
+                {
+                    label: "Redo",
+                    shortcut: "Ctrl+Shift+Z",
+                    act: "redo",
+                    enabled: root.canRedo,
+                    sep: true
+                },
+                {
+                    label: root.hasSelection ? "Cut" : "Cut Line",
+                    shortcut: "Ctrl+X",
+                    act: "cut",
+                    enabled: root.hasSelection || root.hasText,
+                    sep: false
+                },
+                {
+                    label: root.hasSelection ? "Copy" : "Copy Line",
+                    shortcut: "Ctrl+C",
+                    act: "copy",
+                    enabled: root.hasSelection || root.hasText,
+                    sep: false
+                },
+                {
+                    label: "Paste",
+                    shortcut: "Ctrl+V",
+                    act: "paste",
+                    enabled: root.canPaste,
+                    sep: false
+                },
+                {
+                    label: "Delete",
+                    shortcut: "Del",
+                    act: "delete",
+                    enabled: root.hasSelection,
+                    sep: true
+                },
+                {
+                    label: "Duplicate Line",
+                    shortcut: "Ctrl+D",
+                    act: "duplicate",
+                    enabled: true,
+                    sep: false
+                },
+                {
+                    label: "Toggle Comment",
+                    shortcut: "Ctrl+\x2f",
+                    act: "comment",
+                    enabled: root.canComment,
+                    sep: true
+                },
+                {
+                    label: "Select All",
+                    shortcut: "Ctrl+A",
+                    act: "selectall",
+                    enabled: root.hasText,
+                    sep: false
+                },
+                {
+                    label: root.hasSingleLineSelection ? "Find Selection" : "Find...",
+                    shortcut: "Ctrl+F",
+                    act: "find",
+                    enabled: true,
+                    sep: false
+                }
+            ]
+
+            delegate: Column {
+                width: root.width - root.padding * 2
+                spacing: 2
+
+                Rectangle {
+                    width: parent.width
+                    height: 28
+                    radius: 5
+                    color: !modelData.enabled ? "transparent" : (itemMa.pressed ? (root.darkMode ? "#282b34" : "#d8dce5") : (itemMa.containsMouse ? root.bgHover : "transparent"))
+                    border.width: 1
+                    border.color: (modelData.enabled && itemMa.containsMouse) ? root.borderControl : "transparent"
+                    scale: (modelData.enabled && itemMa.pressed) ? 0.985 : 1.0
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 90
+                        }
+                    }
+                    Behavior on border.color {
+                        ColorAnimation {
+                            duration: 90
+                        }
+                    }
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: 60
+                        }
+                    }
+
+                    Text {
+                        anchors.left: parent.left
+                        anchors.leftMargin: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: modelData.label
+                        color: modelData.enabled ? root.fgMain : root.fgGutter
+                        font.pixelSize: 12
+                    }
+
+                    Text {
+                        anchors.right: parent.right
+                        anchors.rightMargin: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: modelData.shortcut
+                        color: modelData.enabled ? root.fgMuted : root.fgGutter
+                        opacity: modelData.enabled ? 0.78 : 0.55
+                        font.pixelSize: 11
+                    }
+
+                    MouseArea {
+                        id: itemMa
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        enabled: modelData.enabled
+                        cursorShape: modelData.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                        onClicked: {
+                            root.close();
+                            root.actionTriggered(modelData.act);
+                        }
+                    }
+                }
+
+                Rectangle {
+                    visible: modelData.sep
+                    width: parent.width - 12
+                    height: 1
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: root.borderSubtle
+                }
+            }
+        }
+    }
+}

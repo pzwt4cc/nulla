@@ -6,6 +6,7 @@ Rectangle {
     property bool darkMode: true
     property var activeTab: null
     property int zoomPercent: 100
+    property int selectedChars: 0
     property color bgShell: "#0d0e11"
     property color bgSurfaceElev: "#1c1f27"
     property color borderSubtle: "#222630"
@@ -14,17 +15,20 @@ Rectangle {
     property color fgMuted: "#9ca3b4"
     property color fgGutter: "#565d6e"
 
-    signal gotoLineClicked()
-    signal languageClicked()
-    signal zoomInRequested()
-    signal zoomOutRequested()
-    signal zoomResetRequested()
+    signal gotoLineClicked
+    signal languageClicked
+    signal zoomInRequested
+    signal zoomOutRequested
+    signal zoomResetRequested
 
     height: 36
     color: bgShell
 
     Behavior on color {
-        ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+        ColorAnimation {
+            duration: 110
+            easing.type: Easing.OutCubic
+        }
     }
 
     Rectangle {
@@ -46,10 +50,16 @@ Rectangle {
         border.color: root.borderControl
 
         Behavior on color {
-            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+            ColorAnimation {
+                duration: 110
+                easing.type: Easing.OutCubic
+            }
         }
         Behavior on border.color {
-            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+            ColorAnimation {
+                duration: 110
+                easing.type: Easing.OutCubic
+            }
         }
 
         Rectangle {
@@ -70,8 +80,7 @@ Rectangle {
 
             M3Button {
                 anchors.verticalCenter: parent.verticalCenter
-                text: "Ln " + (root.activeTab ? root.activeTab.cursorLine : 1) +
-                      ", Col " + (root.activeTab ? root.activeTab.cursorColumn : 1)
+                text: "Ln " + (root.activeTab ? root.activeTab.cursorLine : 1) + ", Col " + (root.activeTab ? root.activeTab.cursorColumn : 1) + (root.selectedChars > 0 ? (" · " + root.selectedChars + " sel") : "")
                 ghost: true
                 darkMode: root.darkMode
                 buttonHeight: 22
@@ -165,10 +174,16 @@ Rectangle {
             border.color: root.borderControl
 
             Behavior on color {
-                ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+                ColorAnimation {
+                    duration: 110
+                    easing.type: Easing.OutCubic
+                }
             }
             Behavior on border.color {
-                ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+                ColorAnimation {
+                    duration: 110
+                    easing.type: Easing.OutCubic
+                }
             }
 
             Rectangle {
