@@ -6,3 +6,6 @@ skills/
 package/arch/pkg/
 package/arch/src/
 package/arch/*.pkg.tar.*
+build-win/
+dist/
+*.msi

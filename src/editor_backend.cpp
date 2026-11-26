@@ -24,6 +24,9 @@
 #include <cmath>
 
 static bool detectDesktopEnvironment() {
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
+  return true;
+#else
   if (!qEnvironmentVariableIsEmpty("HYPRLAND_INSTANCE_SIGNATURE") ||
       !qEnvironmentVariableIsEmpty("SWAYSOCK") ||
       !qEnvironmentVariableIsEmpty("I3SOCK") ||
@@ -59,16 +62,19 @@ static bool detectDesktopEnvironment() {
   }
 
   return false;
+#endif
 }
 
 static QString pickMonoFontFamily() {
   const QStringList available = QFontDatabase::families();
   const char *const preferred[] = {
       "JetBrains Mono", "IBM Plex Mono",
-      "Cascadia Mono",  "CaskaydiaCove Nerd Font Mono",
+      "Cascadia Mono",  "Cascadia Code",
+      "CaskaydiaCove Nerd Font Mono",
       "Fira Code",      "FiraCode Nerd Font Mono",
-      "Hack",           "Adwaita Mono",
-      "Ubuntu Mono",    "Liberation Mono"};
+      "Consolas",       "Hack",
+      "Adwaita Mono",   "Ubuntu Mono",
+      "Liberation Mono"};
   for (const char *name : preferred) {
     const QString qname = QLatin1String(name);
     if (available.contains(qname, Qt::CaseInsensitive)) {
@@ -87,6 +93,7 @@ static QString normalizeFilePath(const QString &rawPath) {
   return QFileInfo(path).absoluteFilePath();
 }
 
+#if !defined(Q_OS_WIN)
 static double linearChannel(double c) {
   return (c <= 0.03928) ? (c / 12.92) : std::pow((c + 0.055) / 1.055, 2.4);
 }
@@ -485,6 +492,8 @@ static AdaptivePaletteSeed tryLoadWalOrMatugenJson(const QString &cfgRoot,
   return AdaptivePaletteSeed();
 }
 
+#endif
+
 static QVariantMap buildFixedTheme(bool dark) {
   QVariantMap t;
   t.insert(QStringLiteral("dark"), dark);
@@ -597,6 +606,7 @@ static QVariantMap buildFixedTheme(bool dark) {
   return t;
 }
 
+#if !defined(Q_OS_WIN)
 static QVariantMap buildAdaptiveTheme(const AdaptivePaletteSeed &seed) {
   const QColor bgEditor = seed.bgEditor;
   const bool dark = relativeLuminance(bgEditor) < 0.25;
@@ -703,6 +713,7 @@ static QVariantMap buildAdaptiveTheme(const AdaptivePaletteSeed &seed) {
   t.insert(QStringLiteral("hoverLineBand"), colorStr(withAlpha(fgMain, dark ? 14 : 10)));
   return t;
 }
+#endif
 
 TabModel::TabModel(QObject *parent) : QAbstractListModel(parent) {}
 
@@ -856,6 +867,7 @@ void EditorBackend::rebuildThemePalette() {
     return;
   }
 
+#if !defined(Q_OS_WIN)
   const QString cfgRoot =
       QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
   const QString cacheRoot =
@@ -877,6 +889,7 @@ void EditorBackend::rebuildThemePalette() {
     m_effectiveDark = m_theme.value(QStringLiteral("dark"), true).toBool();
     return;
   }
+#endif
 
   const bool sysDark = QGuiApplication::styleHints()
                            ? (QGuiApplication::styleHints()->colorScheme() !=
@@ -887,6 +900,9 @@ void EditorBackend::rebuildThemePalette() {
 }
 
 void EditorBackend::updateThemeWatches() {
+#if defined(Q_OS_WIN)
+  return;
+#else
   if (!m_themeWatcher) {
     return;
   }
@@ -945,6 +961,7 @@ void EditorBackend::updateThemeWatches() {
       m_themeWatcher->addPath(d);
     }
   }
+#endif
 }
 
 TabSession *EditorBackend::createSession() {

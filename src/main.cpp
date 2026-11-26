@@ -11,6 +11,7 @@
 #include <QQuickWindow>
 #include <QStandardPaths>
 #include <QtGlobal>
+#if defined(Q_OS_LINUX)
 #include <dlfcn.h>
 
 static bool canUseWaylandVulkan() {
@@ -41,8 +42,10 @@ static bool canUseWaylandVulkan() {
     dlclose(vk);
     return true;
 }
+#endif
 
 int main(int argc, char *argv[]) {
+#if defined(Q_OS_LINUX)
     if (qEnvironmentVariableIsEmpty("QSG_RENDER_LOOP")) {
         qputenv("QSG_RENDER_LOOP", "basic");
     }
@@ -50,13 +53,16 @@ int main(int argc, char *argv[]) {
         qputenv("QSG_RHI_BACKEND", "vulkan");
         QQuickWindow::setGraphicsApi(QSGRendererInterface::Vulkan);
     }
+#endif
     QApplication app(argc, argv);
     app.setApplicationName(QStringLiteral("Nulla"));
     app.setOrganizationName(QStringLiteral("Nulla"));
+#if defined(Q_OS_LINUX)
     if (!QStandardPaths::locate(QStandardPaths::ApplicationsLocation,
                                 QStringLiteral("nulla.desktop")).isEmpty()) {
         app.setDesktopFileName(QStringLiteral("nulla"));
     }
+#endif
     app.setWindowIcon(QIcon(QStringLiteral(":/assets/nulla.svg")));
 
     QQuickStyle::setStyle(QStringLiteral("Basic"));

@@ -1,0 +1,173 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package Name="Nulla"
+           Manufacturer="Nulla"
+           Version="$(var.Version)"
+           UpgradeCode="7E9B4C2A-3D61-4F8B-9A1E-2C5D8F4E1B07"
+           Scope="perMachine">
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="NullaIcon.ico" SourceFile="$(var.IconPath)" />
+    <Property Id="ARPPRODUCTICON" Value="NullaIcon.ico" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/pzwt4cc/nulla" />
+
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.LicenseRtf)" />
+    <ui:WixUI Id="WixUI_FeatureTree" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Nulla" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="Nulla" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder" />
+
+    <Component Id="NullaExeComp" Directory="INSTALLFOLDER" Guid="6F0C3E19-2A4B-4D7E-8C91-0123456789AB">
+      <File Id="NullaExeFile" Source="$(var.StageDir)\nulla.exe" KeyPath="yes" />
+    </Component>
+
+    <Component Id="StartMenuShortcutComp" Directory="ApplicationProgramsFolder" Guid="8A1D2F30-4B5C-4D6E-9F01-112233445566">
+      <Shortcut Id="StartMenuShortcut"
+                Name="Nulla"
+                Description="Minimalist script and config editor"
+                Target="[INSTALLFOLDER]nulla.exe"
+                WorkingDirectory="INSTALLFOLDER"
+                Icon="NullaIcon.ico" />
+      <RemoveFolder Id="RemoveAppProgramsFolder" On="uninstall" />
+      <RegistryValue Root="HKLM"
+                     Key="Software\Nulla\Installer"
+                     Name="StartMenuShortcut"
+                     Type="integer"
+                     Value="1"
+                     KeyPath="yes" />
+    </Component>
+
+    <Component Id="DesktopShortcutComp" Directory="DesktopFolder" Guid="8B2E3F41-5C6D-4E7F-8A02-112233445567">
+      <Shortcut Id="DesktopShortcut"
+                Name="Nulla"
+                Description="Minimalist script and config editor"
+                Target="[INSTALLFOLDER]nulla.exe"
+                WorkingDirectory="INSTALLFOLDER"
+                Icon="NullaIcon.ico" />
+      <RegistryValue Root="HKLM"
+                     Key="Software\Nulla\Installer"
+                     Name="DesktopShortcut"
+                     Type="integer"
+                     Value="1"
+                     KeyPath="yes" />
+    </Component>
+
+    <Component Id="PathEnvComp" Directory="INSTALLFOLDER" Guid="9B2E3F41-5C6D-4E7F-8A12-223344556677">
+      <RegistryValue Root="HKLM"
+                     Key="Software\Nulla\Installer"
+                     Name="PathEnv"
+                     Type="integer"
+                     Value="1"
+                     KeyPath="yes" />
+      <Environment Id="PATH"
+                   Name="PATH"
+                   Value="[INSTALLFOLDER]"
+                   Permanent="no"
+                   Part="last"
+                   Action="set"
+                   System="yes" />
+    </Component>
+
+    <Component Id="ContextMenuComp" Directory="INSTALLFOLDER" Guid="AC3F4052-6D7E-4F80-9B23-334455667788">
+      <RegistryKey Root="HKLM" Key="Software\Classes\*\shell\Nulla">
+        <RegistryValue Type="string" Value="Open with Nulla" KeyPath="yes" />
+        <RegistryValue Name="Icon" Type="string" Value="&quot;[INSTALLFOLDER]nulla.exe&quot;,0" />
+        <RegistryKey Key="command">
+          <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]nulla.exe&quot; &quot;%1&quot;" />
+        </RegistryKey>
+      </RegistryKey>
+    </Component>
+
+    <Component Id="FileAssocComp" Directory="INSTALLFOLDER" Guid="BD405163-7E8F-4091-AC34-445566778899">
+      <RegistryValue Root="HKLM"
+                     Key="Software\Nulla\Installer"
+                     Name="FileAssoc"
+                     Type="integer"
+                     Value="1"
+                     KeyPath="yes" />
+      <ProgId Id="Nulla.Document" Description="Nulla Text Document" Icon="NullaExeFile" IconIndex="0">
+        <Extension Id="txt" ContentType="text/plain">
+          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
+        </Extension>
+        <Extension Id="md" ContentType="text/markdown">
+          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
+        </Extension>
+        <Extension Id="json" ContentType="application/json">
+          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
+        </Extension>
+        <Extension Id="yaml" ContentType="text/plain">
+          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
+        </Extension>
+        <Extension Id="yml" ContentType="text/plain">
+          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
+        </Extension>
+        <Extension Id="toml" ContentType="text/plain">
+          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
+        </Extension>
+        <Extension Id="ini" ContentType="text/plain">
+          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
+        </Extension>
+        <Extension Id="conf" ContentType="text/plain">
+          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
+        </Extension>
+        <Extension Id="log" ContentType="text/plain">
+          <Verb Id="open" Command="Open" TargetFile="NullaExeFile" Argument="&quot;%1&quot;" />
+        </Extension>
+      </ProgId>
+    </Component>
+
+    <Feature Id="ProductFeature"
+             Title="Nulla Editor"
+             Description="Core editor executable and Qt 6 runtime libraries."
+             Level="1"
+             ConfigurableDirectory="INSTALLFOLDER"
+             AllowAbsent="no"
+             Display="expand">
+      <ComponentRef Id="NullaExeComp" />
+      <ComponentGroupRef Id="QtRuntimeComponents" />
+
+      <Feature Id="StartMenuFeature"
+               Title="Start Menu Shortcut"
+               Description="Create a Nulla shortcut in the Windows Start Menu."
+               Level="1">
+        <ComponentRef Id="StartMenuShortcutComp" />
+      </Feature>
+
+      <Feature Id="DesktopFeature"
+               Title="Desktop Shortcut"
+               Description="Create a Nulla shortcut on the Desktop."
+               Level="1">
+        <ComponentRef Id="DesktopShortcutComp" />
+      </Feature>
+
+      <Feature Id="PathFeature"
+               Title="Add to PATH"
+               Description="Allow launching nulla from Command Prompt and PowerShell."
+               Level="1">
+        <ComponentRef Id="PathEnvComp" />
+      </Feature>
+
+      <Feature Id="ContextMenuFeature"
+               Title="Explorer Context Menu"
+               Description="Add Open with Nulla to the Windows Explorer right-click menu."
+               Level="1">
+        <ComponentRef Id="ContextMenuComp" />
+      </Feature>
+
+      <Feature Id="FileAssocFeature"
+               Title="File Associations"
+               Description="Associate .txt, .md, .json, .yaml, .yml, .toml, .ini, .conf, and .log files with Nulla."
+               Level="2">
+        <ComponentRef Id="FileAssocComp" />
+      </Feature>
+    </Feature>
+  </Package>
+</Wix>
