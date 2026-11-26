@@ -488,6 +488,24 @@ Item {
                     }
                 }
 
+                onHeightChanged: {
+                    var maxY = Math.max(0, contentHeight - height);
+                    if (contentY > maxY) {
+                        scrollYAnim.stop();
+                        contentY = maxY;
+                        targetY = maxY;
+                    }
+                }
+
+                onWidthChanged: {
+                    var maxX = Math.max(0, contentWidth - width);
+                    if (contentX > maxX) {
+                        scrollXAnim.stop();
+                        contentX = maxX;
+                        targetX = maxX;
+                    }
+                }
+
                 NumberAnimation {
                     id: scrollYAnim
                     target: flick

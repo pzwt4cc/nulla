@@ -8,8 +8,12 @@
 #include <QQmlContext>
 #include <QQuickStyle>
 #include <QStandardPaths>
+#include <QtGlobal>
 
 int main(int argc, char *argv[]) {
+    if (qEnvironmentVariableIsEmpty("QSG_RENDER_LOOP")) {
+        qputenv("QSG_RENDER_LOOP", "basic");
+    }
     QApplication app(argc, argv);
     app.setApplicationName(QStringLiteral("Nulla"));
     app.setOrganizationName(QStringLiteral("Nulla"));

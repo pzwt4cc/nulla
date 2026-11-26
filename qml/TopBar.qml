@@ -171,34 +171,37 @@ Rectangle {
             text: centerBadge.displayTitle
         }
 
-        Row {
+        Item {
             id: titleRow
             readonly property real maxRowW: Math.max(0, centerBadge.width - 8)
             readonly property real idealW: centerBadge.fixedContentWidth + Math.ceil(titleMetrics.width)
             readonly property real rowW: Math.min(idealW, maxRowW)
             width: rowW
             height: parent.height
-            x: Math.max(0, Math.min(centerBadge.width - rowW, (root.width - rowW) * 0.5 - centerBadge.x))
-            spacing: 8
+            x: Math.round(Math.max(0, Math.min(centerBadge.width - rowW, (root.width - rowW) * 0.5 - centerBadge.x)))
 
             Image {
+                id: titleIcon
                 source: "qrc:/assets/nulla.svg"
                 width: 16
                 height: 16
                 sourceSize: Qt.size(32, 32)
+                anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 opacity: root.darkMode ? 0.92 : 0.88
             }
 
             Text {
                 id: titleLabel
+                anchors.left: titleIcon.right
+                anchors.leftMargin: 8
+                anchors.verticalCenter: parent.verticalCenter
                 width: Math.max(0, Math.min(Math.ceil(titleMetrics.width), titleRow.maxRowW - centerBadge.fixedContentWidth))
                 elide: Text.ElideMiddle
                 text: centerBadge.displayTitle
                 color: root.fgMain
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
-                anchors.verticalCenter: parent.verticalCenter
             }
 
             Rectangle {
@@ -206,6 +209,8 @@ Rectangle {
                 width: 6
                 height: 6
                 radius: 3
+                anchors.left: titleLabel.right
+                anchors.leftMargin: 8
                 anchors.verticalCenter: parent.verticalCenter
                 color: root.fgMain
             }
