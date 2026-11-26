@@ -24,6 +24,7 @@ Rectangle {
     signal zoomResetRequested
 
     height: 36
+    clip: true
     color: bgShell
 
     Behavior on color {
@@ -41,11 +42,13 @@ Rectangle {
     }
 
     Rectangle {
+        id: leftInfoPill
         anchors.left: parent.left
         anchors.leftMargin: 10
         anchors.verticalCenter: parent.verticalCenter
         height: 26
-        width: leftInfoRow.implicitWidth + 4
+        width: Math.min(leftInfoRow.implicitWidth + 4, Math.max(0, root.width - rightStatusRow.width - 30))
+        clip: true
         radius: 6
         color: root.bgSurfaceElev
         border.width: 1
@@ -77,7 +80,9 @@ Rectangle {
 
         Row {
             id: leftInfoRow
-            anchors.centerIn: parent
+            anchors.left: parent.left
+            anchors.leftMargin: 2
+            anchors.verticalCenter: parent.verticalCenter
             spacing: 0
 
             M3Button {
@@ -146,6 +151,7 @@ Rectangle {
     }
 
     Row {
+        id: rightStatusRow
         anchors.right: parent.right
         anchors.rightMargin: 10
         anchors.verticalCenter: parent.verticalCenter

@@ -4,6 +4,7 @@ import Nulla 1.0
 
 Item {
     id: pane
+    clip: true
 
     property var session: null
     property bool darkMode: true
@@ -332,15 +333,17 @@ Item {
         }
     }
 
-    Row {
+    Item {
         anchors.fill: parent
-        spacing: 0
+        clip: true
 
         Rectangle {
             id: gutterContainer
             visible: pane.showLineNumbers
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
             width: visible ? gutter.implicitWidth : 0
-            height: parent.height
             color: pane.bgGutter
 
             Behavior on color {
@@ -373,8 +376,11 @@ Item {
 
         Item {
             id: editorViewport
-            width: parent.width - gutterContainer.width
-            height: parent.height
+            anchors.left: gutterContainer.right
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            clip: true
 
             Item {
                 anchors.fill: parent

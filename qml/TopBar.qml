@@ -30,6 +30,7 @@ Rectangle {
     signal menuToggleRequested(real anchorX)
 
     height: 48
+    clip: true
     color: bgHeader
 
     Behavior on color {
@@ -152,18 +153,32 @@ Rectangle {
         id: centerBadge
         readonly property bool dirty: root.activeTab ? root.activeTab.modified : false
         readonly property real fixedContentWidth: 16 + 8 + (dirty ? 14 : 0)
-        readonly property real availableSpan: Math.max(64, root.width - actionGroup.width - rightControls.width - 40)
-        readonly property real naturalWidth: 16 + fixedContentWidth + titleLabel.implicitWidth
+        readonly property string displayTitle: (root.activeTab && root.activeTab.filePath !== "") ? root.activeTab.fileName : (root.ui.untitled || "Untitled")
 
-        y: (parent.height - height) * 0.5
-        x: Math.max(actionGroup.x + actionGroup.width + 10, Math.min(rightControls.x - width - 10, (root.width - width) * 0.5))
+        anchors.left: actionGroup.right
+        anchors.leftMargin: 10
+        anchors.right: rightControls.left
+        anchors.rightMargin: 10
+        anchors.verticalCenter: parent.verticalCenter
         height: 28
-        width: Math.min(naturalWidth, availableSpan)
+        visible: width > 12
         clip: true
+
+        TextMetrics {
+            id: titleMetrics
+            font.pixelSize: 13
+            font.weight: Font.DemiBold
+            text: centerBadge.displayTitle
+        }
 
         Row {
             id: titleRow
-            anchors.centerIn: parent
+            readonly property real maxRowW: Math.max(0, centerBadge.width - 8)
+            readonly property real idealW: centerBadge.fixedContentWidth + Math.ceil(titleMetrics.width)
+            readonly property real rowW: Math.min(idealW, maxRowW)
+            width: rowW
+            height: parent.height
+            x: Math.max(0, Math.min(centerBadge.width - rowW, (root.width - rowW) * 0.5 - centerBadge.x))
             spacing: 8
 
             Image {
@@ -177,9 +192,9 @@ Rectangle {
 
             Text {
                 id: titleLabel
-                width: Math.max(12, Math.min(implicitWidth, centerBadge.width - 16 - centerBadge.fixedContentWidth))
+                width: Math.max(0, Math.min(Math.ceil(titleMetrics.width), titleRow.maxRowW - centerBadge.fixedContentWidth))
                 elide: Text.ElideMiddle
-                text: (root.activeTab && root.activeTab.filePath !== "") ? root.activeTab.fileName : (root.ui.untitled || "Untitled")
+                text: centerBadge.displayTitle
                 color: root.fgMain
                 font.pixelSize: 13
                 font.weight: Font.DemiBold

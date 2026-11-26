@@ -50,26 +50,31 @@ Rectangle {
     color: bgGutter
     clip: true
 
-    Column {
+    Item {
         anchors.fill: parent
-        spacing: 0
+        clip: true
 
         Item {
-            width: parent.width
+            id: findRowWrap
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
             height: 38
 
             Row {
+                id: findRow
                 anchors.left: parent.left
                 anchors.leftMargin: 10
                 anchors.right: closeFindBtn.left
                 anchors.rightMargin: 8
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
+                clip: true
                 spacing: 6
 
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
-                    width: Math.min(264, Math.max(120, root.width - 240))
+                    width: Math.min(264, Math.max(48, findRow.width - (root.gotoMode ? 0 : (82 + findNavBox.width + replaceToggleBtn.width + 18))))
                     height: 26
                     radius: 6
                     color: root.bgEditor
@@ -137,6 +142,7 @@ Rectangle {
                 }
 
                 Rectangle {
+                    id: findNavBox
                     visible: !root.gotoMode
                     anchors.verticalCenter: parent.verticalCenter
                     height: 26
@@ -185,6 +191,7 @@ Rectangle {
                 }
 
                 M3Button {
+                    id: replaceToggleBtn
                     visible: !root.gotoMode
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.ui.replaceBtn || "Replace"
@@ -218,19 +225,25 @@ Rectangle {
         }
 
         Item {
+            id: replaceRowWrap
             visible: root.replaceMode && !root.gotoMode
-            width: parent.width
+            anchors.top: findRowWrap.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
             height: visible ? 34 : 0
+            clip: true
 
             Row {
+                id: replaceRow
                 anchors.fill: parent
                 anchors.leftMargin: 10
                 anchors.rightMargin: 10
+                clip: true
                 spacing: 6
 
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
-                    width: Math.min(264, Math.max(120, root.width - 240))
+                    width: Math.min(264, Math.max(48, replaceRow.width - replaceOneBtn.width - replaceAllBtn.width - 12))
                     height: 26
                     radius: 6
                     color: root.bgEditor
@@ -269,6 +282,7 @@ Rectangle {
                 }
 
                 M3Button {
+                    id: replaceOneBtn
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.ui.replaceBtn || "Replace"
                     ghost: true
@@ -281,6 +295,7 @@ Rectangle {
                 }
 
                 M3Button {
+                    id: replaceAllBtn
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.ui.replaceAllBtn || "All"
                     ghost: true

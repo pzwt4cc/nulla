@@ -418,13 +418,15 @@ ApplicationWindow {
             }
         }
 
-        Column {
+        Item {
             anchors.fill: parent
-            spacing: 0
+            clip: true
 
             TopBar {
                 id: topbar
-                width: parent.width
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
                 darkMode: win.dark
                 theme: win.theme
                 activeTab: backend.activeTab
@@ -466,7 +468,9 @@ ApplicationWindow {
 
             TabStrip {
                 id: tabBar
-                width: parent.width
+                anchors.top: topbar.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
                 darkMode: win.dark
                 theme: win.theme
                 tabModel: backend.tabModel
@@ -493,7 +497,9 @@ ApplicationWindow {
 
             FindBar {
                 id: findBar
-                width: parent.width
+                anchors.top: tabBar.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
                 darkMode: win.dark
                 theme: win.theme
                 totalLines: backend.activeTab ? backend.activeTab.lineCount : 1
@@ -529,8 +535,10 @@ ApplicationWindow {
 
             Item {
                 id: editorHost
-                width: parent.width
-                height: Math.max(80, parent.height - topbar.height - tabBar.height - findBar.height - statusBar.height)
+                anchors.top: findBar.bottom
+                anchors.bottom: statusBar.top
+                anchors.left: parent.left
+                anchors.right: parent.right
                 clip: true
 
                 Repeater {
@@ -578,7 +586,9 @@ ApplicationWindow {
 
             StatusBar {
                 id: statusBar
-                width: parent.width
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
                 darkMode: win.dark
                 theme: win.theme
                 activeTab: backend.activeTab

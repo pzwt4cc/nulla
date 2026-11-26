@@ -75,8 +75,15 @@ Rectangle {
                     readonly property bool hovered: tabMa.containsMouse || closeBtn.hovered
                     readonly property bool isDirty: session ? session.modified : false
 
+                    TextMetrics {
+                        id: tabMetrics
+                        font.pixelSize: 12
+                        font.weight: tabItem.isActive ? Font.DemiBold : Font.Normal
+                        text: (session && session.filePath !== "") ? session.fileName : (root.ui.untitled || "Untitled")
+                    }
+
                     height: 28
-                    width: Math.min(220, Math.max(116, labelText.implicitWidth + 56))
+                    width: Math.min(220, Math.max(116, Math.ceil(tabMetrics.width) + 56))
                     anchors.verticalCenter: parent.verticalCenter
 
                     onIsActiveChanged: {
