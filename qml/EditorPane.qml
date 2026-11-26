@@ -258,6 +258,8 @@ Item {
         }
     }
 
+    onZoomPercentChanged: suppressZoomScroll()
+
     onSessionChanged: {
         if (pane.session) {
             pane.session.attachDocument(editor.textDocument)
@@ -517,7 +519,7 @@ Item {
 
                     Timer {
                         id: zoomSuppressTimer
-                        interval: 60
+                        interval: 140
                         onTriggered: editor.suppressCursorScroll = false
                     }
 

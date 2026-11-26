@@ -19,6 +19,14 @@ Item {
     readonly property color fgTitle: darkMode ? "#eceef2" : "#14161a"
     readonly property color fgSub: darkMode ? "#787f8e" : "#6a7180"
 
+    function selectFirstMatch() {
+        var m = langList.model
+        if (m && m.length > 0 && root.backend) {
+            root.backend.languageId = m[0].id
+            root.closed()
+        }
+    }
+
     onOpenChanged: {
         if (open) {
             langFilter = ""
@@ -141,6 +149,8 @@ Item {
                     text: root.langFilter
                     onTextChanged: root.langFilter = text
                     Keys.onEscapePressed: root.closed()
+                    Keys.onReturnPressed: root.selectFirstMatch()
+                    Keys.onEnterPressed: root.selectFirstMatch()
 
                     Text {
                         visible: langSearch.text === ""

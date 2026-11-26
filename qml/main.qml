@@ -38,6 +38,7 @@ ApplicationWindow {
     readonly property color selBg: dark ? "#2a3449" : "#dbe4f5"
 
     readonly property var activePane: tabRepeater.itemAt(backend.activeTabIndex)
+    readonly property bool modalOpen: confirmModal.open || settingsModal.open || languageModal.open
 
     EditorBackend {
         id: backend
@@ -73,11 +74,11 @@ ApplicationWindow {
         findBar.replaceMode = !gotoMode && !!replaceMode
         findBar.open = true
         var sel = (!gotoMode && activePane) ? activePane.editorItem.selectedText : ""
-        if (sel !== "" && sel.indexOf("\n") === -1) {
+        if (!gotoMode && sel !== "" && sel.indexOf("\n") === -1) {
             findBar.query = sel
-            findBar.focusInput(sel)
+            findBar.focusInput(sel, false)
         } else {
-            findBar.focusInput("")
+            findBar.focusInput("", !!gotoMode)
         }
         if (!gotoMode) {
             updateMatchStats()
@@ -188,38 +189,38 @@ ApplicationWindow {
         }
     }
 
-    Shortcut { sequence: "Ctrl+T"; onActivated: backend.newTab() }
-    Shortcut { sequence: "Ctrl+N"; onActivated: backend.newTab() }
-    Shortcut { sequence: "Ctrl+O"; onActivated: backend.openFileDialog() }
-    Shortcut { sequence: "Ctrl+S"; onActivated: backend.saveFile() }
-    Shortcut { sequence: "Ctrl+Shift+S"; onActivated: backend.saveFileAsDialog() }
-    Shortcut { sequence: "Ctrl+W"; onActivated: requestCloseTab(backend.activeTabIndex) }
-    Shortcut { sequence: "Ctrl+Q"; onActivated: requestQuit() }
-    Shortcut { sequence: "Ctrl+Tab"; onActivated: backend.nextTab() }
-    Shortcut { sequence: "Ctrl+Shift+Tab"; onActivated: backend.prevTab() }
-    Shortcut { sequence: "Ctrl+Backtab"; onActivated: backend.prevTab() }
-    Shortcut { sequence: "Ctrl+PgDown"; onActivated: backend.nextTab() }
-    Shortcut { sequence: "Ctrl+PgUp"; onActivated: backend.prevTab() }
-    Shortcut { sequence: "Ctrl+1"; onActivated: backend.activateTab(0) }
-    Shortcut { sequence: "Ctrl+2"; onActivated: backend.activateTab(1) }
-    Shortcut { sequence: "Ctrl+3"; onActivated: backend.activateTab(2) }
-    Shortcut { sequence: "Ctrl+4"; onActivated: backend.activateTab(3) }
-    Shortcut { sequence: "Ctrl+5"; onActivated: backend.activateTab(4) }
-    Shortcut { sequence: "Ctrl+6"; onActivated: backend.activateTab(5) }
-    Shortcut { sequence: "Ctrl+7"; onActivated: backend.activateTab(6) }
-    Shortcut { sequence: "Ctrl+8"; onActivated: backend.activateTab(7) }
-    Shortcut { sequence: "Ctrl+9"; onActivated: backend.activateTab(8) }
-    Shortcut { sequence: "Ctrl+F"; onActivated: openFindBar(false, false) }
-    Shortcut { sequence: "Ctrl+H"; onActivated: openFindBar(true, false) }
-    Shortcut { sequence: "Ctrl+G"; onActivated: openFindBar(false, true) }
-    Shortcut { sequence: "F3"; onActivated: findNext(false) }
-    Shortcut { sequence: "Shift+F3"; onActivated: findNext(true) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+T"; onActivated: backend.newTab() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+N"; onActivated: backend.newTab() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+O"; onActivated: backend.openFileDialog() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+S"; onActivated: backend.saveFile() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+Shift+S"; onActivated: backend.saveFileAsDialog() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+W"; onActivated: requestCloseTab(backend.activeTabIndex) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+Q"; onActivated: requestQuit() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+Tab"; onActivated: backend.nextTab() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+Shift+Tab"; onActivated: backend.prevTab() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+Backtab"; onActivated: backend.prevTab() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+PgDown"; onActivated: backend.nextTab() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+PgUp"; onActivated: backend.prevTab() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+1"; onActivated: backend.activateTab(0) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+2"; onActivated: backend.activateTab(1) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+3"; onActivated: backend.activateTab(2) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+4"; onActivated: backend.activateTab(3) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+5"; onActivated: backend.activateTab(4) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+6"; onActivated: backend.activateTab(5) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+7"; onActivated: backend.activateTab(6) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+8"; onActivated: backend.activateTab(7) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+9"; onActivated: backend.activateTab(8) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+F"; onActivated: openFindBar(false, false) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+H"; onActivated: openFindBar(true, false) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+G"; onActivated: openFindBar(false, true) }
+    Shortcut { enabled: !win.modalOpen; sequence: "F3"; onActivated: findNext(false) }
+    Shortcut { enabled: !win.modalOpen; sequence: "Shift+F3"; onActivated: findNext(true) }
     Shortcut { sequence: "Ctrl+,"; onActivated: settingsModal.open = !settingsModal.open }
-    Shortcut { sequence: "Ctrl++"; onActivated: backend.zoomIn() }
-    Shortcut { sequence: "Ctrl+="; onActivated: backend.zoomIn() }
-    Shortcut { sequence: "Ctrl+Shift+="; onActivated: backend.zoomIn() }
-    Shortcut { sequence: "Ctrl+-"; onActivated: backend.zoomOut() }
-    Shortcut { sequence: "Ctrl+0"; onActivated: backend.zoomReset() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl++"; onActivated: backend.zoomIn() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+="; onActivated: backend.zoomIn() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+Shift+="; onActivated: backend.zoomIn() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+-"; onActivated: backend.zoomOut() }
+    Shortcut { enabled: !win.modalOpen; sequence: "Ctrl+0"; onActivated: backend.zoomReset() }
     Shortcut {
         sequence: "F11"
         onActivated: {

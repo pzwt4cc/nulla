@@ -31,9 +31,13 @@ Rectangle {
     signal gotoLineRequested(int lineNumber)
     signal closed()
 
-    function focusInput(initialText) {
-        if (initialText !== undefined && initialText !== "") {
+    function focusInput(initialText, isGoto) {
+        if (isGoto) {
+            findInput.text = ""
+        } else if (initialText !== undefined && initialText !== "") {
             findInput.text = initialText
+        } else {
+            findInput.text = root.query
         }
         findInput.forceActiveFocus()
         findInput.selectAll()
@@ -53,9 +57,12 @@ Rectangle {
             height: 38
 
             Row {
-                anchors.fill: parent
+                anchors.left: parent.left
                 anchors.leftMargin: 10
-                anchors.rightMargin: 10
+                anchors.right: closeFindBtn.left
+                anchors.rightMargin: 8
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
                 spacing: 6
 
                 Rectangle {
@@ -82,8 +89,8 @@ Rectangle {
                         font.pixelSize: 12
                         clip: true
                         onTextChanged: {
-                            root.query = text
                             if (!root.gotoMode) {
+                                root.query = text
                                 root.queryEdited(text)
                             }
                         }
@@ -186,22 +193,21 @@ Rectangle {
                     onClicked: root.replaceMode = !root.replaceMode
                 }
 
-                Item {
-                    width: Math.max(1, root.width - (root.gotoMode ? 330 : 480))
-                    height: 1
-                }
+            }
 
-                M3Button {
-                    anchors.verticalCenter: parent.verticalCenter
-                    iconKind: "close"
-                    iconOnly: true
-                    ghost: true
-                    buttonHeight: 26
-                    cornerRadius: 5
-                    darkMode: root.darkMode
-                    tooltipText: "Close (Esc)"
-                    onClicked: root.closed()
-                }
+            M3Button {
+                id: closeFindBtn
+                anchors.right: parent.right
+                anchors.rightMargin: 10
+                anchors.verticalCenter: parent.verticalCenter
+                iconKind: "close"
+                iconOnly: true
+                ghost: true
+                buttonHeight: 26
+                cornerRadius: 5
+                darkMode: root.darkMode
+                tooltipText: "Close (Esc)"
+                onClicked: root.closed()
             }
         }
 
