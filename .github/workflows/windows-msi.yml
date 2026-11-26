@@ -25,7 +25,7 @@ jobs:
           host: "windows"
           target: "desktop"
           arch: "win64_msvc2022_64"
-          modules: "qtshadertools qtsvg"
+          modules: "qtshadertools"
 
       - name: Install Ninja
         run: choco install ninja -y --no-progress
