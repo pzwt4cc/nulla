@@ -125,13 +125,7 @@ Item {
             }
             return accent ? fillAccent : "transparent"
         }
-        border.width: {
-            if (primaryFill) return 0
-            if (accent) return 1.25
-            if (activeChip) return 1
-            if (ghost && !hovered && !pressed) return 0
-            return 1
-        }
+        border.width: primaryFill ? 0 : (accent ? 1.25 : 1)
         border.color: {
             if (dangerHover && (hovered || pressed)) {
                 return borderDanger
@@ -139,17 +133,20 @@ Item {
             if (accent || activeChip) {
                 return borderAccent
             }
-            return hovered ? borderHover : borderNormal
+            if (ghost && !hovered && !pressed) {
+                return "transparent"
+            }
+            return (hovered || pressed) ? borderHover : borderNormal
         }
 
         scale: pressed ? 0.97 : 1.0
         transformOrigin: Item.Center
 
         Behavior on color {
-            ColorAnimation { duration: 80; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
         }
         Behavior on border.color {
-            ColorAnimation { duration: 80; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
         }
         Behavior on scale {
             NumberAnimation { duration: 60; easing.type: Easing.OutCubic }
@@ -193,7 +190,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
 
                 Behavior on color {
-                    ColorAnimation { duration: 80; easing.type: Easing.OutCubic }
+                    ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
                 }
             }
         }

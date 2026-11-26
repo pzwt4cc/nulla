@@ -70,6 +70,7 @@ private:
     QColor m_activeTextColor = QColor(QStringLiteral("#e6e8ec"));
     QColor m_activeLineColor = QColor(QStringLiteral("#1c1e24"));
     qreal m_topPadding = 8.0;
+    qreal m_lineHeight = 16.0;
 };
 
 #endif

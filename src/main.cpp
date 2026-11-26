@@ -1,5 +1,6 @@
 #include "editor_backend.h"
 #include "gutter.h"
+#include "tab_session.h"
 
 #include <QApplication>
 #include <QIcon>
@@ -22,15 +23,19 @@ int main(int argc, char *argv[]) {
 
     qmlRegisterType<EditorBackend>("Nulla", 1, 0, "EditorBackend");
     qmlRegisterType<LineNumberGutter>("Nulla", 1, 0, "LineNumberGutter");
+    qmlRegisterUncreatableType<TabSession>("Nulla", 1, 0, "TabSession", QStringLiteral("Managed by EditorBackend"));
+    qmlRegisterUncreatableType<TabModel>("Nulla", 1, 0, "TabModel", QStringLiteral("Managed by EditorBackend"));
 
-    QString initialFile;
+    QStringList initialFiles;
     const QStringList args = app.arguments();
-    if (args.size() > 1) {
-        initialFile = args.at(1);
+    for (int i = 1; i < args.size(); ++i) {
+        if (!args.at(i).isEmpty()) {
+            initialFiles.append(args.at(i));
+        }
     }
 
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty(QStringLiteral("initialFileArg"), initialFile);
+    engine.rootContext()->setContextProperty(QStringLiteral("initialFilesArg"), initialFiles);
     engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
     if (engine.rootObjects().isEmpty()) {
         return 1;

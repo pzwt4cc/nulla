@@ -18,9 +18,11 @@ public:
     explicit NullaHighlighter(QTextDocument *parent = nullptr);
 
     void configure(bool enabled, const QString &languageId, bool darkMode);
+
     static QVector<NullaLangDef> supportedLanguages();
-    static QString detectLanguage(const QString &filePath, const QString &firstLine);
     static QString languageDisplayName(const QString &id);
+    static QString detectLanguage(const QString &filePath, const QString &contentSample);
+    static QString commentPrefix(const QString &languageId);
 
 protected:
     void highlightBlock(const QString &text) override;
@@ -33,18 +35,16 @@ private:
     };
 
     void rebuildRules();
-    void applyCommentBlock(const QString &text, const QRegularExpression &startExpr,
-                           const QRegularExpression &endExpr, int stateFlag);
 
     bool m_enabled = true;
-    bool m_darkMode = true;
     QString m_languageId = QStringLiteral("plain");
+    bool m_darkMode = true;
+    bool m_hasBlockComments = false;
+    bool m_hasTripleQuotes = false;
 
     QVector<HighlightRule> m_rules;
     QTextCharFormat m_commentFormat;
     QTextCharFormat m_stringFormat;
-    bool m_hasBlockComments = false;
-    bool m_hasTripleQuotes = false;
 };
 
 #endif

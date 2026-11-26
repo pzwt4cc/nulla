@@ -106,15 +106,15 @@ void LineNumberGutter::updateMetricsWidth() {
     if (m_document && m_document->textDocument()) {
         blocks = qMax(1, m_document->textDocument()->blockCount());
     }
-    int digits = 2;
     int v = blocks;
     int count = 0;
     while (v > 0) {
         v /= 10;
         count++;
     }
-    digits = qMax(2, count);
+    const int digits = qMax(2, count);
     const QFontMetricsF fm(m_font);
+    m_lineHeight = fm.height();
     const qreal w = fm.horizontalAdvance(QString(digits, QLatin1Char('9'))) + 22.0;
     if (!qFuzzyCompare(implicitWidth(), w)) {
         setImplicitWidth(qCeil(w));
@@ -134,30 +134,33 @@ void LineNumberGutter::paint(QPainter *painter) {
     painter->setRenderHint(QPainter::TextAntialiasing, true);
     painter->setFont(m_font);
 
-    const qreal viewTop = m_contentY - m_topPadding;
-    const qreal viewBottom = m_contentY + height();
     const qreal rightMargin = 11.0;
+    const qreal docTop = qMax(0.0, m_contentY - m_topPadding - m_lineHeight);
+    int startPos = layout->hitTest(QPointF(0.0, docTop), Qt::FuzzyHit);
+    QTextBlock block = (startPos >= 0) ? td->findBlock(startPos) : td->begin();
+    if (!block.isValid()) {
+        block = td->begin();
+    } else if (block.previous().isValid()) {
+        block = block.previous();
+    }
 
-    QTextBlock block = td->begin();
-    int lineNum = 1;
+    int lineNum = block.isValid() ? (block.blockNumber() + 1) : 1;
+    const qreal maxY = height() + m_lineHeight;
+
     while (block.isValid()) {
         const QRectF rect = layout->blockBoundingRect(block);
         const qreal y = rect.top() - m_contentY + m_topPadding;
-        if (y + rect.height() >= -20.0 && rect.top() <= viewBottom) {
-            if (y > height() + 20.0) {
-                break;
-            }
+        if (y > maxY) {
+            break;
+        }
+        if (y + rect.height() >= -m_lineHeight) {
             const bool isCurrent = (lineNum == m_currentLine);
-            const QFontMetricsF fm(m_font);
-            const qreal lineH = fm.height();
             if (isCurrent && m_activeLineColor.alpha() > 0) {
-                painter->fillRect(QRectF(0.0, y, width(), lineH), m_activeLineColor);
+                painter->fillRect(QRectF(0.0, y, width(), m_lineHeight), m_activeLineColor);
             }
             painter->setPen(isCurrent ? m_activeTextColor : m_textColor);
-            const QRectF drawRect(0.0, y, width() - rightMargin, lineH);
+            const QRectF drawRect(0.0, y, width() - rightMargin, m_lineHeight);
             painter->drawText(drawRect, Qt::AlignRight | Qt::AlignVCenter, QString::number(lineNum));
-        } else if (rect.top() > viewBottom && rect.top() > viewTop + height() + 100.0) {
-            break;
         }
         block = block.next();
         lineNum++;

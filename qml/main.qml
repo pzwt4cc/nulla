@@ -6,21 +6,19 @@ ApplicationWindow {
     id: win
 
     visible: true
-    width: 880
-    height: 610
+    width: 900
+    height: 620
     minimumWidth: 520
     minimumHeight: 360
     flags: Qt.Window | Qt.FramelessWindowHint
     color: "transparent"
-    title: (backend.modified ? "* " : "") + backend.fileName + " — Nulla"
+    title: ((backend.activeTab && backend.activeTab.modified) ? "* " : "") +
+           (backend.activeTab ? backend.activeTab.fileName : "Untitled") + " — Nulla"
 
     property bool forceClose: false
     property string pendingAction: ""
-    property string pendingDropPath: ""
-    property bool findOpen: false
-    property string findQuery: ""
-    property int matchCurrent: 0
-    property int matchTotal: 0
+    property int pendingTabIndex: -1
+    property real menuAnchorX: 0
 
     readonly property bool dark: backend.effectiveDark
     readonly property color bgShell: dark ? "#111215" : "#f2f3f6"
@@ -32,21 +30,22 @@ ApplicationWindow {
     readonly property color bgLineHighlight: dark ? "#1c1e24" : "#eff1f5"
     readonly property color borderSubtle: dark ? "#22242c" : "#e0e3eb"
     readonly property color borderControl: dark ? "#2c2f38" : "#cfd4de"
+    readonly property color borderHover: dark ? "#484e5e" : "#8b93a4"
     readonly property color borderFocus: dark ? "#687082" : "#737b8c"
     readonly property color fgMain: dark ? "#eceef2" : "#14161a"
     readonly property color fgMuted: dark ? "#8c92a0" : "#606674"
     readonly property color fgGutter: dark ? "#4a4f5c" : "#9ba1ae"
     readonly property color selBg: dark ? "#2a3347" : "#dbe4f5"
 
+    readonly property var activePane: tabRepeater.itemAt(backend.activeTabIndex)
+
     EditorBackend {
         id: backend
-        onDocumentLoaded: {
-            flick.stopScrollAnims()
-            editor.cursorPosition = 0
-            flick.contentY = 0
-            flick.contentX = 0
-            flick.targetY = 0
-            flick.targetX = 0
+        onActiveTabChanged: {
+            if (findBar.open && !findBar.gotoMode) {
+                updateMatchStats()
+            }
+            Qt.callLater(focusActiveEditor)
         }
         onErrorOccurred: function(title, message) {
             confirmModal.errorOnly = true
@@ -57,168 +56,162 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        backend.attachDocument(editor.textDocument)
-        if (initialFileArg !== "") {
-            backend.setInitialFile(initialFileArg)
+        if (initialFilesArg && initialFilesArg.length > 0) {
+            backend.setInitialFiles(initialFilesArg)
         }
-        editor.forceActiveFocus()
+        focusActiveEditor()
     }
 
-    function openFindBar() {
-        findOpen = true
-        if (editor.selectedText !== "" && editor.selectedText.indexOf("\n") === -1) {
-            findQuery = editor.selectedText
-            findInput.text = findQuery
+    function focusActiveEditor() {
+        if (activePane) {
+            activePane.focusEditor()
         }
-        updateMatchStats()
-        findInput.forceActiveFocus()
-        findInput.selectAll()
+    }
+
+    function openFindBar(replaceMode, gotoMode) {
+        findBar.gotoMode = !!gotoMode
+        findBar.replaceMode = !gotoMode && !!replaceMode
+        findBar.open = true
+        var sel = (!gotoMode && activePane) ? activePane.editorItem.selectedText : ""
+        if (sel !== "" && sel.indexOf("\n") === -1) {
+            findBar.query = sel
+            findBar.focusInput(sel)
+        } else {
+            findBar.focusInput("")
+        }
+        if (!gotoMode) {
+            updateMatchStats()
+        }
     }
 
     function closeFindBar() {
-        findOpen = false
-        editor.forceActiveFocus()
+        findBar.open = false
+        findBar.gotoMode = false
+        focusActiveEditor()
     }
 
     function updateMatchStats() {
-        if (findQuery === "") {
-            matchCurrent = 0
-            matchTotal = 0
+        if (!backend.activeTab || !activePane || findBar.query === "") {
+            findBar.matchCurrent = 0
+            findBar.matchTotal = 0
             return
         }
-        var st = backend.matchStats(findQuery, editor.selectionStart)
-        matchCurrent = st.current
-        matchTotal = st.total
+        var st = backend.activeTab.matchStats(findBar.query, activePane.editorItem.selectionStart)
+        findBar.matchCurrent = st.current
+        findBar.matchTotal = st.total
     }
 
     function findNext(backward) {
-        if (findQuery === "") {
+        if (!backend.activeTab || !activePane || findBar.query === "") {
             updateMatchStats()
             return
         }
-        var fromPos = backward ? Math.max(0, editor.selectionStart) : editor.selectionEnd
-        var res = backend.findText(findQuery, fromPos, backward)
+        var ed = activePane.editorItem
+        var fromPos = backward ? Math.max(0, ed.selectionStart) : ed.selectionEnd
+        var res = backend.activeTab.findText(findBar.query, fromPos, backward)
         if (res.found) {
-            editor.select(res.start, res.end)
+            ed.select(res.start, res.end)
         }
         updateMatchStats()
     }
 
-    function indentSelection(unindent) {
-        var text = editor.text
-        var selStart = editor.selectionStart
-        var selEnd = editor.selectionEnd
-        if (selStart === selEnd && !unindent) {
-            editor.insert(editor.cursorPosition, "    ")
+    function replaceOne(replacement) {
+        if (!backend.activeTab || !activePane || findBar.query === "") {
             return
         }
-        var lineStart = text.lastIndexOf("\n", Math.max(0, selStart - 1)) + 1
-        var lineEnd = text.indexOf("\n", selEnd)
-        if (lineEnd === -1) {
-            lineEnd = text.length
+        var ed = activePane.editorItem
+        var res = backend.activeTab.replaceMatch(findBar.query, replacement, ed.selectionStart, ed.selectionEnd)
+        if (res.found) {
+            ed.select(res.start, res.end)
         }
-        var block = text.slice(lineStart, lineEnd)
-        var lines = block.split("\n")
-        for (var i = 0; i < lines.length; i++) {
-            if (unindent) {
-                if (lines[i].startsWith("    ")) {
-                    lines[i] = lines[i].slice(4)
-                } else if (lines[i].startsWith("\t")) {
-                    lines[i] = lines[i].slice(1)
-                } else {
-                    lines[i] = lines[i].replace(/^ {1,3}/, "")
-                }
-            } else {
-                lines[i] = "    " + lines[i]
-            }
-        }
-        var updated = lines.join("\n")
-        editor.remove(lineStart, lineEnd)
-        editor.insert(lineStart, updated)
-        editor.select(lineStart, lineStart + updated.length)
+        updateMatchStats()
     }
 
-    function duplicateCurrentLine() {
-        var text = editor.text
-        var pos = editor.cursorPosition
-        var lineStart = pos === 0 ? 0 : text.lastIndexOf("\n", pos - 1) + 1
-        var lineEnd = text.indexOf("\n", pos)
-        if (lineEnd === -1) {
-            lineEnd = text.length
-        }
-        var line = text.slice(lineStart, lineEnd)
-        editor.insert(lineEnd, "\n" + line)
-        editor.cursorPosition = pos + line.length + 1
-    }
-
-    function cutCurrentLine() {
-        var text = editor.text
-        if (text.length === 0) {
+    function replaceAll(replacement) {
+        if (!backend.activeTab || !activePane || findBar.query === "") {
             return
         }
-        var pos = editor.cursorPosition
-        var lineStart = pos === 0 ? 0 : text.lastIndexOf("\n", pos - 1) + 1
-        var lineEnd = text.indexOf("\n", pos)
-        if (lineEnd === -1) {
-            lineEnd = text.length
-        }
-        if (lineEnd < text.length) {
-            editor.select(lineStart, lineEnd + 1)
-        } else if (lineStart > 0) {
-            editor.select(lineStart - 1, lineEnd)
-        } else {
-            editor.select(0, text.length)
-        }
-        editor.cut()
+        backend.activeTab.replaceAllMatches(findBar.query, replacement)
+        updateMatchStats()
     }
 
-    function runPendingAction() {
-        var act = win.pendingAction
-        var dropTarget = win.pendingDropPath
-        win.pendingAction = ""
-        win.pendingDropPath = ""
-        if (act === "new") {
-            backend.newFile()
-            editor.forceActiveFocus()
-        } else if (act === "open") {
-            backend.openFileDialog()
-            editor.forceActiveFocus()
-        } else if (act === "drop" && dropTarget !== "") {
-            backend.loadFile(dropTarget, true)
-            editor.forceActiveFocus()
-        } else if (act === "close") {
-            win.forceClose = true
+    function requestCloseTab(index) {
+        if (backend.tabCount === 1 && backend.isActivePristineUntitled()) {
             win.close()
+            return
         }
-    }
-
-    function requestGuardedAction(actionName, dropPath) {
-        if (backend.modified) {
-            win.pendingAction = actionName
-            win.pendingDropPath = dropPath || ""
+        if (backend.isTabModified(index)) {
+            win.pendingAction = "closeTab"
+            win.pendingTabIndex = index
             confirmModal.errorOnly = false
             confirmModal.title = "Unsaved changes"
-            confirmModal.message = 'Save changes to "' + backend.fileName + '" before continuing?'
+            confirmModal.message = 'Save changes to "' + backend.tabFileName(index) + '" before closing?'
             confirmModal.open = true
             return
         }
-        win.pendingAction = actionName
-        win.pendingDropPath = dropPath || ""
-        runPendingAction()
+        backend.closeTabImmediate(index)
     }
 
-    onClosing: function(close) {
-        if (!win.forceClose && backend.modified) {
-            close.accepted = false
-            requestGuardedAction("close", "")
+    function requestQuit() {
+        var dirtyIdx = backend.firstModifiedTabIndex()
+        if (dirtyIdx >= 0) {
+            backend.activateTab(dirtyIdx)
+            win.pendingAction = "quitApp"
+            win.pendingTabIndex = dirtyIdx
+            confirmModal.errorOnly = false
+            confirmModal.title = "Unsaved changes"
+            confirmModal.message = 'Save changes to "' + backend.tabFileName(dirtyIdx) + '" before exiting?'
+            confirmModal.open = true
+            return
+        }
+        win.forceClose = true
+        win.close()
+    }
+
+    function continuePendingAction() {
+        var act = win.pendingAction
+        var idx = win.pendingTabIndex
+        win.pendingAction = ""
+        win.pendingTabIndex = -1
+        if (act === "closeTab") {
+            backend.closeTabImmediate(idx)
+            focusActiveEditor()
+        } else if (act === "quitApp") {
+            requestQuit()
         }
     }
 
-    Shortcut { sequence: "Ctrl+N"; onActivated: requestGuardedAction("new", "") }
-    Shortcut { sequence: "Ctrl+O"; onActivated: requestGuardedAction("open", "") }
+    onClosing: function(close) {
+        if (!win.forceClose && backend.firstModifiedTabIndex() >= 0) {
+            close.accepted = false
+            requestQuit()
+        }
+    }
+
+    Shortcut { sequence: "Ctrl+T"; onActivated: backend.newTab() }
+    Shortcut { sequence: "Ctrl+N"; onActivated: backend.newTab() }
+    Shortcut { sequence: "Ctrl+O"; onActivated: backend.openFileDialog() }
     Shortcut { sequence: "Ctrl+S"; onActivated: backend.saveFile() }
     Shortcut { sequence: "Ctrl+Shift+S"; onActivated: backend.saveFileAsDialog() }
-    Shortcut { sequence: "Ctrl+F"; onActivated: openFindBar() }
+    Shortcut { sequence: "Ctrl+W"; onActivated: requestCloseTab(backend.activeTabIndex) }
+    Shortcut { sequence: "Ctrl+Q"; onActivated: requestQuit() }
+    Shortcut { sequence: "Ctrl+Tab"; onActivated: backend.nextTab() }
+    Shortcut { sequence: "Ctrl+Shift+Tab"; onActivated: backend.prevTab() }
+    Shortcut { sequence: "Ctrl+Backtab"; onActivated: backend.prevTab() }
+    Shortcut { sequence: "Ctrl+PgDown"; onActivated: backend.nextTab() }
+    Shortcut { sequence: "Ctrl+PgUp"; onActivated: backend.prevTab() }
+    Shortcut { sequence: "Ctrl+1"; onActivated: backend.activateTab(0) }
+    Shortcut { sequence: "Ctrl+2"; onActivated: backend.activateTab(1) }
+    Shortcut { sequence: "Ctrl+3"; onActivated: backend.activateTab(2) }
+    Shortcut { sequence: "Ctrl+4"; onActivated: backend.activateTab(3) }
+    Shortcut { sequence: "Ctrl+5"; onActivated: backend.activateTab(4) }
+    Shortcut { sequence: "Ctrl+6"; onActivated: backend.activateTab(5) }
+    Shortcut { sequence: "Ctrl+7"; onActivated: backend.activateTab(6) }
+    Shortcut { sequence: "Ctrl+8"; onActivated: backend.activateTab(7) }
+    Shortcut { sequence: "Ctrl+9"; onActivated: backend.activateTab(8) }
+    Shortcut { sequence: "Ctrl+F"; onActivated: openFindBar(false, false) }
+    Shortcut { sequence: "Ctrl+H"; onActivated: openFindBar(true, false) }
+    Shortcut { sequence: "Ctrl+G"; onActivated: openFindBar(false, true) }
     Shortcut { sequence: "F3"; onActivated: findNext(false) }
     Shortcut { sequence: "Shift+F3"; onActivated: findNext(true) }
     Shortcut { sequence: "Ctrl+,"; onActivated: settingsModal.open = !settingsModal.open }
@@ -227,15 +220,23 @@ ApplicationWindow {
     Shortcut { sequence: "Ctrl+Shift+="; onActivated: backend.zoomIn() }
     Shortcut { sequence: "Ctrl+-"; onActivated: backend.zoomOut() }
     Shortcut { sequence: "Ctrl+0"; onActivated: backend.zoomReset() }
-    Shortcut { sequence: "Ctrl+W"; onActivated: win.close() }
-    Shortcut { sequence: "Ctrl+Q"; onActivated: win.close() }
+    Shortcut {
+        sequence: "F11"
+        onActivated: {
+            if (win.visibility === Window.FullScreen) {
+                win.showNormal()
+            } else {
+                win.showFullScreen()
+            }
+        }
+    }
     Shortcut {
         sequence: "Escape"
         onActivated: {
             if (confirmModal.open) {
                 confirmModal.open = false
                 win.pendingAction = ""
-                win.pendingDropPath = ""
+                win.pendingTabIndex = -1
             } else if (settingsModal.open) {
                 if (settingsModal.langPickerOpen) {
                     settingsModal.langPickerOpen = false
@@ -244,20 +245,21 @@ ApplicationWindow {
                 }
             } else if (menuPopup.opened) {
                 menuPopup.close()
-            } else if (win.findOpen) {
+            } else if (findBar.open) {
                 closeFindBar()
                 return
             }
-            editor.forceActiveFocus()
+            focusActiveEditor()
         }
     }
 
     Rectangle {
         id: shell
         anchors.fill: parent
-        radius: win.visibility === Window.Maximized ? 0 : 10
+        readonly property bool edgeToEdge: win.visibility === Window.Maximized || win.visibility === Window.FullScreen
+        radius: edgeToEdge ? 0 : 10
         color: win.bgShell
-        border.width: win.visibility === Window.Maximized ? 0 : 1
+        border.width: edgeToEdge ? 0 : 1
         border.color: win.borderSubtle
         clip: true
 
@@ -272,884 +274,160 @@ ApplicationWindow {
             anchors.fill: parent
             spacing: 0
 
-            Rectangle {
+            TopBar {
                 id: topbar
                 width: parent.width
-                height: 44
-                color: win.bgHeader
+                darkMode: win.dark
+                activeTab: backend.activeTab
+                showWindowControls: backend.showWindowControls
+                isMaximized: win.visibility === Window.Maximized
+                menuOpened: menuPopup.opened
+                bgHeader: win.bgHeader
+                bgSurfaceElev: win.bgSurfaceElev
+                borderSubtle: win.borderSubtle
+                borderControl: win.borderControl
+                fgMain: win.fgMain
+                fgMuted: win.fgMuted
 
-                Behavior on color {
-                    ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onPressed: win.startSystemMove()
-                    onDoubleClicked: {
-                        if (win.visibility === Window.Maximized) {
-                            win.showNormal()
-                        } else {
-                            win.showMaximized()
-                        }
+                onMoveWindowRequested: win.startSystemMove()
+                onToggleMaximizeRequested: {
+                    if (win.visibility === Window.Maximized) {
+                        win.showNormal()
+                    } else {
+                        win.showMaximized()
                     }
                 }
-
-                Rectangle {
-                    id: actionGroup
-                    anchors.left: parent.left
-                    anchors.leftMargin: 10
-                    anchors.verticalCenter: parent.verticalCenter
-                    height: 28
-                    width: groupRow.implicitWidth + 2
-                    radius: 8
-                    color: win.bgSurfaceElev
-                    border.width: 1
-                    border.color: win.borderControl
-
-                    Row {
-                        id: groupRow
-                        anchors.centerIn: parent
-                        spacing: 0
-
-                        M3Button {
-                            iconKind: "plus"
-                            iconOnly: true
-                            ghost: true
-                            buttonHeight: 26
-                            cornerRadius: 7
-                            darkMode: win.dark
-                            tooltipText: "New File (Ctrl+N)"
-                            onClicked: requestGuardedAction("new", "")
-                        }
-
-                        Rectangle {
-                            width: 1
-                            height: 14
-                            anchors.verticalCenter: parent.verticalCenter
-                            color: win.borderSubtle
-                        }
-
-                        M3Button {
-                            text: "Open"
-                            ghost: true
-                            buttonHeight: 26
-                            horizontalPadding: 10
-                            cornerRadius: 7
-                            darkMode: win.dark
-                            tooltipText: "Open File (Ctrl+O)"
-                            onClicked: requestGuardedAction("open", "")
-                        }
-
-                        Rectangle {
-                            width: 1
-                            height: 14
-                            anchors.verticalCenter: parent.verticalCenter
-                            color: win.borderSubtle
-                        }
-
-                        M3Button {
-                            text: "Save"
-                            ghost: !backend.modified
-                            accent: backend.modified
-                            showDot: backend.modified
-                            buttonHeight: 26
-                            horizontalPadding: 10
-                            cornerRadius: 7
-                            darkMode: win.dark
-                            tooltipText: "Save File (Ctrl+S)"
-                            onClicked: backend.saveFile()
-                        }
+                onMinimizeRequested: win.showMinimized()
+                onCloseWindowRequested: win.requestQuit()
+                onNewTabRequested: backend.newTab()
+                onOpenFileRequested: backend.openFileDialog()
+                onSaveFileRequested: backend.saveFile()
+                onFindRequested: openFindBar(false, false)
+                onSettingsRequested: settingsModal.open = true
+                onMenuToggleRequested: function(anchorX) {
+                    win.menuAnchorX = anchorX
+                    if (menuPopup.opened) {
+                        menuPopup.close()
+                    } else {
+                        menuPopup.open()
                     }
-                }
-
-                Row {
-                    id: centerTitle
-                    anchors.centerIn: parent
-                    spacing: 7
-                    width: Math.min(24 + titleLabel.implicitWidth + (backend.modified ? 12 : 0),
-                                    Math.max(80, topbar.width - actionGroup.width - rightControls.width - 48))
-
-                    Image {
-                        source: "qrc:/assets/nulla.svg"
-                        width: 14
-                        height: 14
-                        sourceSize: Qt.size(28, 28)
-                        anchors.verticalCenter: parent.verticalCenter
-                        opacity: win.dark ? 0.88 : 0.82
-                    }
-
-                    Text {
-                        id: titleLabel
-                        width: Math.min(implicitWidth, centerTitle.width - 24 - (backend.modified ? 12 : 0))
-                        elide: Text.ElideMiddle
-                        text: backend.fileName
-                        color: backend.modified ? win.fgMain : win.fgMuted
-                        font.pixelSize: 13
-                        font.weight: backend.modified ? Font.DemiBold : Font.Medium
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Rectangle {
-                        visible: backend.modified
-                        width: 6
-                        height: 6
-                        radius: 3
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: win.fgMain
-                    }
-                }
-
-                Row {
-                    id: rightControls
-                    anchors.right: parent.right
-                    anchors.rightMargin: 10
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 3
-
-                    M3Button {
-                        iconKind: "search"
-                        iconOnly: true
-                        ghost: true
-                        buttonHeight: 28
-                        darkMode: win.dark
-                        tooltipText: "Find (Ctrl+F)"
-                        onClicked: openFindBar()
-                    }
-
-                    M3Button {
-                        iconKind: "gear"
-                        iconOnly: true
-                        ghost: true
-                        buttonHeight: 28
-                        darkMode: win.dark
-                        tooltipText: "Settings (Ctrl+,)"
-                        onClicked: settingsModal.open = true
-                    }
-
-                    M3Button {
-                        id: menuBtn
-                        iconKind: "dots"
-                        iconOnly: true
-                        ghost: true
-                        buttonHeight: 28
-                        darkMode: win.dark
-                        tooltipText: "Menu"
-                        onClicked: {
-                            if (menuPopup.opened) {
-                                menuPopup.close()
-                            } else {
-                                menuPopup.open()
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        visible: backend.showWindowControls
-                        width: 1
-                        height: 14
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: win.borderSubtle
-                    }
-
-                    M3Button {
-                        visible: backend.showWindowControls
-                        iconKind: "minus"
-                        iconOnly: true
-                        ghost: true
-                        buttonHeight: 28
-                        darkMode: win.dark
-                        tooltipText: "Minimize"
-                        onClicked: win.showMinimized()
-                    }
-
-                    M3Button {
-                        visible: backend.showWindowControls
-                        iconKind: win.visibility === Window.Maximized ? "restore" : "max"
-                        iconOnly: true
-                        ghost: true
-                        buttonHeight: 28
-                        darkMode: win.dark
-                        tooltipText: win.visibility === Window.Maximized ? "Restore" : "Maximize"
-                        onClicked: {
-                            if (win.visibility === Window.Maximized) {
-                                win.showNormal()
-                            } else {
-                                win.showMaximized()
-                            }
-                        }
-                    }
-
-                    M3Button {
-                        visible: backend.showWindowControls
-                        iconKind: "close"
-                        iconOnly: true
-                        ghost: true
-                        buttonHeight: 28
-                        darkMode: win.dark
-                        dangerHover: true
-                        tooltipText: "Close"
-                        onClicked: win.close()
-                    }
-                }
-
-                Rectangle {
-                    width: parent.width
-                    height: 1
-                    anchors.bottom: parent.bottom
-                    color: win.borderSubtle
                 }
             }
 
-            Rectangle {
-                id: editorCard
+            TabStrip {
+                id: tabBar
                 width: parent.width
-                height: parent.height - topbar.height - statusBar.height
-                color: win.bgEditor
+                darkMode: win.dark
+                tabModel: backend.tabModel
+                activeIndex: backend.activeTabIndex
+                bgShell: win.bgShell
+                bgEditor: win.bgEditor
+                bgHover: win.bgHover
+                borderSubtle: win.borderSubtle
+                borderControl: win.borderControl
+                borderHover: win.borderHover
+                fgMain: win.fgMain
+                fgMuted: win.fgMuted
+
+                onTabActivated: function(index) { backend.activateTab(index) }
+                onTabClosed: function(index) { requestCloseTab(index) }
+                onNewTabRequested: backend.newTab()
+            }
+
+            FindBar {
+                id: findBar
+                width: parent.width
+                darkMode: win.dark
+                totalLines: backend.activeTab ? backend.activeTab.lineCount : 1
+                bgGutter: win.bgGutter
+                bgEditor: win.bgEditor
+                bgSurfaceElev: win.bgSurfaceElev
+                borderSubtle: win.borderSubtle
+                borderControl: win.borderControl
+                borderFocus: win.borderFocus
+                fgMain: win.fgMain
+                fgMuted: win.fgMuted
+                fgGutter: win.fgGutter
+                selBg: win.selBg
+
+                onQueryEdited: updateMatchStats()
+                onFindNextRequested: function(backward) { findNext(backward) }
+                onReplaceOneRequested: function(rep) { replaceOne(rep) }
+                onReplaceAllRequested: function(rep) { replaceAll(rep) }
+                onGotoLineRequested: function(ln) {
+                    if (activePane) {
+                        activePane.jumpToLine(ln)
+                    }
+                }
+                onClosed: closeFindBar()
+            }
+
+            Item {
+                id: editorHost
+                width: parent.width
+                height: Math.max(80, parent.height - topbar.height - tabBar.height - findBar.height - statusBar.height)
                 clip: true
 
-                Behavior on color {
-                    ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
-                }
+                Repeater {
+                    id: tabRepeater
+                    model: backend.tabModel
 
-                Column {
-                    anchors.fill: parent
-                    spacing: 0
+                    delegate: EditorPane {
+                        anchors.fill: parent
+                        visible: index === backend.activeTabIndex
+                        session: model.session
+                        darkMode: win.dark
+                        showLineNumbers: backend.showLineNumbers
+                        zoomPercent: backend.zoomPercent
+                        monoFontFamily: backend.monoFontFamily
+                        bgEditor: win.bgEditor
+                        bgGutter: win.bgGutter
+                        bgLineHighlight: win.bgLineHighlight
+                        borderSubtle: win.borderSubtle
+                        fgMain: win.fgMain
+                        fgGutter: win.fgGutter
+                        selBg: win.selBg
 
-                    Rectangle {
-                        id: findBar
-                        visible: win.findOpen
-                        width: parent.width
-                        height: visible ? 38 : 0
-                        color: win.bgGutter
-
-                        Row {
-                            anchors.fill: parent
-                            anchors.leftMargin: 10
-                            anchors.rightMargin: 10
-                            spacing: 6
-
-                            Rectangle {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: Math.min(264, Math.max(120, findBar.width - 210))
-                                height: 26
-                                radius: 7
-                                color: win.bgEditor
-                                border.width: 1
-                                border.color: findInput.activeFocus ? win.borderFocus : win.borderControl
-
-                                TextInput {
-                                    id: findInput
-                                    anchors.fill: parent
-                                    anchors.leftMargin: 9
-                                    anchors.rightMargin: 9
-                                    verticalAlignment: TextInput.AlignVCenter
-                                    color: win.fgMain
-                                    selectionColor: win.selBg
-                                    font.pixelSize: 12
-                                    clip: true
-                                    onTextChanged: {
-                                        win.findQuery = text
-                                        win.updateMatchStats()
-                                    }
-                                    Keys.onPressed: function(event) {
-                                        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                                            findNext((event.modifiers & Qt.ShiftModifier) !== 0)
-                                            event.accepted = true
-                                        } else if (event.key === Qt.Key_Escape) {
-                                            closeFindBar()
-                                            event.accepted = true
-                                        }
-                                    }
-
-                                    Text {
-                                        visible: findInput.text === ""
-                                        text: "Find in file..."
-                                        color: win.fgGutter
-                                        font.pixelSize: 12
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-                                }
-                            }
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: 64
-                                text: win.findQuery === ""
-                                      ? ""
-                                      : (win.matchTotal > 0 ? (win.matchCurrent + " / " + win.matchTotal) : "0 found")
-                                color: win.fgMuted
-                                font.pixelSize: 12
-                            }
-
-                            Rectangle {
-                                anchors.verticalCenter: parent.verticalCenter
-                                height: 26
-                                width: findNavRow.implicitWidth + 2
-                                radius: 7
-                                color: win.bgSurfaceElev
-                                border.width: 1
-                                border.color: win.borderControl
-
-                                Row {
-                                    id: findNavRow
-                                    anchors.centerIn: parent
-                                    spacing: 0
-
-                                    M3Button {
-                                        iconKind: "up"
-                                        iconOnly: true
-                                        ghost: true
-                                        buttonHeight: 24
-                                        cornerRadius: 6
-                                        darkMode: win.dark
-                                        tooltipText: "Previous (Shift+Enter)"
-                                        onClicked: findNext(true)
-                                    }
-
-                                    Rectangle {
-                                        width: 1
-                                        height: 14
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        color: win.borderSubtle
-                                    }
-
-                                    M3Button {
-                                        iconKind: "chevron"
-                                        iconOnly: true
-                                        ghost: true
-                                        buttonHeight: 24
-                                        cornerRadius: 6
-                                        darkMode: win.dark
-                                        tooltipText: "Next (Enter)"
-                                        onClicked: findNext(false)
-                                    }
-                                }
-                            }
-
-                            Item {
-                                width: Math.max(1, findBar.width - 404)
-                                height: 1
-                            }
-
-                            M3Button {
-                                anchors.verticalCenter: parent.verticalCenter
-                                iconKind: "close"
-                                iconOnly: true
-                                ghost: true
-                                buttonHeight: 26
-                                cornerRadius: 7
-                                darkMode: win.dark
-                                tooltipText: "Close (Esc)"
-                                onClicked: closeFindBar()
-                            }
-                        }
-
-                        Rectangle {
-                            width: parent.width
-                            height: 1
-                            anchors.bottom: parent.bottom
-                            color: win.borderSubtle
-                        }
-                    }
-
-                    Item {
-                        width: parent.width
-                        height: parent.height - findBar.height
-
-                        Row {
-                            anchors.fill: parent
-                            spacing: 0
-
-                            Rectangle {
-                                id: gutterContainer
-                                visible: backend.showLineNumbers
-                                width: visible ? gutter.implicitWidth : 0
-                                height: parent.height
-                                color: win.bgGutter
-
-                                Behavior on color {
-                                    ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
-                                }
-
-                                LineNumberGutter {
-                                    id: gutter
-                                    anchors.fill: parent
-                                    document: editor.textDocument
-                                    contentY: flick.contentY
-                                    currentLine: backend.cursorLine
-                                    font: editor.font
-                                    textColor: win.fgGutter
-                                    activeTextColor: win.fgMain
-                                    activeLineColor: editor.activeFocus ? win.bgLineHighlight : "transparent"
-                                    topPadding: 8
-                                }
-
-                                Rectangle {
-                                    width: 1
-                                    height: parent.height
-                                    anchors.right: parent.right
-                                    color: win.borderSubtle
-                                }
-                            }
-
-                            Item {
-                                width: parent.width - gutterContainer.width
-                                height: parent.height
-
-                                Flickable {
-                                    id: flick
-                                    anchors.fill: parent
-                                    interactive: false
-                                    contentWidth: Math.max(width, editor.contentWidth + 20)
-                                    contentHeight: Math.max(height, editor.contentHeight + 16)
-                                    clip: true
-                                    boundsBehavior: Flickable.StopAtBounds
-
-                                    property real targetY: 0
-                                    property real targetX: 0
-
-                                    function clampY(v) {
-                                        return Math.max(0, Math.min(Math.max(0, contentHeight - height), v))
-                                    }
-
-                                    function clampX(v) {
-                                        return Math.max(0, Math.min(Math.max(0, contentWidth - width), v))
-                                    }
-
-                                    function stopScrollAnims() {
-                                        scrollYAnim.stop()
-                                        scrollXAnim.stop()
-                                        targetY = contentY
-                                        targetX = contentX
-                                    }
-
-                                    function smoothScrollBy(dx, dy, animDuration) {
-                                        if (dy !== 0) {
-                                            var baseY = scrollYAnim.running ? targetY : contentY
-                                            var nextY = clampY(baseY + dy)
-                                            targetY = nextY
-                                            if (animDuration > 0) {
-                                                scrollYAnim.duration = animDuration
-                                                scrollYAnim.to = nextY
-                                                scrollYAnim.restart()
-                                            } else {
-                                                scrollYAnim.stop()
-                                                contentY = nextY
-                                            }
-                                        }
-                                        if (dx !== 0) {
-                                            var baseX = scrollXAnim.running ? targetX : contentX
-                                            var nextX = clampX(baseX + dx)
-                                            targetX = nextX
-                                            if (animDuration > 0) {
-                                                scrollXAnim.duration = animDuration
-                                                scrollXAnim.to = nextX
-                                                scrollXAnim.restart()
-                                            } else {
-                                                scrollXAnim.stop()
-                                                contentX = nextX
-                                            }
-                                        }
-                                    }
-
-                                    onContentHeightChanged: {
-                                        var maxY = Math.max(0, contentHeight - height)
-                                        if (contentY > maxY) {
-                                            scrollYAnim.stop()
-                                            contentY = maxY
-                                            targetY = maxY
-                                        }
-                                    }
-
-                                    onContentWidthChanged: {
-                                        var maxX = Math.max(0, contentWidth - width)
-                                        if (contentX > maxX) {
-                                            scrollXAnim.stop()
-                                            contentX = maxX
-                                            targetX = maxX
-                                        }
-                                    }
-
-                                    NumberAnimation {
-                                        id: scrollYAnim
-                                        target: flick
-                                        property: "contentY"
-                                        duration: 240
-                                        easing.type: Easing.OutCubic
-                                    }
-
-                                    NumberAnimation {
-                                        id: scrollXAnim
-                                        target: flick
-                                        property: "contentX"
-                                        duration: 200
-                                        easing.type: Easing.OutCubic
-                                    }
-
-                                    ScrollBar.vertical: ScrollBar {
-                                        policy: ScrollBar.AsNeeded
-                                        width: 8
-                                        onPressedChanged: if (pressed) flick.stopScrollAnims()
-                                        contentItem: Rectangle {
-                                            implicitWidth: 5
-                                            radius: 3
-                                            color: parent.pressed
-                                                   ? (win.dark ? "#7d8594" : "#6c7382")
-                                                   : (parent.hovered ? (win.dark ? "#5a606e" : "#8d94a3") : (win.dark ? "#373b46" : "#c1c6d0"))
-                                            Behavior on color { ColorAnimation { duration: 100 } }
-                                        }
-                                    }
-
-                                    ScrollBar.horizontal: ScrollBar {
-                                        policy: ScrollBar.AsNeeded
-                                        height: 8
-                                        onPressedChanged: if (pressed) flick.stopScrollAnims()
-                                        contentItem: Rectangle {
-                                            implicitHeight: 5
-                                            radius: 3
-                                            color: parent.pressed
-                                                   ? (win.dark ? "#7d8594" : "#6c7382")
-                                                   : (parent.hovered ? (win.dark ? "#5a606e" : "#8d94a3") : (win.dark ? "#373b46" : "#c1c6d0"))
-                                            Behavior on color { ColorAnimation { duration: 100 } }
-                                        }
-                                    }
-
-                                    Rectangle {
-                                        id: currentLineBand
-                                        visible: editor.activeFocus
-                                        x: 0
-                                        y: editor.y + editor.cursorRectangle.y
-                                        width: Math.max(flick.width, flick.contentWidth)
-                                        height: Math.max(18, editor.cursorRectangle.height)
-                                        color: win.bgLineHighlight
-                                    }
-
-                                    MouseArea {
-                                        x: 0
-                                        y: 0
-                                        width: Math.max(flick.width, flick.contentWidth)
-                                        height: Math.max(flick.height, flick.contentHeight)
-                                        cursorShape: Qt.IBeamCursor
-                                        onPressed: function(mouse) {
-                                            editor.forceActiveFocus()
-                                            editor.cursorPosition = editor.positionAt(mouse.x - editor.x, mouse.y - editor.y)
-                                        }
-                                    }
-
-                                    TextEdit {
-                                        id: editor
-                                        x: 10
-                                        y: 8
-                                        textFormat: TextEdit.PlainText
-                                        selectByMouse: true
-                                        persistentSelection: true
-                                        wrapMode: TextEdit.NoWrap
-                                        color: win.fgMain
-                                        selectionColor: win.selBg
-                                        selectedTextColor: win.fgMain
-                                        cursorVisible: activeFocus
-                                        font.family: backend.monoFontFamily
-                                        font.pixelSize: Math.round(14 * backend.zoomPercent / 100)
-
-                                        property bool suppressCursorScroll: false
-                                        property int lastZoomPercent: backend.zoomPercent
-
-                                        Timer {
-                                            id: zoomSuppressTimer
-                                            interval: 60
-                                            onTriggered: editor.suppressCursorScroll = false
-                                        }
-
-                                        Connections {
-                                            target: backend
-                                            function onSettingsChanged() {
-                                                if (editor.lastZoomPercent !== backend.zoomPercent) {
-                                                    editor.lastZoomPercent = backend.zoomPercent
-                                                    editor.suppressCursorScroll = true
-                                                    zoomSuppressTimer.restart()
-                                                }
-                                            }
-                                        }
-
-                                        onCursorPositionChanged: backend.updateCursorPosition(cursorPosition)
-
-                                        onCursorRectangleChanged: {
-                                            if (suppressCursorScroll) {
-                                                return
-                                            }
-                                            var r = cursorRectangle
-                                            var cy = r.y + y
-                                            var cx = r.x + x
-                                            if (cy - flick.contentY < 8) {
-                                                flick.stopScrollAnims()
-                                                flick.contentY = Math.max(0, cy - 8)
-                                                flick.targetY = flick.contentY
-                                            } else if (cy + r.height - flick.contentY > flick.height - 8) {
-                                                flick.stopScrollAnims()
-                                                flick.contentY = Math.max(0, cy + r.height - flick.height + 8)
-                                                flick.targetY = flick.contentY
-                                            }
-                                            if (cx - flick.contentX < 10) {
-                                                flick.stopScrollAnims()
-                                                flick.contentX = Math.max(0, cx - 10)
-                                                flick.targetX = flick.contentX
-                                            } else if (cx + r.width - flick.contentX > flick.width - 10) {
-                                                flick.stopScrollAnims()
-                                                flick.contentX = Math.max(0, cx + r.width - flick.width + 10)
-                                                flick.targetX = flick.contentX
-                                            }
-                                        }
-
-                                        Keys.onPressed: function(event) {
-                                            if (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier) === 0) {
-                                                indentSelection(false)
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if (event.key === Qt.Key_Backtab ||
-                                                (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier) !== 0)) {
-                                                indentSelection(true)
-                                                event.accepted = true
-                                                return
-                                            }
-                                            if ((event.modifiers & Qt.ControlModifier) !== 0 &&
-                                                (event.modifiers & (Qt.AltModifier | Qt.MetaModifier)) === 0) {
-                                                var k = event.key
-                                                var shift = (event.modifiers & Qt.ShiftModifier) !== 0
-                                                if (k === Qt.Key_Z && shift) {
-                                                    editor.redo()
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if (k === Qt.Key_D || k === 0x0412 || k === 0x0432) {
-                                                    duplicateCurrentLine()
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if ((k === Qt.Key_X || k === 0x0427 || k === 0x0447) && !shift) {
-                                                    if (editor.selectionStart === editor.selectionEnd) {
-                                                        cutCurrentLine()
-                                                    } else {
-                                                        editor.cut()
-                                                    }
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if (k === 0x042f || k === 0x044f) {
-                                                    if (shift) editor.redo()
-                                                    else editor.undo()
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if (k === 0x041d || k === 0x043d) {
-                                                    editor.redo()
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if (k === 0x0421 || k === 0x0441) {
-                                                    editor.copy()
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if (k === 0x041c || k === 0x043c) {
-                                                    editor.paste()
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if (k === 0x0424 || k === 0x0444) {
-                                                    editor.selectAll()
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if (k === 0x0410 || k === 0x0430) {
-                                                    openFindBar()
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if (k === 0x042b || k === 0x044b) {
-                                                    if (shift) backend.saveFileAsDialog()
-                                                    else backend.saveFile()
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if (k === 0x0429 || k === 0x0449) {
-                                                    requestGuardedAction("open", "")
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if (k === 0x0422 || k === 0x0442) {
-                                                    requestGuardedAction("new", "")
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if (k === 0x0419 || k === 0x0439 || k === 0x0426 || k === 0x0446) {
-                                                    win.close()
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                                if (k === 0x0411 || k === 0x0431) {
-                                                    settingsModal.open = !settingsModal.open
-                                                    event.accepted = true
-                                                    return
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            acceptedButtons: Qt.NoButton
-
-                            property real zoomAccum: 0
-
-                            onWheel: function(wheel) {
-                                if ((wheel.modifiers & Qt.ControlModifier) !== 0) {
-                                    var zDelta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.pixelDelta.y
-                                    if (Math.abs(zDelta) >= 120) {
-                                        editor.suppressCursorScroll = true
-                                        zoomSuppressTimer.restart()
-                                        if (zDelta > 0) backend.zoomIn()
-                                        else backend.zoomOut()
-                                        zoomAccum = 0
-                                    } else if (zDelta !== 0) {
-                                        zoomAccum += zDelta
-                                        if (Math.abs(zoomAccum) >= 50) {
-                                            editor.suppressCursorScroll = true
-                                            zoomSuppressTimer.restart()
-                                            if (zoomAccum > 0) backend.zoomIn()
-                                            else backend.zoomOut()
-                                            zoomAccum = 0
-                                        }
-                                    }
-                                    wheel.accepted = true
-                                    return
-                                }
-
-                                var shiftHeld = (wheel.modifiers & Qt.ShiftModifier) !== 0
-                                var dx = 0
-                                var dy = 0
-                                var animMs = 240
-
-                                if (wheel.pixelDelta.y !== 0 && Math.abs(wheel.angleDelta.y) < 120) {
-                                    dy = -wheel.pixelDelta.y * 1.45
-                                    animMs = 90
-                                } else if (wheel.angleDelta.y !== 0) {
-                                    var stepPx = Math.max(150, editor.font.pixelSize * 10.5)
-                                    dy = -(wheel.angleDelta.y / 120.0) * stepPx
-                                }
-
-                                if (wheel.pixelDelta.x !== 0 && Math.abs(wheel.angleDelta.x) < 120) {
-                                    dx = -wheel.pixelDelta.x * 1.45
-                                    animMs = 90
-                                } else if (wheel.angleDelta.x !== 0) {
-                                    var stepX = Math.max(120, editor.font.pixelSize * 8)
-                                    dx = -(wheel.angleDelta.x / 120.0) * stepX
-                                }
-
-                                if (shiftHeld && dx === 0 && dy !== 0) {
-                                    dx = dy
-                                    dy = 0
-                                }
-
-                                if (dx !== 0 || dy !== 0) {
-                                    flick.smoothScrollBy(dx, dy, animMs)
-                                }
-                                wheel.accepted = true
-                            }
-                        }
+                        onZoomInRequested: backend.zoomIn()
+                        onZoomOutRequested: backend.zoomOut()
+                        onOpenFindRequested: openFindBar(false, false)
+                        onOpenReplaceRequested: openFindBar(true, false)
+                        onOpenGotoRequested: openFindBar(false, true)
+                        onNewTabRequested: backend.newTab()
+                        onOpenFileRequested: backend.openFileDialog()
+                        onSaveFileRequested: backend.saveFile()
+                        onSaveAsRequested: backend.saveFileAsDialog()
+                        onCloseTabRequested: requestCloseTab(index)
+                        onQuitRequested: requestQuit()
+                        onToggleSettingsRequested: settingsModal.open = !settingsModal.open
                     }
                 }
             }
 
-            Rectangle {
+            StatusBar {
                 id: statusBar
                 width: parent.width
-                height: 28
-                color: win.bgShell
+                darkMode: win.dark
+                activeTab: backend.activeTab
+                zoomPercent: backend.zoomPercent
+                bgShell: win.bgShell
+                borderSubtle: win.borderSubtle
+                fgMuted: win.fgMuted
+                fgGutter: win.fgGutter
 
-                Behavior on color {
-                    ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
+                onLanguageClicked: {
+                    settingsModal.open = true
+                    settingsModal.langPickerOpen = true
                 }
-
-                Rectangle {
-                    width: parent.width
-                    height: 1
-                    anchors.top: parent.top
-                    color: win.borderSubtle
-                }
-
-                Row {
-                    anchors.left: parent.left
-                    anchors.leftMargin: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 8
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "Ln " + backend.cursorLine + ", Col " + backend.cursorColumn
-                        color: win.fgMuted
-                        font.pixelSize: 11
-                    }
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "·"
-                        color: win.fgGutter
-                        font.pixelSize: 11
-                    }
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: backend.lineCount + (backend.lineCount === 1 ? " line" : " lines")
-                        color: win.fgGutter
-                        font.pixelSize: 11
-                    }
-                }
-
-                Row {
-                    anchors.right: parent.right
-                    anchors.rightMargin: 8
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 4
-
-                    M3Button {
-                        text: backend.statusLanguage
-                        ghost: true
-                        darkMode: win.dark
-                        buttonHeight: 20
-                        horizontalPadding: 8
-                        fontPixelSize: 11
-                        cornerRadius: 6
-                        tooltipText: "Change syntax language"
-                        onClicked: {
-                            settingsModal.open = true
-                            settingsModal.langPickerOpen = true
-                        }
-                    }
-
-                    M3Button {
-                        text: backend.zoomPercent + "%"
-                        ghost: true
-                        darkMode: win.dark
-                        buttonHeight: 20
-                        horizontalPadding: 8
-                        fontPixelSize: 11
-                        cornerRadius: 6
-                        tooltipText: "Reset zoom (Ctrl+0)"
-                        onClicked: backend.zoomReset()
-                    }
-                }
+                onZoomResetRequested: backend.zoomReset()
             }
         }
 
         Popup {
             id: menuPopup
-            x: rightControls.x + menuBtn.x + menuBtn.width - width + 4
+            x: win.menuAnchorX > 0 ? Math.max(8, win.menuAnchorX - width) : (win.width - width - 10)
             y: topbar.height - 2
-            width: 214
+            width: 224
             padding: 6
             modal: true
             focus: true
@@ -1175,11 +453,14 @@ ApplicationWindow {
 
                 Repeater {
                     model: [
-                        { label: "New", shortcut: "Ctrl+N", act: "new", sep: false },
+                        { label: "New Tab", shortcut: "Ctrl+T", act: "new", sep: false },
                         { label: "Open...", shortcut: "Ctrl+O", act: "open", sep: false },
                         { label: "Save", shortcut: "Ctrl+S", act: "save", sep: false },
-                        { label: "Save As...", shortcut: "Ctrl+Shift+S", act: "saveas", sep: true },
-                        { label: "Find...", shortcut: "Ctrl+F", act: "find", sep: true },
+                        { label: "Save As...", shortcut: "Ctrl+Shift+S", act: "saveas", sep: false },
+                        { label: "Close Tab", shortcut: "Ctrl+W", act: "closetab", sep: true },
+                        { label: "Find...", shortcut: "Ctrl+F", act: "find", sep: false },
+                        { label: "Replace...", shortcut: "Ctrl+H", act: "replace", sep: false },
+                        { label: "Go to Line...", shortcut: "Ctrl+G", act: "goto", sep: true },
                         { label: "Zoom In", shortcut: "Ctrl++", act: "zoomin", sep: false },
                         { label: "Zoom Out", shortcut: "Ctrl+-", act: "zoomout", sep: false },
                         { label: "Reset Zoom", shortcut: "Ctrl+0", act: "zoomreset", sep: true },
@@ -1188,34 +469,36 @@ ApplicationWindow {
                     ]
 
                     delegate: Column {
-                        width: 202
+                        width: 212
                         spacing: 2
 
                         Rectangle {
-                            id: menuRow
                             width: parent.width
-                            height: 30
+                            height: 29
                             radius: 7
                             color: rowMa.pressed
-                                   ? (win.dark ? "#2c303a" : "#d8dce5")
+                                   ? (win.dark ? "#282b34" : "#d8dce5")
                                    : (rowMa.containsMouse ? win.bgHover : "transparent")
+                            border.width: 1
+                            border.color: rowMa.containsMouse ? win.borderControl : "transparent"
                             scale: rowMa.pressed ? 0.985 : 1.0
 
-                            Behavior on color { ColorAnimation { duration: 90 } }
-                            Behavior on scale { NumberAnimation { duration: 65 } }
+                            Behavior on color { ColorAnimation { duration: 100 } }
+                            Behavior on border.color { ColorAnimation { duration: 100 } }
+                            Behavior on scale { NumberAnimation { duration: 60 } }
 
                             Text {
                                 anchors.left: parent.left
-                                anchors.leftMargin: 12
+                                anchors.leftMargin: 10
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData.label
                                 color: win.fgMain
-                                font.pixelSize: 13
+                                font.pixelSize: 12
                             }
 
                             Text {
                                 anchors.right: parent.right
-                                anchors.rightMargin: 12
+                                anchors.rightMargin: 10
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData.shortcut
                                 color: win.fgGutter
@@ -1230,23 +513,26 @@ ApplicationWindow {
                                 onClicked: {
                                     menuPopup.close()
                                     var a = modelData.act
-                                    if (a === "new") requestGuardedAction("new", "")
-                                    else if (a === "open") requestGuardedAction("open", "")
+                                    if (a === "new") backend.newTab()
+                                    else if (a === "open") backend.openFileDialog()
                                     else if (a === "save") backend.saveFile()
                                     else if (a === "saveas") backend.saveFileAsDialog()
-                                    else if (a === "find") openFindBar()
+                                    else if (a === "closetab") requestCloseTab(backend.activeTabIndex)
+                                    else if (a === "find") openFindBar(false, false)
+                                    else if (a === "replace") openFindBar(true, false)
+                                    else if (a === "goto") openFindBar(false, true)
                                     else if (a === "zoomin") backend.zoomIn()
                                     else if (a === "zoomout") backend.zoomOut()
                                     else if (a === "zoomreset") backend.zoomReset()
                                     else if (a === "settings") settingsModal.open = true
-                                    else if (a === "quit") win.close()
+                                    else if (a === "quit") requestQuit()
                                 }
                             }
                         }
 
                         Rectangle {
                             visible: modelData.sep
-                            width: parent.width - 16
+                            width: parent.width - 12
                             height: 1
                             anchors.horizontalCenter: parent.horizontalCenter
                             color: win.borderSubtle
@@ -1262,7 +548,7 @@ ApplicationWindow {
             backend: backend
             onClosed: {
                 open = false
-                editor.forceActiveFocus()
+                focusActiveEditor()
             }
         }
 
@@ -1272,21 +558,21 @@ ApplicationWindow {
             onCancelled: {
                 open = false
                 win.pendingAction = ""
-                win.pendingDropPath = ""
-                editor.forceActiveFocus()
+                win.pendingTabIndex = -1
+                focusActiveEditor()
             }
             onDiscarded: {
                 open = false
-                backend.discardChanges()
-                win.runPendingAction()
+                backend.discardTabChanges(win.pendingTabIndex)
+                win.continuePendingAction()
             }
             onSaved: {
                 open = false
-                if (backend.saveFile()) {
-                    win.runPendingAction()
+                if (backend.saveFile(win.pendingTabIndex)) {
+                    win.continuePendingAction()
                 } else {
                     win.pendingAction = ""
-                    win.pendingDropPath = ""
+                    win.pendingTabIndex = -1
                 }
             }
         }
@@ -1295,60 +581,62 @@ ApplicationWindow {
             anchors.fill: parent
             onDropped: function(drop) {
                 if (drop.hasUrls && drop.urls.length > 0) {
-                    requestGuardedAction("drop", drop.urls[0].toString())
+                    for (var i = 0; i < drop.urls.length; i++) {
+                        backend.loadFile(drop.urls[i].toString(), true)
+                    }
                 }
             }
         }
     }
 
     MouseArea {
-        visible: win.visibility !== Window.Maximized
+        visible: !shell.edgeToEdge
         anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom
         anchors.topMargin: 10; anchors.bottomMargin: 10
         width: 5; cursorShape: Qt.SizeHorCursor
         onPressed: win.startSystemResize(Qt.LeftEdge)
     }
     MouseArea {
-        visible: win.visibility !== Window.Maximized
+        visible: !shell.edgeToEdge
         anchors.right: parent.right; anchors.top: parent.top; anchors.bottom: parent.bottom
         anchors.topMargin: 10; anchors.bottomMargin: 10
         width: 5; cursorShape: Qt.SizeHorCursor
         onPressed: win.startSystemResize(Qt.RightEdge)
     }
     MouseArea {
-        visible: win.visibility !== Window.Maximized
+        visible: !shell.edgeToEdge
         anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right
         anchors.leftMargin: 10; anchors.rightMargin: 10
         height: 5; cursorShape: Qt.SizeVerCursor
         onPressed: win.startSystemResize(Qt.TopEdge)
     }
     MouseArea {
-        visible: win.visibility !== Window.Maximized
+        visible: !shell.edgeToEdge
         anchors.bottom: parent.bottom; anchors.left: parent.left; anchors.right: parent.right
         anchors.leftMargin: 10; anchors.rightMargin: 10
         height: 5; cursorShape: Qt.SizeVerCursor
         onPressed: win.startSystemResize(Qt.BottomEdge)
     }
     MouseArea {
-        visible: win.visibility !== Window.Maximized
+        visible: !shell.edgeToEdge
         anchors.left: parent.left; anchors.top: parent.top
         width: 10; height: 10; cursorShape: Qt.SizeFDiagCursor
         onPressed: win.startSystemResize(Qt.LeftEdge | Qt.TopEdge)
     }
     MouseArea {
-        visible: win.visibility !== Window.Maximized
+        visible: !shell.edgeToEdge
         anchors.right: parent.right; anchors.top: parent.top
         width: 10; height: 10; cursorShape: Qt.SizeBDiagCursor
         onPressed: win.startSystemResize(Qt.RightEdge | Qt.TopEdge)
     }
     MouseArea {
-        visible: win.visibility !== Window.Maximized
+        visible: !shell.edgeToEdge
         anchors.left: parent.left; anchors.bottom: parent.bottom
         width: 10; height: 10; cursorShape: Qt.SizeBDiagCursor
         onPressed: win.startSystemResize(Qt.LeftEdge | Qt.BottomEdge)
     }
     MouseArea {
-        visible: win.visibility !== Window.Maximized
+        visible: !shell.edgeToEdge
         anchors.right: parent.right; anchors.bottom: parent.bottom
         width: 10; height: 10; cursorShape: Qt.SizeFDiagCursor
         onPressed: win.startSystemResize(Qt.RightEdge | Qt.BottomEdge)

@@ -1,6 +1,11 @@
 <RCC>
     <qresource prefix="/">
         <file>qml/main.qml</file>
+        <file>qml/EditorPane.qml</file>
+        <file>qml/TopBar.qml</file>
+        <file>qml/TabStrip.qml</file>
+        <file>qml/FindBar.qml</file>
+        <file>qml/StatusBar.qml</file>
         <file>qml/M3Button.qml</file>
         <file>qml/M3Switch.qml</file>
         <file>qml/SettingsModal.qml</file>
