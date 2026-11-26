@@ -5,37 +5,38 @@
 #include <gtksourceview/gtksource.h>
 
 typedef enum {
-	NULLA_THEME_GTK = 0,
-	NULLA_THEME_LIGHT = 1,
-	NULLA_THEME_DARK = 2
+  NULLA_THEME_GTK = 0,
+  NULLA_THEME_LIGHT = 1,
+  NULLA_THEME_DARK = 2
 } NullaThemeMode;
 
 typedef enum {
-	NULLA_PENDING_NONE = 0,
-	NULLA_PENDING_NEW,
-	NULLA_PENDING_OPEN,
-	NULLA_PENDING_CLOSE
+  NULLA_PENDING_NONE = 0,
+  NULLA_PENDING_NEW,
+  NULLA_PENDING_OPEN,
+  NULLA_PENDING_CLOSE
 } NullaPendingAction;
 
 typedef struct {
-	gboolean show_line_numbers;
-	NullaThemeMode theme_mode;
-	gboolean syntax_enabled;
-	char *language_id;
-	int zoom_percent;
+  gboolean show_line_numbers;
+  NullaThemeMode theme_mode;
+  gboolean syntax_enabled;
+  char *language_id;
+  int zoom_percent;
 } NullaConfig;
 
 typedef struct {
-	GtkApplication *app;
-	GtkWidget *window;
-	GtkWidget *view;
-	GtkSourceBuffer *buffer;
-	GtkSourceFile *source_file;
-	GtkCssProvider *css_provider;
-	GtkWidget *settings_window;
-	NullaConfig *config;
-	gboolean force_close;
-	NullaPendingAction pending_action;
+  GtkApplication *app;
+  GtkWidget *window;
+  GtkWidget *view;
+  GtkSourceBuffer *buffer;
+  GtkSourceFile *source_file;
+  GtkCssProvider *css_provider;
+  GtkWidget *settings_window;
+  GCancellable *cancellable;
+  NullaConfig *config;
+  gboolean force_close;
+  NullaPendingAction pending_action;
 } NullaWindow;
 
 void nulla_config_init(NullaConfig *cfg);
@@ -50,7 +51,8 @@ void nulla_window_apply_language(NullaWindow *win);
 void nulla_window_apply_theme(NullaWindow *win);
 void nulla_window_apply_zoom(NullaWindow *win);
 void nulla_window_update_title(NullaWindow *win);
-void nulla_window_show_error(NullaWindow *win, const char *title, const char *message);
+void nulla_window_show_error(NullaWindow *win, const char *title,
+                             const char *message);
 void nulla_window_run_pending(NullaWindow *win);
 
 void nulla_file_new(NullaWindow *win);
