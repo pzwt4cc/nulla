@@ -21,22 +21,23 @@ ApplicationWindow {
     property real menuAnchorX: 0
 
     readonly property bool dark: backend.effectiveDark
+    readonly property var theme: backend.theme
     readonly property var ui: backend.ui
-    readonly property color bgShell: dark ? "#0d0e11" : "#ebedf2"
-    readonly property color bgHeader: dark ? "#0d0e11" : "#ebedf2"
-    readonly property color bgEditor: dark ? "#16181e" : "#ffffff"
-    readonly property color bgGutter: dark ? "#121318" : "#f5f6f9"
-    readonly property color bgSurfaceElev: dark ? "#1c1f27" : "#ffffff"
-    readonly property color bgHover: dark ? "#252934" : "#e2e5ed"
-    readonly property color bgLineHighlight: dark ? "#1f232c" : "#eff2f8"
-    readonly property color borderSubtle: dark ? "#222630" : "#dadde6"
-    readonly property color borderControl: dark ? "#313644" : "#c6ccd8"
-    readonly property color borderHover: dark ? "#52596d" : "#8b93a5"
-    readonly property color borderFocus: dark ? "#6e768b" : "#687183"
-    readonly property color fgMain: dark ? "#f0f2f6" : "#14161a"
-    readonly property color fgMuted: dark ? "#9ca3b4" : "#565e6d"
-    readonly property color fgGutter: dark ? "#565d6e" : "#8c93a3"
-    readonly property color selBg: dark ? "#2e3d59" : "#cde0ff"
+    readonly property color bgShell: theme.bgShell || (dark ? "#0d0e11" : "#ebedf2")
+    readonly property color bgHeader: theme.bgHeader || (dark ? "#0d0e11" : "#ebedf2")
+    readonly property color bgEditor: theme.bgEditor || (dark ? "#16181e" : "#ffffff")
+    readonly property color bgGutter: theme.bgGutter || (dark ? "#121318" : "#f5f6f9")
+    readonly property color bgSurfaceElev: theme.bgSurfaceElev || (dark ? "#1c1f27" : "#ffffff")
+    readonly property color bgHover: theme.bgHover || (dark ? "#252934" : "#e2e5ed")
+    readonly property color bgLineHighlight: theme.bgLineHighlight || (dark ? "#1f232c" : "#eff2f8")
+    readonly property color borderSubtle: theme.borderSubtle || (dark ? "#222630" : "#dadde6")
+    readonly property color borderControl: theme.borderControl || (dark ? "#313644" : "#c6ccd8")
+    readonly property color borderHover: theme.borderHover || (dark ? "#52596d" : "#8b93a5")
+    readonly property color borderFocus: theme.borderFocus || (dark ? "#6e768b" : "#687183")
+    readonly property color fgMain: theme.fgMain || (dark ? "#f0f2f6" : "#14161a")
+    readonly property color fgMuted: theme.fgMuted || (dark ? "#9ca3b4" : "#565e6d")
+    readonly property color fgGutter: theme.fgGutter || (dark ? "#565d6e" : "#8c93a3")
+    readonly property color selBg: theme.selBg || (dark ? "#2e3d59" : "#cde0ff")
 
     readonly property var activePane: tabRepeater.itemAt(backend.activeTabIndex)
     readonly property bool modalOpen: confirmModal.open || settingsModal.open || languageModal.open
@@ -425,6 +426,7 @@ ApplicationWindow {
                 id: topbar
                 width: parent.width
                 darkMode: win.dark
+                theme: win.theme
                 activeTab: backend.activeTab
                 showWindowControls: backend.showWindowControls
                 isMaximized: win.visibility === Window.Maximized
@@ -466,6 +468,7 @@ ApplicationWindow {
                 id: tabBar
                 width: parent.width
                 darkMode: win.dark
+                theme: win.theme
                 tabModel: backend.tabModel
                 tabCount: backend.tabCount
                 activeIndex: backend.activeTabIndex
@@ -492,6 +495,7 @@ ApplicationWindow {
                 id: findBar
                 width: parent.width
                 darkMode: win.dark
+                theme: win.theme
                 totalLines: backend.activeTab ? backend.activeTab.lineCount : 1
                 ui: win.ui
                 bgGutter: win.bgGutter
@@ -538,6 +542,7 @@ ApplicationWindow {
                         visible: index === backend.activeTabIndex
                         session: model.session
                         darkMode: win.dark
+                theme: win.theme
                         showLineNumbers: backend.showLineNumbers
                         zoomPercent: backend.zoomPercent
                         monoFontFamily: backend.monoFontFamily
@@ -575,6 +580,7 @@ ApplicationWindow {
                 id: statusBar
                 width: parent.width
                 darkMode: win.dark
+                theme: win.theme
                 activeTab: backend.activeTab
                 zoomPercent: backend.zoomPercent
                 selectedChars: activePane ? activePane.selectedLength : 0
@@ -642,7 +648,7 @@ ApplicationWindow {
                     anchors.leftMargin: 10
                     anchors.rightMargin: 10
                     height: 1
-                    color: win.dark ? "#12ffffff" : "#80ffffff"
+                    color: win.theme.sheen || (win.dark ? "#12ffffff" : "#80ffffff")
                 }
             }
 
@@ -674,7 +680,7 @@ ApplicationWindow {
                             width: parent.width
                             height: 29
                             radius: 5
-                            color: rowMa.pressed ? (win.dark ? "#282b34" : "#d8dce5") : (rowMa.containsMouse ? win.bgHover : "transparent")
+                            color: rowMa.pressed ? (win.theme.bgPressed || (win.dark ? "#282b34" : "#d8dce5")) : (rowMa.containsMouse ? win.bgHover : "transparent")
                             border.width: 1
                             border.color: rowMa.containsMouse ? win.borderControl : "transparent"
                             scale: rowMa.pressed ? 0.985 : 1.0
@@ -766,6 +772,7 @@ ApplicationWindow {
         SettingsModal {
             id: settingsModal
             darkMode: win.dark
+                theme: win.theme
             backend: backend
             ui: win.ui
             onClosed: {
@@ -777,6 +784,7 @@ ApplicationWindow {
         LanguageModal {
             id: languageModal
             darkMode: win.dark
+                theme: win.theme
             backend: backend
             ui: win.ui
             onClosed: {
@@ -788,6 +796,7 @@ ApplicationWindow {
         ConfirmModal {
             id: confirmModal
             darkMode: win.dark
+                theme: win.theme
             ui: win.ui
             onCancelled: {
                 open = false;

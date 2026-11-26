@@ -4,6 +4,7 @@ Rectangle {
     id: root
 
     property bool darkMode: true
+    property var theme: ({})
     property var tabModel: null
     property int tabCount: 1
     property int activeIndex: 0
@@ -125,7 +126,7 @@ Rectangle {
                             anchors.leftMargin: 5
                             anchors.rightMargin: 5
                             height: 1
-                            color: root.darkMode ? "#12ffffff" : "#90ffffff"
+                            color: root.theme.sheenBright || (root.darkMode ? "#12ffffff" : "#90ffffff")
                         }
 
                         Rectangle {
@@ -206,6 +207,7 @@ Rectangle {
                         iconSize: 11
                         cornerRadius: 4
                         darkMode: root.darkMode
+            theme: root.theme
                         onClicked: root.tabClosed(index)
 
                         Behavior on opacity {
@@ -232,6 +234,7 @@ Rectangle {
         iconSize: 15
         cornerRadius: 6
         darkMode: root.darkMode
+            theme: root.theme
         tooltipText: root.ui.newTabTip || "New Tab (Ctrl+T)"
         onClicked: root.newTabRequested()
     }

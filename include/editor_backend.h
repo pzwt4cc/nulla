@@ -12,6 +12,9 @@
 #include <QVariantMap>
 #include <QVector>
 
+class QFileSystemWatcher;
+class QTimer;
+
 class TabModel : public QAbstractListModel {
   Q_OBJECT
 
@@ -48,6 +51,7 @@ class EditorBackend : public QObject {
   Q_PROPERTY(
       int themeMode READ themeMode WRITE setThemeMode NOTIFY themeChanged)
   Q_PROPERTY(bool effectiveDark READ effectiveDark NOTIFY themeChanged)
+  Q_PROPERTY(QVariantMap theme READ theme NOTIFY themeChanged)
   Q_PROPERTY(bool syntaxEnabled READ syntaxEnabled WRITE setSyntaxEnabled NOTIFY
                  settingsChanged)
   Q_PROPERTY(QString languageId READ languageId WRITE setLanguageId NOTIFY
@@ -68,6 +72,8 @@ public:
 
   explicit EditorBackend(QObject *parent = nullptr);
 
+  bool eventFilter(QObject *watched, QEvent *event) override;
+
   TabModel *tabModel() { return &m_tabModel; }
   int activeTabIndex() const { return m_activeTabIndex; }
   TabSession *activeTab() const;
@@ -75,7 +81,8 @@ public:
 
   bool showLineNumbers() const { return m_showLineNumbers; }
   int themeMode() const { return m_themeMode; }
-  bool effectiveDark() const;
+  bool effectiveDark() const { return m_effectiveDark; }
+  QVariantMap theme() const { return m_theme; }
   bool syntaxEnabled() const { return m_syntaxEnabled; }
   QString languageId() const;
   int zoomPercent() const { return m_zoomPercent; }
@@ -126,12 +133,15 @@ signals:
 
 private slots:
   void onSystemColorSchemeChanged();
+  void onThemeFilesChanged();
 
 private:
   TabSession *createSession();
   TabSession *tabAtOrActive(int index) const;
   int findOpenTabByPath(const QString &absPath) const;
   void propagateThemeAndSyntax();
+  void rebuildThemePalette();
+  void updateThemeWatches();
   void initTranslations();
   void applyUiLanguageStrings();
   void loadSettings();
@@ -142,6 +152,8 @@ private:
 
   bool m_showLineNumbers = true;
   int m_themeMode = ThemeDark;
+  bool m_effectiveDark = true;
+  QVariantMap m_theme;
   bool m_syntaxEnabled = true;
   int m_zoomPercent = 100;
   QString m_uiLanguage = QStringLiteral("en");
@@ -150,6 +162,9 @@ private:
   QVariantMap m_uiStrings;
   bool m_showWindowControls = false;
   QString m_monoFontFamily;
+  QFileSystemWatcher *m_themeWatcher = nullptr;
+  QTimer *m_themeReloadTimer = nullptr;
+  QStringList m_watchedThemeFiles;
 };
 
 #endif

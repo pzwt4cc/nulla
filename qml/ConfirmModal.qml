@@ -5,6 +5,7 @@ Item {
 
     property bool open: false
     property bool darkMode: true
+    property var theme: ({})
     property bool errorOnly: false
     property string title: ""
     property string message: ""
@@ -28,7 +29,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: darkMode ? "#9608090c" : "#66101216"
+        color: theme.scrim || (darkMode ? "#9608090c" : "#66101216")
     }
 
     MouseArea {
@@ -42,9 +43,9 @@ Item {
         height: contentCol.implicitHeight + 40
         anchors.centerIn: parent
         radius: 12
-        color: darkMode ? "#17191e" : "#ffffff"
+        color: theme.bgCard || (darkMode ? "#17191e" : "#ffffff")
         border.width: 1
-        border.color: darkMode ? "#2c303a" : "#cfd4df"
+        border.color: theme.borderControl || (darkMode ? "#2c303a" : "#cfd4df")
         clip: true
         scale: root.open ? 1.0 : 0.985
 
@@ -67,7 +68,7 @@ Item {
             anchors.leftMargin: 12
             anchors.rightMargin: 12
             height: 1
-            color: darkMode ? "#14ffffff" : "#90ffffff"
+            color: theme.sheenBright || (darkMode ? "#14ffffff" : "#90ffffff")
         }
 
         Column {
@@ -78,7 +79,7 @@ Item {
 
             Text {
                 text: root.title
-                color: darkMode ? "#eceef2" : "#14161a"
+                color: theme.fgTitle || (darkMode ? "#eceef2" : "#14161a")
                 font.pixelSize: 15
                 font.weight: Font.DemiBold
                 width: parent.width
@@ -87,7 +88,7 @@ Item {
 
             Text {
                 text: root.message
-                color: darkMode ? "#8f96a4" : "#5e6573"
+                color: theme.fgMuted || (darkMode ? "#8f96a4" : "#5e6573")
                 font.pixelSize: 13
                 lineHeight: 1.35
                 width: parent.width
@@ -108,6 +109,7 @@ Item {
                     text: root.ui.btnCancel || "Cancel"
                     ghost: true
                     darkMode: root.darkMode
+                    theme: root.theme
                     buttonHeight: 32
                     cornerRadius: 9
                     horizontalPadding: 12
@@ -119,6 +121,7 @@ Item {
                     text: root.ui.btnDiscard || "Discard"
                     elevated: true
                     darkMode: root.darkMode
+                    theme: root.theme
                     dangerHover: true
                     buttonHeight: 32
                     cornerRadius: 9
@@ -129,6 +132,7 @@ Item {
                 M3Button {
                     text: root.errorOnly ? (root.ui.btnOk || "OK") : (root.ui.btnSave || "Save")
                     darkMode: root.darkMode
+                    theme: root.theme
                     primaryFill: true
                     buttonHeight: 32
                     cornerRadius: 9

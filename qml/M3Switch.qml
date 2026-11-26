@@ -5,18 +5,19 @@ Item {
 
     property bool checked: false
     property bool darkMode: true
+    property var theme: ({})
 
     signal toggled(bool newValue)
 
     implicitWidth: 44
     implicitHeight: 24
 
-    readonly property color trackBorderOff: darkMode ? (ma.containsMouse ? "#565d6e" : "#383c47") : (ma.containsMouse ? "#788092" : "#b5bac6")
-    readonly property color trackBorderOn: darkMode ? "#f0f2f6" : "#14161a"
-    readonly property color trackFillOff: darkMode ? "#131418" : "#eceef2"
-    readonly property color trackFillOn: darkMode ? "#f0f2f6" : "#14161a"
-    readonly property color thumbOff: darkMode ? (ma.containsMouse ? "#a8b0bf" : "#7f8694") : (ma.containsMouse ? "#454b57" : "#6b7280")
-    readonly property color thumbOn: darkMode ? "#111215" : "#ffffff"
+    readonly property color trackBorderOff: ma.containsMouse ? (theme.borderHover || (darkMode ? "#565d6e" : "#788092")) : (theme.borderControl || (darkMode ? "#383c47" : "#b5bac6"))
+    readonly property color trackBorderOn: theme.primaryBg || (darkMode ? "#f0f2f6" : "#14161a")
+    readonly property color trackFillOff: theme.bgGroup || (darkMode ? "#131418" : "#eceef2")
+    readonly property color trackFillOn: theme.primaryBg || (darkMode ? "#f0f2f6" : "#14161a")
+    readonly property color thumbOff: ma.containsMouse ? (theme.fgMain || (darkMode ? "#a8b0bf" : "#454b57")) : (theme.fgMuted || (darkMode ? "#7f8694" : "#6b7280"))
+    readonly property color thumbOn: theme.fgOnPrimary || (darkMode ? "#111215" : "#ffffff")
 
     Rectangle {
         id: track

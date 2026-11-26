@@ -5,6 +5,7 @@ Popup {
     id: root
 
     property bool darkMode: true
+    property var theme: ({})
     property var ui: ({})
     property bool canUndo: false
     property bool canRedo: false
@@ -82,7 +83,7 @@ Popup {
             anchors.leftMargin: 10
             anchors.rightMargin: 10
             height: 1
-            color: root.darkMode ? "#14ffffff" : "#80ffffff"
+            color: root.theme.sheenBright || (root.darkMode ? "#14ffffff" : "#80ffffff")
         }
     }
 
@@ -112,7 +113,7 @@ Popup {
                     width: parent.width
                     height: 28
                     radius: 5
-                    color: !modelData.enabled ? "transparent" : (itemMa.pressed ? (root.darkMode ? "#282b34" : "#d8dce5") : (itemMa.containsMouse ? root.bgHover : "transparent"))
+                    color: !modelData.enabled ? "transparent" : (itemMa.pressed ? (root.theme.bgPressed || (root.darkMode ? "#282b34" : "#d8dce5")) : (itemMa.containsMouse ? root.bgHover : "transparent"))
                     border.width: 1
                     border.color: (modelData.enabled && itemMa.containsMouse) ? root.borderControl : "transparent"
                     scale: (modelData.enabled && itemMa.pressed) ? 0.985 : 1.0

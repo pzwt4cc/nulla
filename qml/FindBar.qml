@@ -4,6 +4,7 @@ Rectangle {
     id: root
 
     property bool darkMode: true
+    property var theme: ({})
     property bool open: false
     property bool replaceMode: false
     property bool gotoMode: false
@@ -157,6 +158,7 @@ Rectangle {
                             buttonHeight: 24
                             cornerRadius: 5
                             darkMode: root.darkMode
+                theme: root.theme
                             tooltipText: root.ui.prevMatchTip || "Previous (Shift+Enter)"
                             onClicked: root.findNextRequested(true)
                         }
@@ -175,6 +177,7 @@ Rectangle {
                             buttonHeight: 24
                             cornerRadius: 5
                             darkMode: root.darkMode
+                theme: root.theme
                             tooltipText: root.ui.nextMatchTip || "Next (Enter)"
                             onClicked: root.findNextRequested(false)
                         }
@@ -191,6 +194,7 @@ Rectangle {
                     horizontalPadding: 9
                     cornerRadius: 5
                     darkMode: root.darkMode
+                theme: root.theme
                     tooltipText: root.ui.toggleReplaceTip || "Toggle Replace (Ctrl+H)"
                     onClicked: root.replaceMode = !root.replaceMode
                 }
@@ -207,6 +211,7 @@ Rectangle {
                 buttonHeight: 26
                 cornerRadius: 5
                 darkMode: root.darkMode
+                theme: root.theme
                 tooltipText: root.ui.closeEscTip || "Close (Esc)"
                 onClicked: root.closed()
             }
@@ -271,6 +276,7 @@ Rectangle {
                     horizontalPadding: 10
                     cornerRadius: 5
                     darkMode: root.darkMode
+                theme: root.theme
                     onClicked: root.replaceOneRequested(replaceInput.text)
                 }
 
@@ -282,6 +288,7 @@ Rectangle {
                     horizontalPadding: 10
                     cornerRadius: 5
                     darkMode: root.darkMode
+                theme: root.theme
                     onClicked: root.replaceAllRequested(replaceInput.text)
                 }
             }

@@ -6,6 +6,7 @@ Item {
 
     property bool open: false
     property bool darkMode: true
+    property var theme: ({})
     property var backend: null
     property var ui: ({})
 
@@ -17,13 +18,13 @@ Item {
         langPopup.close();
     }
 
-    readonly property color bgCard: darkMode ? "#17191e" : "#ffffff"
-    readonly property color bgGroup: darkMode ? "#131418" : "#f7f8fa"
-    readonly property color borderGroup: darkMode ? "#262831" : "#dfe2ea"
-    readonly property color borderDivider: darkMode ? "#20222a" : "#e7e9f0"
-    readonly property color fgTitle: darkMode ? "#eceef2" : "#14161a"
-    readonly property color fgLabel: darkMode ? "#d8dce4" : "#1f2228"
-    readonly property color fgSub: darkMode ? "#787f8e" : "#6a7180"
+    readonly property color bgCard: theme.bgCard || (darkMode ? "#17191e" : "#ffffff")
+    readonly property color bgGroup: theme.bgGroup || (darkMode ? "#131418" : "#f7f8fa")
+    readonly property color borderGroup: theme.borderGroup || (darkMode ? "#262831" : "#dfe2ea")
+    readonly property color borderDivider: theme.borderDivider || (darkMode ? "#20222a" : "#e7e9f0")
+    readonly property color fgTitle: theme.fgTitle || (darkMode ? "#eceef2" : "#14161a")
+    readonly property color fgLabel: theme.fgLabel || (darkMode ? "#d8dce4" : "#1f2228")
+    readonly property color fgSub: theme.fgSub || (darkMode ? "#787f8e" : "#6a7180")
 
     function currentUiLanguageName() {
         if (!backend || !backend.uiLanguagesModel) {
@@ -58,7 +59,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: darkMode ? "#9608090c" : "#66101216"
+        color: theme.scrim || (darkMode ? "#9608090c" : "#66101216")
     }
 
     MouseArea {
@@ -74,7 +75,7 @@ Item {
         radius: 12
         color: root.bgCard
         border.width: 1
-        border.color: darkMode ? "#2c303a" : "#cfd4df"
+        border.color: theme.borderControl || (darkMode ? "#2c303a" : "#cfd4df")
         scale: root.open ? 1.0 : 0.985
         clip: true
 
@@ -97,7 +98,7 @@ Item {
             anchors.leftMargin: 12
             anchors.rightMargin: 12
             height: 1
-            color: darkMode ? "#14ffffff" : "#90ffffff"
+            color: theme.sheenBright || (darkMode ? "#14ffffff" : "#90ffffff")
         }
 
         Column {
@@ -128,6 +129,7 @@ Item {
                     iconOnly: true
                     ghost: true
                     darkMode: root.darkMode
+                    theme: root.theme
                     buttonHeight: 28
                     cornerRadius: 9
                     onClicked: root.closed()
@@ -185,7 +187,7 @@ Item {
                                 height: 30
                                 width: themeRow.implicitWidth + 4
                                 radius: 10
-                                color: darkMode ? "#1a1c22" : "#eceef3"
+                                color: theme.bgInput || (darkMode ? "#1a1c22" : "#eceef3")
                                 border.width: 1
                                 border.color: root.borderGroup
 
@@ -199,6 +201,7 @@ Item {
                                         ghost: !(root.backend && root.backend.themeMode === 0)
                                         activeChip: root.backend && root.backend.themeMode === 0
                                         darkMode: root.darkMode
+                    theme: root.theme
                                         buttonHeight: 26
                                         horizontalPadding: 11
                                         cornerRadius: 9
@@ -210,6 +213,7 @@ Item {
                                         ghost: !(root.backend && root.backend.themeMode === 2)
                                         activeChip: root.backend && root.backend.themeMode === 2
                                         darkMode: root.darkMode
+                    theme: root.theme
                                         buttonHeight: 26
                                         horizontalPadding: 11
                                         cornerRadius: 9
@@ -221,6 +225,7 @@ Item {
                                         ghost: !(root.backend && root.backend.themeMode === 1)
                                         activeChip: root.backend && root.backend.themeMode === 1
                                         darkMode: root.darkMode
+                    theme: root.theme
                                         buttonHeight: 26
                                         horizontalPadding: 11
                                         cornerRadius: 9
@@ -259,9 +264,9 @@ Item {
                                 width: 176
                                 height: 30
                                 radius: 10
-                                color: langPopup.opened ? (darkMode ? "#262a35" : "#e2e6ef") : (langBtnMa.pressed ? (darkMode ? "#242832" : "#dde1eb") : (langBtnMa.containsMouse ? (darkMode ? "#21252f" : "#e8ebf2") : (darkMode ? "#1a1c22" : "#eceef3")))
+                                color: langPopup.opened ? (theme.bgPressed || (darkMode ? "#262a35" : "#e2e6ef")) : (langBtnMa.pressed ? (theme.bgPressed || (darkMode ? "#242832" : "#dde1eb")) : (langBtnMa.containsMouse ? (theme.bgHover || (darkMode ? "#21252f" : "#e8ebf2")) : (theme.bgInput || (darkMode ? "#1a1c22" : "#eceef3"))))
                                 border.width: 1
-                                border.color: (langPopup.opened || langBtnMa.containsMouse) ? (darkMode ? "#4d5466" : "#9aa2b4") : root.borderGroup
+                                border.color: (langPopup.opened || langBtnMa.containsMouse) ? (theme.borderHover || (darkMode ? "#4d5466" : "#9aa2b4")) : root.borderGroup
                                 scale: langBtnMa.pressed ? 0.985 : 1.0
 
                                 Behavior on color {
@@ -393,9 +398,9 @@ Item {
 
                                     background: Rectangle {
                                         radius: 10
-                                        color: darkMode ? "#1c1f27" : "#ffffff"
+                                        color: theme.bgSurfaceElev || (darkMode ? "#1c1f27" : "#ffffff")
                                         border.width: 1
-                                        border.color: darkMode ? "#313644" : "#c6ccd8"
+                                        border.color: theme.borderControl || (darkMode ? "#313644" : "#c6ccd8")
                                         clip: true
 
                                         Rectangle {
@@ -406,7 +411,7 @@ Item {
                                             anchors.leftMargin: 10
                                             anchors.rightMargin: 10
                                             height: 1
-                                            color: darkMode ? "#14ffffff" : "#80ffffff"
+                                            color: theme.sheenBright || (darkMode ? "#14ffffff" : "#80ffffff")
                                         }
                                     }
 
@@ -425,7 +430,7 @@ Item {
                                             contentItem: Rectangle {
                                                 implicitWidth: 3
                                                 radius: 2
-                                                color: darkMode ? "#454b5a" : "#b8beca"
+                                                color: theme.scrollHover || (darkMode ? "#454b5a" : "#b8beca")
                                             }
                                         }
 
@@ -434,9 +439,9 @@ Item {
                                             height: 30
                                             radius: 7
                                             readonly property bool isCurrent: root.backend && root.backend.uiLanguage === modelData.id
-                                            color: isCurrent ? (darkMode ? "#293245" : "#e3ebfa") : (dropItemMa.pressed ? (darkMode ? "#282b34" : "#d8dce5") : (dropItemMa.containsMouse ? (darkMode ? "#252934" : "#eceff5") : "transparent"))
+                                            color: isCurrent ? (theme.chipBg || (darkMode ? "#293245" : "#e3ebfa")) : (dropItemMa.pressed ? (theme.bgPressed || (darkMode ? "#282b34" : "#d8dce5")) : (dropItemMa.containsMouse ? (theme.bgHover || (darkMode ? "#252934" : "#eceff5")) : "transparent"))
                                             border.width: 1
-                                            border.color: isCurrent ? (darkMode ? "#44577a" : "#b7c9ec") : (dropItemMa.containsMouse ? (darkMode ? "#343947" : "#cfd5e1") : "transparent")
+                                            border.color: isCurrent ? (theme.chipBorder || (darkMode ? "#44577a" : "#b7c9ec")) : (dropItemMa.containsMouse ? (theme.borderControl || (darkMode ? "#343947" : "#cfd5e1")) : "transparent")
                                             scale: dropItemMa.pressed ? 0.985 : 1.0
 
                                             Behavior on color {
@@ -462,7 +467,7 @@ Item {
                                                 anchors.rightMargin: 8
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: modelData.name
-                                                color: parent.isCurrent ? (darkMode ? "#f3f6fc" : "#153672") : root.fgTitle
+                                                color: parent.isCurrent ? (theme.chipFg || (darkMode ? "#f3f6fc" : "#153672")) : root.fgTitle
                                                 font.pixelSize: 12
                                                 font.weight: parent.isCurrent ? Font.DemiBold : Font.Normal
                                                 elide: Text.ElideRight
@@ -477,7 +482,7 @@ Item {
                                                 width: 6
                                                 height: 6
                                                 radius: 3
-                                                color: darkMode ? "#7aa2f7" : "#2563eb"
+                                                color: theme.accent || (darkMode ? "#7aa2f7" : "#2563eb")
                                             }
 
                                             MouseArea {
@@ -525,7 +530,7 @@ Item {
                                 height: 30
                                 width: zoomRow.implicitWidth + 4
                                 radius: 10
-                                color: darkMode ? "#1a1c22" : "#eceef3"
+                                color: theme.bgInput || (darkMode ? "#1a1c22" : "#eceef3")
                                 border.width: 1
                                 border.color: root.borderGroup
 
@@ -539,6 +544,7 @@ Item {
                                         iconOnly: true
                                         ghost: true
                                         darkMode: root.darkMode
+                    theme: root.theme
                                         buttonHeight: 26
                                         buttonWidth: 28
                                         cornerRadius: 9
@@ -557,6 +563,7 @@ Item {
                                         text: (root.backend ? root.backend.zoomPercent : 100) + "%"
                                         ghost: true
                                         darkMode: root.darkMode
+                    theme: root.theme
                                         buttonHeight: 26
                                         horizontalPadding: 12
                                         cornerRadius: 9
@@ -577,6 +584,7 @@ Item {
                                         iconOnly: true
                                         ghost: true
                                         darkMode: root.darkMode
+                    theme: root.theme
                                         buttonHeight: 26
                                         buttonWidth: 28
                                         cornerRadius: 9
@@ -628,6 +636,7 @@ Item {
                                 anchors.rightMargin: 12
                                 anchors.verticalCenter: parent.verticalCenter
                                 darkMode: root.darkMode
+                    theme: root.theme
                                 checked: root.backend ? root.backend.showLineNumbers : true
                                 onToggled: function (v) {
                                     if (root.backend) {
@@ -662,6 +671,7 @@ Item {
                                 anchors.rightMargin: 12
                                 anchors.verticalCenter: parent.verticalCenter
                                 darkMode: root.darkMode
+                    theme: root.theme
                                 checked: root.backend ? root.backend.syntaxEnabled : true
                                 onToggled: function (v) {
                                     if (root.backend) {

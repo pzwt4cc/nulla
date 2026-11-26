@@ -4,6 +4,7 @@ Rectangle {
     id: root
 
     property bool darkMode: true
+    property var theme: ({})
     property var activeTab: null
     property int zoomPercent: 100
     property int selectedChars: 0
@@ -71,7 +72,7 @@ Rectangle {
             anchors.leftMargin: 5
             anchors.rightMargin: 5
             height: 1
-            color: root.darkMode ? "#12ffffff" : "#80ffffff"
+            color: root.theme.sheen || (root.darkMode ? "#12ffffff" : "#80ffffff")
         }
 
         Row {
@@ -84,6 +85,7 @@ Rectangle {
                 text: (root.ui.statusLn || "Ln") + " " + (root.activeTab ? root.activeTab.cursorLine : 1) + ", " + (root.ui.statusCol || "Col") + " " + (root.activeTab ? root.activeTab.cursorColumn : 1) + (root.selectedChars > 0 ? (" · " + root.selectedChars + " " + (root.ui.statusSel || "sel")) : "")
                 ghost: true
                 darkMode: root.darkMode
+                theme: root.theme
                 buttonHeight: 22
                 horizontalPadding: 9
                 fontPixelSize: 12
@@ -157,6 +159,7 @@ Rectangle {
             iconSize: 12
             elevated: true
             darkMode: root.darkMode
+                theme: root.theme
             buttonHeight: 26
             horizontalPadding: 11
             fontPixelSize: 12
@@ -195,7 +198,7 @@ Rectangle {
                 anchors.leftMargin: 5
                 anchors.rightMargin: 5
                 height: 1
-                color: root.darkMode ? "#12ffffff" : "#80ffffff"
+                color: root.theme.sheen || (root.darkMode ? "#12ffffff" : "#80ffffff")
             }
 
             Row {
@@ -208,6 +211,7 @@ Rectangle {
                     iconOnly: true
                     ghost: true
                     darkMode: root.darkMode
+                theme: root.theme
                     buttonHeight: 22
                     buttonWidth: 24
                     iconSize: 12
@@ -227,6 +231,7 @@ Rectangle {
                     text: root.zoomPercent + "%"
                     ghost: true
                     darkMode: root.darkMode
+                theme: root.theme
                     buttonHeight: 22
                     horizontalPadding: 9
                     fontPixelSize: 12
@@ -247,6 +252,7 @@ Rectangle {
                     iconOnly: true
                     ghost: true
                     darkMode: root.darkMode
+                theme: root.theme
                     buttonHeight: 22
                     buttonWidth: 24
                     iconSize: 12

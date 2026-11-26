@@ -7,6 +7,7 @@ Item {
 
     property var session: null
     property bool darkMode: true
+    property var theme: ({})
     property bool showLineNumbers: true
     property int zoomPercent: 100
     property string monoFontFamily: "monospace"
@@ -506,7 +507,7 @@ Item {
                     contentItem: Rectangle {
                         implicitWidth: 5
                         radius: 3
-                        color: parent.pressed ? (pane.darkMode ? "#7d8594" : "#6c7382") : (parent.hovered ? (pane.darkMode ? "#5a606e" : "#8d94a3") : (pane.darkMode ? "#373b46" : "#c1c6d0"))
+                        color: parent.pressed ? (pane.theme.scrollPress || (pane.darkMode ? "#7d8594" : "#6c7382")) : (parent.hovered ? (pane.theme.scrollHover || (pane.darkMode ? "#5a606e" : "#8d94a3")) : (pane.theme.scrollIdle || (pane.darkMode ? "#373b46" : "#c1c6d0")))
                         Behavior on color {
                             ColorAnimation {
                                 duration: 100
@@ -524,7 +525,7 @@ Item {
                     contentItem: Rectangle {
                         implicitHeight: 5
                         radius: 3
-                        color: parent.pressed ? (pane.darkMode ? "#7d8594" : "#6c7382") : (parent.hovered ? (pane.darkMode ? "#5a606e" : "#8d94a3") : (pane.darkMode ? "#373b46" : "#c1c6d0"))
+                        color: parent.pressed ? (pane.theme.scrollPress || (pane.darkMode ? "#7d8594" : "#6c7382")) : (parent.hovered ? (pane.theme.scrollHover || (pane.darkMode ? "#5a606e" : "#8d94a3")) : (pane.theme.scrollIdle || (pane.darkMode ? "#373b46" : "#c1c6d0")))
                         Behavior on color {
                             ColorAnimation {
                                 duration: 100
@@ -544,7 +545,7 @@ Item {
                     y: editor.y + pane.hoverLineRect.y
                     width: Math.max(flick.width, flick.contentWidth)
                     height: Math.max(editorMetrics.height, pane.hoverLineRect.height)
-                    color: pane.darkMode ? "#0effffff" : "#07000000"
+                    color: pane.theme.hoverLineBand || (pane.darkMode ? "#0effffff" : "#07000000")
                     opacity: (pane.hoverInsideTextArea && !contextMenu.visible && !pane.hoverOnActiveLine) ? 1.0 : 0.0
                     visible: opacity > 0.01
 
@@ -571,7 +572,7 @@ Item {
                     y: editor.y + editor.liveCursorRect.y
                     width: Math.max(flick.width, flick.contentWidth)
                     height: Math.max(editorMetrics.height, editor.liveCursorRect.height)
-                    color: pane.hasSelection ? (pane.darkMode ? "#1f2738" : "#eaf0fb") : pane.bgLineHighlight
+                    color: pane.hasSelection ? (pane.theme.bgLineHighlightSel || (pane.darkMode ? "#1f2738" : "#eaf0fb")) : pane.bgLineHighlight
 
                     Behavior on color {
                         ColorAnimation {
@@ -583,7 +584,7 @@ Item {
                         width: 2
                         height: parent.height
                         anchors.left: parent.left
-                        color: pane.hasSelection ? (pane.darkMode ? "#7aa2f7" : "#2563eb") : pane.fgMain
+                        color: pane.hasSelection ? (pane.theme.accent || (pane.darkMode ? "#7aa2f7" : "#2563eb")) : pane.fgMain
                         opacity: pane.hasSelection ? 0.95 : (pane.hoverInsideTextArea ? 0.85 : 0.45)
 
                         Behavior on opacity {
@@ -625,7 +626,7 @@ Item {
                     width: 6
                     height: Math.max(editorMetrics.height, editor.liveCursorRect.height)
                     radius: 3
-                    color: pane.hasSelection ? (pane.darkMode ? "#7aa2f7" : "#2563eb") : pane.fgMain
+                    color: pane.hasSelection ? (pane.theme.accent || (pane.darkMode ? "#7aa2f7" : "#2563eb")) : pane.fgMain
                     opacity: pane.hasSelection ? 0.24 : (pane.typingBurst ? 0.22 : (pane.hoverInsideTextArea ? 0.1 : 0.0))
 
                     Behavior on opacity {
@@ -700,7 +701,7 @@ Item {
                             Rectangle {
                                 anchors.fill: parent
                                 radius: 1
-                                color: pane.hasSelection ? (pane.darkMode ? "#8fb4ff" : "#1d4ed8") : pane.fgMain
+                                color: pane.hasSelection ? (pane.theme.accentStrong || (pane.darkMode ? "#8fb4ff" : "#1d4ed8")) : pane.fgMain
                             }
                         }
                     }
@@ -979,6 +980,7 @@ Item {
     EditorContextMenu {
         id: contextMenu
         darkMode: pane.darkMode
+        theme: pane.theme
         ui: pane.ui
         canUndo: editor.canUndo
         canRedo: editor.canRedo

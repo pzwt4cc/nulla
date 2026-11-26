@@ -6,6 +6,7 @@ Item {
 
     property bool open: false
     property bool darkMode: true
+    property var theme: ({})
     property var backend: null
     property var ui: ({})
 
@@ -13,12 +14,12 @@ Item {
 
     property string langFilter: ""
 
-    readonly property color bgCard: darkMode ? "#17191e" : "#ffffff"
-    readonly property color bgGroup: darkMode ? "#131418" : "#f7f8fa"
-    readonly property color borderGroup: darkMode ? "#262831" : "#dfe2ea"
-    readonly property color borderDivider: darkMode ? "#20222a" : "#e7e9f0"
-    readonly property color fgTitle: darkMode ? "#eceef2" : "#14161a"
-    readonly property color fgSub: darkMode ? "#787f8e" : "#6a7180"
+    readonly property color bgCard: theme.bgCard || (darkMode ? "#17191e" : "#ffffff")
+    readonly property color bgGroup: theme.bgGroup || (darkMode ? "#131418" : "#f7f8fa")
+    readonly property color borderGroup: theme.borderGroup || (darkMode ? "#262831" : "#dfe2ea")
+    readonly property color borderDivider: theme.borderDivider || (darkMode ? "#20222a" : "#e7e9f0")
+    readonly property color fgTitle: theme.fgTitle || (darkMode ? "#eceef2" : "#14161a")
+    readonly property color fgSub: theme.fgSub || (darkMode ? "#787f8e" : "#6a7180")
 
     function selectFirstMatch() {
         var m = langList.model;
@@ -53,7 +54,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: darkMode ? "#9608090c" : "#66101216"
+        color: theme.scrim || (darkMode ? "#9608090c" : "#66101216")
     }
 
     MouseArea {
@@ -69,7 +70,7 @@ Item {
         radius: 12
         color: root.bgCard
         border.width: 1
-        border.color: darkMode ? "#2c303a" : "#cfd4df"
+        border.color: theme.borderControl || (darkMode ? "#2c303a" : "#cfd4df")
         scale: root.open ? 1.0 : 0.985
         clip: true
 
@@ -92,7 +93,7 @@ Item {
             anchors.leftMargin: 12
             anchors.rightMargin: 12
             height: 1
-            color: darkMode ? "#14ffffff" : "#90ffffff"
+            color: theme.sheenBright || (darkMode ? "#14ffffff" : "#90ffffff")
         }
 
         Column {
@@ -123,6 +124,7 @@ Item {
                     iconOnly: true
                     ghost: true
                     darkMode: root.darkMode
+                    theme: root.theme
                     buttonHeight: 28
                     cornerRadius: 9
                     onClicked: root.closed()
@@ -141,7 +143,7 @@ Item {
                 radius: 10
                 color: root.bgGroup
                 border.width: 1
-                border.color: langSearch.activeFocus ? (darkMode ? "#6e7687" : "#687082") : root.borderGroup
+                border.color: langSearch.activeFocus ? (theme.borderFocus || (darkMode ? "#6e7687" : "#687082")) : root.borderGroup
 
                 TextInput {
                     id: langSearch
@@ -150,7 +152,7 @@ Item {
                     anchors.rightMargin: 12
                     verticalAlignment: TextInput.AlignVCenter
                     color: root.fgTitle
-                    selectionColor: darkMode ? "#2a3347" : "#dbe4f5"
+                    selectionColor: theme.selBg || (darkMode ? "#2a3347" : "#dbe4f5")
                     font.pixelSize: 13
                     clip: true
                     text: root.langFilter
@@ -199,7 +201,7 @@ Item {
                     contentItem: Rectangle {
                         implicitWidth: 4
                         radius: 2
-                        color: darkMode ? "#373b46" : "#b8beca"
+                        color: theme.scrollIdle || (darkMode ? "#373b46" : "#b8beca")
                     }
                 }
 
@@ -211,6 +213,7 @@ Item {
                     text: modelData.name
                     ghost: !(root.backend && root.backend.languageId === modelData.id)
                     darkMode: root.darkMode
+                    theme: root.theme
                     activeChip: root.backend && root.backend.languageId === modelData.id
                     onClicked: {
                         if (root.backend) {

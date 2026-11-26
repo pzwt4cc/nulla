@@ -4,6 +4,7 @@ Rectangle {
     id: root
 
     property bool darkMode: true
+    property var theme: ({})
     property var activeTab: null
     property bool showWindowControls: false
     property bool isMaximized: false
@@ -77,7 +78,7 @@ Rectangle {
             anchors.leftMargin: 5
             anchors.rightMargin: 5
             height: 1
-            color: root.darkMode ? "#12ffffff" : "#80ffffff"
+            color: root.theme.sheen || (root.darkMode ? "#12ffffff" : "#80ffffff")
         }
 
         Row {
@@ -94,6 +95,7 @@ Rectangle {
                 iconSize: 15
                 cornerRadius: 4
                 darkMode: root.darkMode
+                theme: root.theme
                 tooltipText: root.ui.newTabTip || "New Tab (Ctrl+T)"
                 onClicked: root.newTabRequested()
             }
@@ -115,6 +117,7 @@ Rectangle {
                 fontPixelSize: 12
                 cornerRadius: 4
                 darkMode: root.darkMode
+                theme: root.theme
                 tooltipText: root.ui.openFileTip || "Open File (Ctrl+O)"
                 onClicked: root.openFileRequested()
             }
@@ -138,6 +141,7 @@ Rectangle {
                 fontPixelSize: 12
                 cornerRadius: 4
                 darkMode: root.darkMode
+                theme: root.theme
                 tooltipText: root.ui.saveFileTip || "Save File (Ctrl+S)"
                 onClicked: root.saveFileRequested()
             }
@@ -230,7 +234,7 @@ Rectangle {
                 anchors.leftMargin: 5
                 anchors.rightMargin: 5
                 height: 1
-                color: root.darkMode ? "#12ffffff" : "#80ffffff"
+                color: root.theme.sheen || (root.darkMode ? "#12ffffff" : "#80ffffff")
             }
 
             Row {
@@ -247,6 +251,7 @@ Rectangle {
                     iconSize: 15
                     cornerRadius: 4
                     darkMode: root.darkMode
+                theme: root.theme
                     tooltipText: root.ui.findTip || "Find (Ctrl+F)"
                     onClicked: root.findRequested()
                 }
@@ -267,6 +272,7 @@ Rectangle {
                     iconSize: 15
                     cornerRadius: 4
                     darkMode: root.darkMode
+                theme: root.theme
                     tooltipText: root.ui.settingsTip || "Settings (Ctrl+,)"
                     onClicked: root.settingsRequested()
                 }
@@ -289,6 +295,7 @@ Rectangle {
                     iconSize: 15
                     cornerRadius: 4
                     darkMode: root.darkMode
+                theme: root.theme
                     tooltipText: root.ui.menuTip || "Menu"
                     onClicked: root.menuToggleRequested(rightControls.x + utilityGroup.x + utilRow.x + menuBtn.x + menuBtn.width)
                 }
@@ -325,7 +332,7 @@ Rectangle {
                 anchors.leftMargin: 5
                 anchors.rightMargin: 5
                 height: 1
-                color: root.darkMode ? "#12ffffff" : "#80ffffff"
+                color: root.theme.sheen || (root.darkMode ? "#12ffffff" : "#80ffffff")
             }
 
             Row {
@@ -342,6 +349,7 @@ Rectangle {
                     iconSize: 14
                     cornerRadius: 4
                     darkMode: root.darkMode
+                theme: root.theme
                     tooltipText: root.ui.minimizeTip || "Minimize"
                     onClicked: root.minimizeRequested()
                 }
@@ -362,6 +370,7 @@ Rectangle {
                     iconSize: 14
                     cornerRadius: 4
                     darkMode: root.darkMode
+                theme: root.theme
                     tooltipText: root.isMaximized ? (root.ui.restoreTip || "Restore") : (root.ui.maximizeTip || "Maximize")
                     onClicked: root.toggleMaximizeRequested()
                 }
@@ -382,6 +391,7 @@ Rectangle {
                     iconSize: 14
                     cornerRadius: 4
                     darkMode: root.darkMode
+                theme: root.theme
                     dangerHover: true
                     tooltipText: root.ui.closeTip || "Close"
                     onClicked: root.closeWindowRequested()
