@@ -63,7 +63,7 @@ private:
     QFont m_font;
     QColor m_textColor = QColor(QStringLiteral("#5b616e"));
     QColor m_activeTextColor = QColor(QStringLiteral("#e6e8ec"));
-    qreal m_topPadding = 12.0;
+    qreal m_topPadding = 8.0;
 };
 
 #endif

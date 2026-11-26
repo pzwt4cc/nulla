@@ -26,7 +26,7 @@ Item {
     z: 150
 
     Behavior on opacity {
-        NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: 95; easing.type: Easing.OutCubic }
     }
 
     Rectangle {
@@ -44,15 +44,15 @@ Item {
         width: Math.min(parent.width - 40, 440)
         height: Math.min(parent.height - 40, mainCol.implicitHeight + 44)
         anchors.centerIn: parent
-        radius: 22
+        radius: 10
         color: darkMode ? "#191b20" : "#f7f8fa"
         border.width: 1
         border.color: darkMode ? "#323640" : "#cdd2dc"
-        scale: root.open ? 1.0 : 0.94
+        scale: root.open ? 1.0 : 0.985
         clip: true
 
         Behavior on scale {
-            NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 95; easing.type: Easing.OutCubic }
         }
 
         MouseArea {
@@ -86,7 +86,7 @@ Item {
                     iconKind: "close"
                     iconOnly: true
                     darkMode: root.darkMode
-                    buttonHeight: 30
+                    buttonHeight: 28
                     onClicked: {
                         if (root.langPickerOpen) {
                             root.langPickerOpen = false
@@ -146,7 +146,7 @@ Item {
                         M3Button {
                             text: "System"
                             darkMode: root.darkMode
-                            buttonHeight: 28
+                            buttonHeight: 26
                             horizontalPadding: 11
                             fontPixelSize: 12
                             activeChip: root.backend && root.backend.themeMode === 0
@@ -155,7 +155,7 @@ Item {
                         M3Button {
                             text: "Dark"
                             darkMode: root.darkMode
-                            buttonHeight: 28
+                            buttonHeight: 26
                             horizontalPadding: 11
                             fontPixelSize: 12
                             activeChip: root.backend && root.backend.themeMode === 2
@@ -164,7 +164,7 @@ Item {
                         M3Button {
                             text: "Light"
                             darkMode: root.darkMode
-                            buttonHeight: 28
+                            buttonHeight: 26
                             horizontalPadding: 11
                             fontPixelSize: 12
                             activeChip: root.backend && root.backend.themeMode === 1
@@ -218,7 +218,7 @@ Item {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         darkMode: root.darkMode
-                        buttonHeight: 30
+                        buttonHeight: 28
                         horizontalPadding: 12
                         fontPixelSize: 12
                         iconKind: "chevron"
@@ -260,13 +260,13 @@ Item {
                             iconKind: "minus"
                             iconOnly: true
                             darkMode: root.darkMode
-                            buttonHeight: 28
+                            buttonHeight: 26
                             onClicked: if (root.backend) root.backend.zoomOut()
                         }
                         M3Button {
                             text: (root.backend ? root.backend.zoomPercent : 100) + "%"
                             darkMode: root.darkMode
-                            buttonHeight: 28
+                            buttonHeight: 26
                             horizontalPadding: 12
                             fontPixelSize: 12
                             onClicked: if (root.backend) root.backend.zoomReset()
@@ -275,7 +275,7 @@ Item {
                             iconKind: "plus"
                             iconOnly: true
                             darkMode: root.darkMode
-                            buttonHeight: 28
+                            buttonHeight: 26
                             onClicked: if (root.backend) root.backend.zoomIn()
                         }
                     }
@@ -290,7 +290,7 @@ Item {
                 Rectangle {
                     width: parent.width
                     height: 34
-                    radius: 17
+                    radius: 8
                     color: darkMode ? "#131519" : "#ffffff"
                     border.width: 1
                     border.color: langSearch.activeFocus
@@ -351,7 +351,7 @@ Item {
 
                     delegate: M3Button {
                         width: langList.width - 6
-                        buttonHeight: 32
+                        buttonHeight: 30
                         text: modelData.name
                         darkMode: root.darkMode
                         activeChip: root.backend && root.backend.languageId === modelData.id

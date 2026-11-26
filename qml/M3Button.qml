@@ -11,10 +11,11 @@ Item {
     property bool activeChip: false
     property bool iconOnly: false
     property bool dangerHover: false
-    property real buttonHeight: 32
-    property real horizontalPadding: 14
+    property real buttonHeight: 30
+    property real horizontalPadding: 11
     property string tooltipText: ""
-    property real fontPixelSize: 13
+    property int fontPixelSize: 13
+    property int cornerRadius: 8
 
     signal clicked()
 
@@ -26,9 +27,9 @@ Item {
     readonly property color borderNormal: darkMode ? "#323640" : "#c5cad4"
     readonly property color borderHover: darkMode ? "#6d7484" : "#6c7382"
     readonly property color borderAccent: darkMode ? "#e6e8ec" : "#16181d"
-    readonly property color fillHover: darkMode ? "#20ffffff" : "#14000000"
-    readonly property color fillPress: darkMode ? "#30ffffff" : "#22000000"
-    readonly property color fillAccent: darkMode ? "#18ffffff" : "#10000000"
+    readonly property color fillHover: darkMode ? "#1cffffff" : "#12000000"
+    readonly property color fillPress: darkMode ? "#2cffffff" : "#1e000000"
+    readonly property color fillAccent: darkMode ? "#14ffffff" : "#0e000000"
     readonly property color fillDanger: "#30e5534b"
     readonly property color borderDanger: "#e5534b"
 
@@ -38,7 +39,7 @@ Item {
     Rectangle {
         id: pill
         anchors.fill: parent
-        radius: height / 2
+        radius: root.cornerRadius
         color: {
             if (pressed) {
                 return dangerHover ? fillDanger : fillPress
@@ -59,17 +60,17 @@ Item {
             return hovered ? borderHover : borderNormal
         }
 
-        scale: pressed ? 0.93 : (hovered ? 1.015 : 1.0)
+        scale: pressed ? 0.97 : 1.0
         transformOrigin: Item.Center
 
         Behavior on color {
-            ColorAnimation { duration: 140; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
         }
         Behavior on border.color {
-            ColorAnimation { duration: 140; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
         }
         Behavior on scale {
-            NumberAnimation { duration: 110; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 65; easing.type: Easing.OutCubic }
         }
 
         Row {
@@ -157,7 +158,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
 
                 Behavior on color {
-                    ColorAnimation { duration: 140; easing.type: Easing.OutCubic }
+                    ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
                 }
             }
         }
@@ -181,7 +182,7 @@ Item {
             font.pixelSize: 12
         }
         background: Rectangle {
-            radius: 8
+            radius: 7
             color: root.darkMode ? "#20232a" : "#ffffff"
             border.width: 1
             border.color: root.darkMode ? "#353945" : "#d0d5de"

@@ -19,7 +19,7 @@ Item {
     z: 200
 
     Behavior on opacity {
-        NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: 95; easing.type: Easing.OutCubic }
     }
 
     Rectangle {
@@ -37,14 +37,14 @@ Item {
         width: Math.min(parent.width - 48, 390)
         height: contentCol.implicitHeight + 44
         anchors.centerIn: parent
-        radius: 20
+        radius: 10
         color: darkMode ? "#191b20" : "#f7f8fa"
         border.width: 1
         border.color: darkMode ? "#323640" : "#cdd2dc"
-        scale: root.open ? 1.0 : 0.94
+        scale: root.open ? 1.0 : 0.985
 
         Behavior on scale {
-            NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 95; easing.type: Easing.OutCubic }
         }
 
         MouseArea {

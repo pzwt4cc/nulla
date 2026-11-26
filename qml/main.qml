@@ -124,17 +124,17 @@ ApplicationWindow {
     Rectangle {
         id: shell
         anchors.fill: parent
-        radius: win.visibility === Window.Maximized ? 0 : 16
+        radius: win.visibility === Window.Maximized ? 0 : 10
         color: win.bgShell
         border.width: win.visibility === Window.Maximized ? 0 : 1
         border.color: win.borderSubtle
         clip: true
 
         Behavior on color {
-            ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
         }
         Behavior on border.color {
-            ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
         }
 
         Column {
@@ -144,7 +144,7 @@ ApplicationWindow {
             Item {
                 id: topbar
                 width: parent.width
-                height: 50
+                height: 42
 
                 MouseArea {
                     anchors.fill: parent
@@ -161,7 +161,7 @@ ApplicationWindow {
                 Row {
                     id: leftControls
                     anchors.left: parent.left
-                    anchors.leftMargin: 12
+                    anchors.leftMargin: 6
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 6
 
@@ -191,16 +191,16 @@ ApplicationWindow {
 
                 Rectangle {
                     id: titlePill
-                    height: 30
-                    width: Math.min(titleLabel.implicitWidth + 28, Math.max(96, topbar.width - leftControls.width - rightControls.width - 56))
-                    radius: height / 2
+                    height: 28
+                    width: Math.min(titleLabel.implicitWidth + 24, Math.max(96, topbar.width - leftControls.width - rightControls.width - 56))
+                    radius: 8
                     anchors.centerIn: parent
                     color: "transparent"
                     border.width: 1
                     border.color: win.borderSubtle
 
                     Behavior on border.color {
-                        ColorAnimation { duration: 160; easing.type: Easing.OutCubic }
+                        ColorAnimation { duration: 100; easing.type: Easing.OutCubic }
                     }
 
                     Text {
@@ -219,7 +219,7 @@ ApplicationWindow {
                 Row {
                     id: rightControls
                     anchors.right: parent.right
-                    anchors.rightMargin: 12
+                    anchors.rightMargin: 6
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 6
 
@@ -251,7 +251,7 @@ ApplicationWindow {
                     M3Button {
                         iconKind: "minus"
                         iconOnly: true
-                        buttonHeight: 28
+                        buttonHeight: 26
                         darkMode: win.dark
                         tooltipText: "Minimize"
                         onClicked: win.showMinimized()
@@ -260,7 +260,7 @@ ApplicationWindow {
                     M3Button {
                         iconKind: "max"
                         iconOnly: true
-                        buttonHeight: 28
+                        buttonHeight: 26
                         darkMode: win.dark
                         tooltipText: win.visibility === Window.Maximized ? "Restore" : "Maximize"
                         onClicked: {
@@ -275,7 +275,7 @@ ApplicationWindow {
                     M3Button {
                         iconKind: "close"
                         iconOnly: true
-                        buttonHeight: 28
+                        buttonHeight: 26
                         darkMode: win.dark
                         dangerHover: true
                         tooltipText: "Close"
@@ -286,20 +286,20 @@ ApplicationWindow {
 
             Rectangle {
                 id: editorCard
-                width: parent.width - 24
+                width: parent.width - 6
                 height: parent.height - topbar.height - statusBar.height
                 anchors.horizontalCenter: parent.horizontalCenter
-                radius: 14
+                radius: 8
                 color: win.bgEditor
                 border.width: 1
                 border.color: editor.activeFocus ? win.borderFocus : win.borderSubtle
                 clip: true
 
                 Behavior on color {
-                    ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+                    ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
                 }
                 Behavior on border.color {
-                    ColorAnimation { duration: 160; easing.type: Easing.OutCubic }
+                    ColorAnimation { duration: 100; easing.type: Easing.OutCubic }
                 }
 
                 Row {
@@ -314,7 +314,7 @@ ApplicationWindow {
                         color: win.bgGutter
 
                         Behavior on color {
-                            ColorAnimation { duration: 180; easing.type: Easing.OutCubic }
+                            ColorAnimation { duration: 110; easing.type: Easing.OutCubic }
                         }
 
                         LineNumberGutter {
@@ -326,7 +326,7 @@ ApplicationWindow {
                             font: editor.font
                             textColor: win.fgGutter
                             activeTextColor: win.fgMain
-                            topPadding: 12
+                            topPadding: 8
                         }
 
                         Rectangle {
@@ -341,8 +341,8 @@ ApplicationWindow {
                         id: flick
                         width: parent.width - gutterContainer.width
                         height: parent.height
-                        contentWidth: Math.max(width, editor.contentWidth + 28)
-                        contentHeight: Math.max(height, editor.contentHeight + 24)
+                        contentWidth: Math.max(width, editor.contentWidth + 20)
+                        contentHeight: Math.max(height, editor.contentHeight + 16)
                         clip: true
                         boundsBehavior: Flickable.StopAtBounds
 
@@ -407,8 +407,8 @@ ApplicationWindow {
 
                         TextEdit {
                             id: editor
-                            x: 14
-                            y: 12
+                            x: 10
+                            y: 8
                             textFormat: TextEdit.PlainText
                             selectByMouse: true
                             persistentSelection: true
@@ -426,15 +426,15 @@ ApplicationWindow {
                                 var r = cursorRectangle
                                 var cy = r.y + y
                                 var cx = r.x + x
-                                if (cy - flick.contentY < 12) {
-                                    flick.contentY = Math.max(0, cy - 12)
-                                } else if (cy + r.height - flick.contentY > flick.height - 12) {
-                                    flick.contentY = Math.max(0, cy + r.height - flick.height + 12)
+                                if (cy - flick.contentY < 8) {
+                                    flick.contentY = Math.max(0, cy - 8)
+                                } else if (cy + r.height - flick.contentY > flick.height - 8) {
+                                    flick.contentY = Math.max(0, cy + r.height - flick.height + 8)
                                 }
-                                if (cx - flick.contentX < 14) {
-                                    flick.contentX = Math.max(0, cx - 14)
-                                } else if (cx + r.width - flick.contentX > flick.width - 14) {
-                                    flick.contentX = Math.max(0, cx + r.width - flick.width + 14)
+                                if (cx - flick.contentX < 10) {
+                                    flick.contentX = Math.max(0, cx - 10)
+                                } else if (cx + r.width - flick.contentX > flick.width - 10) {
+                                    flick.contentX = Math.max(0, cx + r.width - flick.width + 10)
                                 }
                             }
 
@@ -452,18 +452,18 @@ ApplicationWindow {
             Item {
                 id: statusBar
                 width: parent.width
-                height: 36
+                height: 30
 
                 Row {
                     anchors.left: parent.left
-                    anchors.leftMargin: 12
+                    anchors.leftMargin: 6
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 8
 
                     Rectangle {
-                        height: 24
-                        width: posLabel.implicitWidth + 18
-                        radius: height / 2
+                        height: 22
+                        width: posLabel.implicitWidth + 14
+                        radius: 7
                         color: "transparent"
                         border.width: 1
                         border.color: win.borderSubtle
@@ -487,16 +487,17 @@ ApplicationWindow {
 
                 Row {
                     anchors.right: parent.right
-                    anchors.rightMargin: 12
+                    anchors.rightMargin: 6
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 6
 
                     M3Button {
                         text: backend.statusLanguage
                         darkMode: win.dark
-                        buttonHeight: 24
+                        buttonHeight: 22
                         horizontalPadding: 11
-                        fontPixelSize: 11.5
+                        fontPixelSize: 12
+                        cornerRadius: 7
                         tooltipText: "Change syntax language"
                         onClicked: {
                             settingsModal.open = true
@@ -507,9 +508,10 @@ ApplicationWindow {
                     M3Button {
                         text: backend.zoomPercent + "%"
                         darkMode: win.dark
-                        buttonHeight: 24
+                        buttonHeight: 22
                         horizontalPadding: 11
-                        fontPixelSize: 11.5
+                        fontPixelSize: 12
+                        cornerRadius: 7
                         tooltipText: "Reset zoom (Ctrl+0)"
                         onClicked: backend.zoomReset()
                     }
@@ -529,15 +531,14 @@ ApplicationWindow {
             Overlay.modal: Rectangle { color: "transparent" }
 
             enter: Transition {
-                NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 130; easing.type: Easing.OutCubic }
-                NumberAnimation { property: "scale"; from: 0.94; to: 1.0; duration: 130; easing.type: Easing.OutCubic }
+                NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 85; easing.type: Easing.OutCubic }
             }
             exit: Transition {
-                NumberAnimation { property: "opacity"; from: 1.0; to: 0.0; duration: 100; easing.type: Easing.OutCubic }
+                NumberAnimation { property: "opacity"; from: 1.0; to: 0.0; duration: 70; easing.type: Easing.OutCubic }
             }
 
             background: Rectangle {
-                radius: 16
+                radius: 10
                 color: win.dark ? "#1b1d23" : "#f8f9fb"
                 border.width: 1
                 border.color: win.borderSubtle
@@ -566,19 +567,19 @@ ApplicationWindow {
                         Rectangle {
                             id: menuRow
                             width: parent.width
-                            height: 32
-                            radius: 10
+                            height: 30
+                            radius: 7
                             color: rowMa.pressed
                                    ? (win.dark ? "#2c303a" : "#d8dce5")
                                    : (rowMa.containsMouse ? win.bgHover : "transparent")
-                            scale: rowMa.pressed ? 0.97 : 1.0
+                            scale: rowMa.pressed ? 0.985 : 1.0
 
                             Behavior on color { ColorAnimation { duration: 110 } }
                             Behavior on scale { NumberAnimation { duration: 90 } }
 
                             Text {
                                 anchors.left: parent.left
-                                anchors.leftMargin: 12
+                                anchors.leftMargin: 6
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData.label
                                 color: win.fgMain
@@ -587,7 +588,7 @@ ApplicationWindow {
 
                             Text {
                                 anchors.right: parent.right
-                                anchors.rightMargin: 12
+                                anchors.rightMargin: 6
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData.shortcut
                                 color: win.fgGutter

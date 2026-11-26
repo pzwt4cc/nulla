@@ -135,25 +135,25 @@ void NullaHighlighter::rebuildRules() {
     }
 
     QTextCharFormat keywordFmt;
-    keywordFmt.setForeground(QColor(m_darkMode ? QStringLiteral("#f3f4f6") : QStringLiteral("#111318")));
+    keywordFmt.setForeground(QColor(m_darkMode ? QStringLiteral("#c792ea") : QStringLiteral("#7c3aed")));
     keywordFmt.setFontWeight(QFont::DemiBold);
 
     QTextCharFormat typeFmt;
-    typeFmt.setForeground(QColor(m_darkMode ? QStringLiteral("#d6dae2") : QStringLiteral("#272b33")));
+    typeFmt.setForeground(QColor(m_darkMode ? QStringLiteral("#7dcfff") : QStringLiteral("#0284c7")));
     typeFmt.setFontWeight(QFont::Medium);
 
     QTextCharFormat numberFmt;
-    numberFmt.setForeground(QColor(m_darkMode ? QStringLiteral("#c8cdd6") : QStringLiteral("#3a3f4a")));
+    numberFmt.setForeground(QColor(m_darkMode ? QStringLiteral("#ff9e64") : QStringLiteral("#c2410c")));
 
     QTextCharFormat keyFmt;
-    keyFmt.setForeground(QColor(m_darkMode ? QStringLiteral("#eef0f4") : QStringLiteral("#16181d")));
+    keyFmt.setForeground(QColor(m_darkMode ? QStringLiteral("#7aa2f7") : QStringLiteral("#2563eb")));
     keyFmt.setFontWeight(QFont::Medium);
 
     m_stringFormat = QTextCharFormat();
-    m_stringFormat.setForeground(QColor(m_darkMode ? QStringLiteral("#b4bac5") : QStringLiteral("#4c525e")));
+    m_stringFormat.setForeground(QColor(m_darkMode ? QStringLiteral("#9ece6a") : QStringLiteral("#15803d")));
 
     m_commentFormat = QTextCharFormat();
-    m_commentFormat.setForeground(QColor(m_darkMode ? QStringLiteral("#646a76") : QStringLiteral("#8c929e")));
+    m_commentFormat.setForeground(QColor(m_darkMode ? QStringLiteral("#636a78") : QStringLiteral("#858c99")));
     m_commentFormat.setFontItalic(true);
 
     auto addWordList = [&](const QStringList &words, const QTextCharFormat &fmt) {

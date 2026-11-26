@@ -8,8 +8,8 @@ Item {
 
     signal toggled(bool newValue)
 
-    implicitWidth: 48
-    implicitHeight: 28
+    implicitWidth: 44
+    implicitHeight: 24
 
     readonly property color trackBorderOff: darkMode ? "#454a57" : "#9aa1ae"
     readonly property color trackBorderOn: darkMode ? "#e6e8ec" : "#16181d"
@@ -21,39 +21,36 @@ Item {
     Rectangle {
         id: track
         anchors.fill: parent
-        radius: height / 2
+        radius: 8
         color: root.checked ? root.trackFillOn : root.trackFillOff
         border.width: 1.5
         border.color: root.checked ? root.trackBorderOn : root.trackBorderOff
-        scale: ma.pressed ? 0.92 : (ma.containsMouse ? 1.03 : 1.0)
+        scale: ma.pressed ? 0.97 : 1.0
 
         Behavior on color {
-            ColorAnimation { duration: 160; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 100; easing.type: Easing.OutCubic }
         }
         Behavior on border.color {
-            ColorAnimation { duration: 160; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 100; easing.type: Easing.OutCubic }
         }
         Behavior on scale {
-            NumberAnimation { duration: 110; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 65; easing.type: Easing.OutCubic }
         }
 
         Rectangle {
             id: thumb
-            width: root.checked ? 18 : 13
-            height: width
-            radius: width / 2
+            width: 15
+            height: 15
+            radius: 5
             anchors.verticalCenter: parent.verticalCenter
-            x: root.checked ? (parent.width - width - 5) : 7
+            x: root.checked ? (parent.width - width - 5) : 5
             color: root.checked ? root.thumbOn : root.thumbOff
 
             Behavior on x {
-                NumberAnimation { duration: 170; easing.type: Easing.OutCubic }
-            }
-            Behavior on width {
-                NumberAnimation { duration: 170; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: 110; easing.type: Easing.OutCubic }
             }
             Behavior on color {
-                ColorAnimation { duration: 160; easing.type: Easing.OutCubic }
+                ColorAnimation { duration: 100; easing.type: Easing.OutCubic }
             }
         }
     }

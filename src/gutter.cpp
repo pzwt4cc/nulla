@@ -106,7 +106,7 @@ void LineNumberGutter::updateMetricsWidth() {
     }
     digits = qMax(2, count);
     const QFontMetricsF fm(m_font);
-    const qreal w = fm.horizontalAdvance(QString(digits, QLatin1Char('9'))) + 22.0;
+    const qreal w = fm.horizontalAdvance(QString(digits, QLatin1Char('9'))) + 16.0;
     if (!qFuzzyCompare(implicitWidth(), w)) {
         setImplicitWidth(qCeil(w));
     }
@@ -127,7 +127,7 @@ void LineNumberGutter::paint(QPainter *painter) {
 
     const qreal viewTop = m_contentY - m_topPadding;
     const qreal viewBottom = m_contentY + height();
-    const qreal rightMargin = 10.0;
+    const qreal rightMargin = 8.0;
 
     QTextBlock block = td->begin();
     int lineNum = 1;
