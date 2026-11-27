@@ -40,7 +40,7 @@ ApplicationWindow {
     readonly property color fgGutter: theme.fgGutter || (dark ? "#565d6e" : "#8c93a3")
     readonly property color selBg: theme.selBg || (dark ? "#2e3d59" : "#cde0ff")
 
-    readonly property var activePane: tabRepeater.itemAt(editorBackend.activeTabIndex)
+    readonly property var activePane: mainEditorPane
     readonly property bool modalOpen: confirmModal.open || settingsModal.open || languageModal.open
 
     EditorBackend {
@@ -74,17 +74,14 @@ ApplicationWindow {
     }
 
     function focusActiveEditor() {
-        const pane = tabRepeater.itemAt(editorBackend.activeTabIndex);
-        if (pane) {
-            pane.focusEditor();
-        }
+        mainEditorPane.focusEditor();
     }
 
     function openFindBar(replaceMode, gotoMode) {
         findBar.gotoMode = !!gotoMode;
         findBar.replaceMode = !gotoMode && !!replaceMode;
         findBar.open = true;
-        const sel = (!gotoMode && activePane) ? activePane.editorItem.selectedText : "";
+        const sel = (!gotoMode && editorBackend.activeTab) ? editorBackend.activeTab.selectedText() : "";
         if (!gotoMode && sel !== "" && sel.indexOf("\n") === -1 && sel.indexOf("\u2029") === -1) {
             findBar.query = sel;
             findBar.focusInput(sel, false);
@@ -103,44 +100,39 @@ ApplicationWindow {
     }
 
     function updateMatchStats() {
-        if (!editorBackend.activeTab || !activePane || findBar.query === "") {
+        if (!editorBackend.activeTab || findBar.query === "") {
             findBar.matchCurrent = 0;
             findBar.matchTotal = 0;
             return;
         }
-        const st = editorBackend.activeTab.matchStats(findBar.query, activePane.editorItem.selectionStart);
+        const st = editorBackend.activeTab.matchStats(findBar.query);
         findBar.matchCurrent = st.current;
         findBar.matchTotal = st.total;
     }
 
     function findNext(backward) {
-        if (!editorBackend.activeTab || !activePane || findBar.query === "") {
+        if (!editorBackend.activeTab || findBar.query === "") {
             updateMatchStats();
             return;
         }
-        const ed = activePane.editorItem;
-        const fromPos = backward ? Math.max(0, ed.selectionStart) : ed.selectionEnd;
-        const res = editorBackend.activeTab.findText(findBar.query, fromPos, backward);
-        if (res.found) {
-            ed.select(res.start, res.end);
+        if (editorBackend.activeTab.findNext(findBar.query, backward)) {
+            mainEditorPane.ensureCursorVisible();
         }
         updateMatchStats();
     }
 
     function replaceOne(replacement) {
-        if (!editorBackend.activeTab || !activePane || findBar.query === "") {
+        if (!editorBackend.activeTab || findBar.query === "") {
             return;
         }
-        const ed = activePane.editorItem;
-        const res = editorBackend.activeTab.replaceMatch(findBar.query, replacement, ed.selectionStart, ed.selectionEnd);
-        if (res.found) {
-            ed.select(res.start, res.end);
+        if (editorBackend.activeTab.replaceMatch(findBar.query, replacement)) {
+            mainEditorPane.ensureCursorVisible();
         }
         updateMatchStats();
     }
 
     function replaceAll(replacement) {
-        if (!editorBackend.activeTab || !activePane || findBar.query === "") {
+        if (!editorBackend.activeTab || findBar.query === "") {
             return;
         }
         editorBackend.activeTab.replaceAllMatches(findBar.query, replacement);
@@ -737,52 +729,42 @@ ApplicationWindow {
                         anchors.right: parent.right
                         clip: true
 
-                        Repeater {
-                            id: tabRepeater
-                            model: editorBackend.tabModel
+                        EditorPane {
+                            id: mainEditorPane
+                            anchors.fill: parent
+                            session: editorBackend.activeTab
+                            darkMode: win.dark
+                            theme: win.theme
+                            showLineNumbers: editorBackend.showLineNumbers
+                            showIndentGuides: editorBackend.showIndentGuides
+                            zoomPercent: editorBackend.zoomPercent
+                            monoFontFamily: editorBackend.monoFontFamily
+                            ui: win.ui
+                            bgEditor: win.bgEditor
+                            bgGutter: win.bgGutter
+                            bgSurfaceElev: win.bgSurfaceElev
+                            bgHover: win.bgHover
+                            bgLineHighlight: win.bgLineHighlight
+                            borderSubtle: win.borderSubtle
+                            borderControl: win.borderControl
+                            borderFocus: win.borderFocus
+                            fgMain: win.fgMain
+                            fgMuted: win.fgMuted
+                            fgGutter: win.fgGutter
+                            selBg: win.selBg
 
-                            delegate: EditorPane {
-                                anchors.fill: parent
-                                visible: index === editorBackend.activeTabIndex
-                                onVisibleChanged: {
-                                    if (visible && !win.modalOpen && !findBar.open) {
-                                        focusEditor();
-                                    }
-                                }
-                                session: model.session
-                                darkMode: win.dark
-                                theme: win.theme
-                                showLineNumbers: editorBackend.showLineNumbers
-                                showIndentGuides: editorBackend.showIndentGuides
-                                zoomPercent: editorBackend.zoomPercent
-                                monoFontFamily: editorBackend.monoFontFamily
-                                ui: win.ui
-                                bgEditor: win.bgEditor
-                                bgGutter: win.bgGutter
-                                bgSurfaceElev: win.bgSurfaceElev
-                                bgHover: win.bgHover
-                                bgLineHighlight: win.bgLineHighlight
-                                borderSubtle: win.borderSubtle
-                                borderControl: win.borderControl
-                                borderFocus: win.borderFocus
-                                fgMain: win.fgMain
-                                fgMuted: win.fgMuted
-                                fgGutter: win.fgGutter
-                                selBg: win.selBg
-
-                                onZoomInRequested: editorBackend.zoomIn()
-                                onZoomOutRequested: editorBackend.zoomOut()
-                                onOpenFindRequested: openFindBar(false, false)
-                                onOpenReplaceRequested: openFindBar(true, false)
-                                onOpenGotoRequested: openFindBar(false, true)
-                                onNewTabRequested: editorBackend.newTab()
-                                onOpenFileRequested: editorBackend.openFileDialog()
-                                onSaveFileRequested: editorBackend.saveFile()
-                                onSaveAsRequested: editorBackend.saveFileAsDialog()
-                                onCloseTabRequested: requestCloseTab(index)
-                                onQuitRequested: requestQuit()
-                                onToggleSettingsRequested: settingsModal.open = !settingsModal.open
-                            }
+                            onZoomInRequested: editorBackend.zoomIn()
+                            onZoomOutRequested: editorBackend.zoomOut()
+                            onOpenFindRequested: openFindBar(false, false)
+                            onOpenReplaceRequested: openFindBar(true, false)
+                            onOpenGotoRequested: openFindBar(false, true)
+                            onNewTabRequested: editorBackend.newTab()
+                            onOpenFileRequested: editorBackend.openFileDialog()
+                            onSaveFileRequested: editorBackend.saveFile()
+                            onSaveAsRequested: editorBackend.saveFileAsDialog()
+                            onCloseTabRequested: requestCloseTab(editorBackend.activeTabIndex)
+                            onQuitRequested: requestQuit()
+                            onToggleSettingsRequested: settingsModal.open = !settingsModal.open
                         }
                     }
                 }
@@ -803,7 +785,7 @@ ApplicationWindow {
                     theme: win.theme
                     activeTab: editorBackend.activeTab
                     zoomPercent: editorBackend.zoomPercent
-                    selectedChars: activePane ? activePane.selectedLength : 0
+                    selectedChars: editorBackend.activeTab ? editorBackend.activeTab.selectedChars : 0
                     ui: win.ui
                     bgShell: win.bgShell
                     bgSurfaceElev: win.bgSurfaceElev
@@ -828,7 +810,7 @@ ApplicationWindow {
                     theme: win.theme
                     activeTab: editorBackend.activeTab
                     zoomPercent: editorBackend.zoomPercent
-                    selectedChars: activePane ? activePane.selectedLength : 0
+                    selectedChars: editorBackend.activeTab ? editorBackend.activeTab.selectedChars : 0
                     ui: win.ui
                     bgShell: win.bgShell
                     borderSubtle: win.borderSubtle

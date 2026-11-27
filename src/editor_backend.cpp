@@ -1,4 +1,5 @@
 #include "editor_backend.h"
+#include "nulla_core.h"
 
 #include <QColor>
 #include <QDir>
@@ -1146,7 +1147,7 @@ void EditorBackend::updateThemeWatches() {
 
 TabSession *EditorBackend::createSession() {
   auto *tab = new TabSession(this);
-  tab->applyThemeAndSyntax(m_syntaxEnabled, m_effectiveDark);
+  tab->setSyntaxEnabled(m_syntaxEnabled);
   connect(tab, &TabSession::errorOccurred, this, &EditorBackend::errorOccurred);
   connect(tab, &TabSession::languageChanged, this,
           &EditorBackend::languageChanged);
@@ -1182,12 +1183,22 @@ QVariantList EditorBackend::languagesModel() const {
   autoItem.insert(QStringLiteral("name"), QStringLiteral("Auto"));
   list.append(autoItem);
 
-  const QVector<NullaLangDef> langs = NullaHighlighter::supportedLanguages();
-  for (const auto &lang : langs) {
-    QVariantMap item;
-    item.insert(QStringLiteral("id"), lang.id);
-    item.insert(QStringLiteral("name"), lang.name);
-    list.append(item);
+  const size_t count = nulla_supported_languages_count();
+  for (size_t i = 0; i < count; ++i) {
+    const uint8_t *idPtr = nullptr;
+    size_t idLen = 0;
+    const uint8_t *namePtr = nullptr;
+    size_t nameLen = 0;
+    if (nulla_supported_language_at(i, &idPtr, &idLen, &namePtr, &nameLen)) {
+      QVariantMap item;
+      item.insert(QStringLiteral("id"),
+                  QString::fromUtf8(reinterpret_cast<const char *>(idPtr),
+                                    static_cast<qsizetype>(idLen)));
+      item.insert(QStringLiteral("name"),
+                  QString::fromUtf8(reinterpret_cast<const char *>(namePtr),
+                                    static_cast<qsizetype>(nameLen)));
+      list.append(item);
+    }
   }
   return list;
 }
@@ -1429,6 +1440,9 @@ int EditorBackend::findOpenTabByPath(const QString &absPath) const {
 
 bool EditorBackend::loadFile(const QString &path, bool allowMissing) {
   const QString absPath = normalizeFilePath(path);
+  if (QFileInfo(absPath).isDir()) {
+    return openFolder(absPath);
+  }
   const int existing = findOpenTabByPath(absPath);
   if (existing >= 0) {
     setActiveTabIndex(existing);
@@ -1668,7 +1682,7 @@ void EditorBackend::onThemeFilesChanged() {
 void EditorBackend::propagateThemeAndSyntax() {
   const auto &tabs = m_tabModel.tabs();
   for (TabSession *tab : tabs) {
-    tab->applyThemeAndSyntax(m_syntaxEnabled, m_effectiveDark);
+    tab->setSyntaxEnabled(m_syntaxEnabled);
   }
 }
 

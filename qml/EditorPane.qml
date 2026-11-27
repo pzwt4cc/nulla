@@ -28,16 +28,16 @@ Item {
     property color fgGutter: "#4a4f5c"
     property color selBg: "#2e3d59"
 
-    property alias editorItem: editor
+    property alias editorItem: editorView
     property alias flickItem: flick
-    readonly property int selectedLength: Math.abs(editor.selectionEnd - editor.selectionStart)
-    readonly property bool hasSelection: editor.selectionStart !== editor.selectionEnd
+    readonly property int selectedLength: pane.session ? pane.session.selectedChars : 0
+    readonly property bool hasSelection: editorView.hasSelection
     readonly property bool contextMenuOpen: contextMenu.opened
-
-    property bool hoverInsideTextArea: false
-    property rect hoverLineRect: Qt.rect(0, 0, 1, 18)
-    readonly property bool hoverOnActiveLine: Math.abs(hoverLineRect.y - editor.liveCursorRect.y) < 2
+    readonly property bool hoverOnActiveLine: Math.abs(editorView.hoverRect.y - editorView.cursorRect.y) < 2
     property bool typingBurst: false
+    property bool suppressCursorScroll: false
+    property int lastZoomPercent: zoomPercent
+    property bool restoringScroll: false
 
     signal zoomInRequested
     signal zoomOutRequested
@@ -53,7 +53,7 @@ Item {
     signal toggleSettingsRequested
 
     function focusEditor() {
-        editor.forceActiveFocus();
+        editorView.forceActiveFocus();
     }
 
     function closeContextMenu() {
@@ -62,226 +62,35 @@ Item {
         }
     }
 
-    function updateHoverGuide(vx, vy) {
-        const rightLimit = (vScroll.visible && vScroll.size < 1.0) ? (editorViewport.width - 8) : editorViewport.width;
-        const bottomLimit = (hScroll.visible && hScroll.size < 1.0) ? (editorViewport.height - 8) : editorViewport.height;
-        if (vx < 0 || vy < 0 || vx >= rightLimit || vy >= bottomLimit) {
-            hoverInsideTextArea = false;
+    function suppressZoomScroll() {
+        suppressCursorScroll = true;
+        zoomSuppressTimer.restart();
+    }
+
+    function ensureCursorVisible() {
+        if (suppressCursorScroll || flick.height <= 24 || flick.width <= 24) {
             return;
         }
-        hoverInsideTextArea = true;
-        const docX = vx + flick.contentX - editor.x;
-        const docY = vy + flick.contentY - editor.y;
-        const pos = editor.positionAt(docX, docY);
-        let r = editor.positionToRectangle(pos);
-        if (r.height <= 0) {
-            r = Qt.rect(r.x, r.y, Math.max(1, r.width), editorMetrics.height);
+        const r = editorView.cursorRect;
+        const rightLimit = flick.width - editorView.rightInset - 10;
+        const bottomLimit = flick.height - editorView.bottomInset - 8;
+        if (r.y < 8) {
+            flick.stopScrollAnims();
+            flick.contentY = flick.clampY(flick.contentY + r.y - 8);
+            flick.targetY = flick.contentY;
+        } else if (r.y + r.height > bottomLimit) {
+            flick.stopScrollAnims();
+            flick.contentY = flick.clampY(flick.contentY + (r.y + r.height) - bottomLimit);
+            flick.targetY = flick.contentY;
         }
-        hoverLineRect = r;
-    }
-
-    function lineBoundsAt(pos) {
-        const text = editor.text;
-        const start = pos === 0 ? 0 : text.lastIndexOf("\n", pos - 1) + 1;
-        let end = text.indexOf("\n", pos);
-        if (end === -1) {
-            end = text.length;
-        }
-        return {
-            start: start,
-            end: end
-        };
-    }
-
-    function indentSelection(unindent) {
-        const text = editor.text;
-        const selStart = editor.selectionStart;
-        const selEnd = editor.selectionEnd;
-        if (selStart === selEnd && !unindent) {
-            editor.insert(editor.cursorPosition, "    ");
-            return;
-        }
-        const adjEnd = (selEnd > selStart && text.charAt(selEnd - 1) === "\n") ? (selEnd - 1) : selEnd;
-        const lineStart = selStart === 0 ? 0 : text.lastIndexOf("\n", selStart - 1) + 1;
-        let lineEnd = text.indexOf("\n", adjEnd);
-        if (lineEnd === -1) {
-            lineEnd = text.length;
-        }
-        const block = text.slice(lineStart, lineEnd);
-        const lines = block.split("\n");
-        for (let i = 0; i < lines.length; i++) {
-            if (unindent) {
-                if (lines[i].startsWith("    ")) {
-                    lines[i] = lines[i].slice(4);
-                } else if (lines[i].startsWith("\t")) {
-                    lines[i] = lines[i].slice(1);
-                } else {
-                    lines[i] = lines[i].replace(/^ {1,3}/, "");
-                }
-            } else {
-                lines[i] = "    " + lines[i];
-            }
-        }
-        const updated = lines.join("\n");
-        editor.remove(lineStart, lineEnd);
-        editor.insert(lineStart, updated);
-        editor.select(lineStart, lineStart + updated.length);
-    }
-
-    function duplicateCurrentLine() {
-        const text = editor.text;
-        const selStart = editor.selectionStart;
-        const selEnd = editor.selectionEnd;
-        const adjEnd = (selEnd > selStart && text.charAt(selEnd - 1) === "\n") ? (selEnd - 1) : selEnd;
-        const first = lineBoundsAt(selStart);
-        const last = lineBoundsAt(adjEnd);
-        const block = text.slice(first.start, last.end);
-        editor.insert(last.end, "\n" + block);
-        if (selStart === selEnd) {
-            editor.cursorPosition = selStart + block.length + 1;
-        } else {
-            editor.select(last.end + 1, last.end + 1 + block.length);
-        }
-    }
-
-    function cutCurrentLine() {
-        const text = editor.text;
-        if (text.length === 0) {
-            return;
-        }
-        const b = lineBoundsAt(editor.cursorPosition);
-        if (b.end < text.length) {
-            editor.select(b.start, b.end + 1);
-        } else if (b.start > 0) {
-            editor.select(b.start - 1, b.end);
-        } else {
-            editor.select(0, text.length);
-        }
-        editor.cut();
-    }
-
-    function copyCurrentLine() {
-        const text = editor.text;
-        if (text.length === 0) {
-            return;
-        }
-        const pos = editor.cursorPosition;
-        const b = lineBoundsAt(pos);
-        if (b.end < text.length) {
-            editor.select(b.start, b.end + 1);
-        } else {
-            editor.select(b.start, b.end);
-        }
-        editor.copy();
-        editor.cursorPosition = pos;
-    }
-
-    function deleteCurrentLine() {
-        const text = editor.text;
-        if (text.length === 0) {
-            return;
-        }
-        const b = lineBoundsAt(editor.cursorPosition);
-        if (b.end < text.length) {
-            editor.remove(b.start, b.end + 1);
-            editor.cursorPosition = b.start;
-        } else if (b.start > 0) {
-            editor.remove(b.start - 1, b.end);
-            editor.cursorPosition = b.start - 1;
-        } else {
-            editor.remove(0, text.length);
-        }
-    }
-
-    function selectCurrentLine() {
-        const text = editor.text;
-        const b = lineBoundsAt(editor.cursorPosition);
-        const endPos = b.end < text.length ? (b.end + 1) : b.end;
-        editor.select(b.start, endPos);
-    }
-
-    function insertLine(above) {
-        const b = lineBoundsAt(editor.cursorPosition);
-        if (above) {
-            editor.insert(b.start, "\n");
-            editor.cursorPosition = b.start;
-        } else {
-            editor.insert(b.end, "\n");
-            editor.cursorPosition = b.end + 1;
-        }
-    }
-
-    function moveCurrentLine(down) {
-        const text = editor.text;
-        const pos = editor.cursorPosition;
-        const cur = lineBoundsAt(pos);
-        const col = pos - cur.start;
-        const line = text.slice(cur.start, cur.end);
-        if (!down) {
-            if (cur.start === 0) {
-                return;
-            }
-            const prev = lineBoundsAt(cur.start - 1);
-            const prevLine = text.slice(prev.start, prev.end);
-            editor.remove(prev.start, cur.end);
-            editor.insert(prev.start, line + "\n" + prevLine);
-            editor.cursorPosition = prev.start + Math.min(col, line.length);
-        } else {
-            if (cur.end >= text.length) {
-                return;
-            }
-            const next = lineBoundsAt(cur.end + 1);
-            const nextLine = text.slice(next.start, next.end);
-            editor.remove(cur.start, next.end);
-            editor.insert(cur.start, nextLine + "\n" + line);
-            editor.cursorPosition = cur.start + nextLine.length + 1 + Math.min(col, line.length);
-        }
-    }
-
-    function toggleLineComment() {
-        const prefix = pane.session ? pane.session.commentPrefix : "#";
-        if (!prefix || prefix === "") {
-            return;
-        }
-        const text = editor.text;
-        const selStart = editor.selectionStart;
-        const selEnd = editor.selectionEnd;
-        const adjEnd = (selEnd > selStart && text.charAt(selEnd - 1) === "\n") ? (selEnd - 1) : selEnd;
-        const first = lineBoundsAt(selStart);
-        const last = lineBoundsAt(adjEnd);
-        const block = text.slice(first.start, last.end);
-        const lines = block.split("\n");
-        let allCommented = true;
-        for (let i = 0; i < lines.length; i++) {
-            const trimmed = lines[i].trim();
-            if (trimmed !== "" && !trimmed.startsWith(prefix)) {
-                allCommented = false;
-                break;
-            }
-        }
-        for (let j = 0; j < lines.length; j++) {
-            if (allCommented) {
-                const idx = lines[j].indexOf(prefix);
-                if (idx !== -1) {
-                    let cutLen = prefix.length;
-                    if (lines[j].charAt(idx + cutLen) === " ") {
-                        cutLen += 1;
-                    }
-                    lines[j] = lines[j].slice(0, idx) + lines[j].slice(idx + cutLen);
-                }
-            } else if (lines[j].trim() !== "" || lines.length === 1) {
-                const wsMatch = lines[j].match(/^\s*/);
-                const indent = wsMatch ? wsMatch[0] : "";
-                lines[j] = indent + prefix + " " + lines[j].slice(indent.length);
-            }
-        }
-        const updated = lines.join("\n");
-        editor.remove(first.start, last.end);
-        editor.insert(first.start, updated);
-        if (selStart === selEnd) {
-            editor.cursorPosition = first.start + updated.length;
-        } else {
-            editor.select(first.start, first.start + updated.length);
+        if (r.x < 10) {
+            flick.stopScrollAnims();
+            flick.contentX = flick.clampX(flick.contentX + r.x - 10);
+            flick.targetX = flick.contentX;
+        } else if (r.x + r.width > rightLimit) {
+            flick.stopScrollAnims();
+            flick.contentX = flick.clampX(flick.contentX + (r.x + r.width) - rightLimit);
+            flick.targetX = flick.contentX;
         }
     }
 
@@ -289,27 +98,37 @@ Item {
         if (!pane.session) {
             return;
         }
-        const pos = pane.session.lineStartPosition(lineNumber);
-        editor.forceActiveFocus();
-        editor.cursorPosition = pos;
+        pane.session.gotoLine(lineNumber);
+        editorView.forceActiveFocus();
+        Qt.callLater(ensureCursorVisible);
     }
 
-    function suppressZoomScroll() {
-        editor.suppressCursorScroll = true;
-        zoomSuppressTimer.restart();
-    }
-
-    Component.onCompleted: {
+    function syncSessionScroll() {
+        restoringScroll = true;
+        editorView.session = pane.session;
+        flick.stopScrollAnims();
         if (pane.session) {
-            pane.session.attachDocument(editor.textDocument);
+            flick.contentX = flick.clampX(pane.session.scrollX);
+            flick.contentY = flick.clampY(pane.session.scrollY);
+            flick.targetX = flick.contentX;
+            flick.targetY = flick.contentY;
+        } else {
+            flick.contentX = 0;
+            flick.contentY = 0;
+            flick.targetX = 0;
+            flick.targetY = 0;
         }
+        restoringScroll = false;
     }
 
-    onZoomPercentChanged: suppressZoomScroll()
+    Component.onCompleted: syncSessionScroll()
 
-    onSessionChanged: {
-        if (pane.session) {
-            pane.session.attachDocument(editor.textDocument);
+    onSessionChanged: syncSessionScroll()
+
+    onZoomPercentChanged: {
+        if (lastZoomPercent !== zoomPercent) {
+            lastZoomPercent = zoomPercent;
+            suppressZoomScroll();
         }
     }
 
@@ -317,12 +136,23 @@ Item {
         target: pane.session
         function onDocumentLoaded() {
             flick.stopScrollAnims();
-            editor.cursorPosition = 0;
             flick.contentY = 0;
             flick.contentX = 0;
             flick.targetY = 0;
             flick.targetX = 0;
         }
+    }
+
+    Timer {
+        id: zoomSuppressTimer
+        interval: 140
+        onTriggered: pane.suppressCursorScroll = false
+    }
+
+    Timer {
+        id: typingBurstTimer
+        interval: 420
+        onTriggered: pane.typingBurst = false
     }
 
     Rectangle {
@@ -338,686 +168,369 @@ Item {
     }
 
     Item {
+        id: viewportHost
         anchors.fill: parent
         clip: true
 
-        Rectangle {
-            id: gutterContainer
-            visible: pane.showLineNumbers
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            width: visible ? gutter.implicitWidth : 0
-            color: pane.bgGutter
+        Item {
+            id: bandsClip
+            x: editorView.gutterWidth
+            y: 0
+            width: Math.max(0, parent.width - editorView.gutterWidth - editorView.rightInset)
+            height: Math.max(0, parent.height - editorView.bottomInset)
+            clip: true
 
-            Behavior on color {
-                ColorAnimation {
-                    duration: 110
-                    easing.type: Easing.OutCubic
+            Rectangle {
+                id: hoverLineBand
+                x: 0
+                y: editorView.hoverRect.y
+                width: bandsClip.width
+                height: Math.max(editorView.lineHeight, editorView.hoverRect.height)
+                color: pane.theme.hoverLineBand || (pane.darkMode ? "#0effffff" : "#07000000")
+                opacity: (editorView.hoverInside && !contextMenu.visible && !pane.hoverOnActiveLine) ? 1.0 : 0.0
+                visible: opacity > 0.01
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 75
+                        easing.type: Easing.OutCubic
+                    }
                 }
-            }
 
-            LineNumberGutter {
-                id: gutter
-                anchors.fill: parent
-                document: editor.textDocument
-                contentY: flick.contentY
-                currentLine: pane.session ? pane.session.cursorLine : 1
-                font: editor.font
-                textColor: pane.fgGutter
-                activeTextColor: pane.fgMain
-                activeLineColor: editor.activeFocus ? pane.bgLineHighlight : "transparent"
-                topPadding: 8
+                Rectangle {
+                    width: 2
+                    height: parent.height
+                    anchors.left: parent.left
+                    color: pane.borderFocus
+                    opacity: 0.6
+                }
             }
 
             Rectangle {
-                width: 1
-                height: parent.height
-                anchors.right: parent.right
-                color: pane.borderSubtle
-            }
-        }
+                id: currentLineBand
+                visible: editorView.activeFocus
+                x: 0
+                y: editorView.cursorRect.y
+                width: bandsClip.width
+                height: Math.max(editorView.lineHeight, editorView.cursorRect.height)
+                color: pane.hasSelection ? (pane.theme.bgLineHighlightSel || (pane.darkMode ? "#1f2738" : "#eaf0fb")) : pane.bgLineHighlight
 
-        Item {
-            id: editorViewport
-            anchors.left: gutterContainer.right
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            clip: true
-
-            Item {
-                anchors.fill: parent
-                anchors.rightMargin: (vScroll.visible && vScroll.size < 1.0) ? 8 : 0
-                anchors.bottomMargin: (hScroll.visible && hScroll.size < 1.0) ? 8 : 0
-
-                HoverHandler {
-                    id: editorHover
-                    cursorShape: Qt.IBeamCursor
-                    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-                    onPointChanged: pane.updateHoverGuide(point.position.x, point.position.y)
-                    onHoveredChanged: {
-                        if (!hovered) {
-                            pane.hoverInsideTextArea = false;
-                        } else {
-                            pane.updateHoverGuide(point.position.x, point.position.y);
-                        }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 90
                     }
-                }
-            }
-
-            Flickable {
-                id: flick
-                anchors.fill: parent
-                interactive: false
-                contentWidth: Math.max(width, editor.contentWidth + 20)
-                contentHeight: Math.max(height, editor.contentHeight + 16)
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-
-                property real targetY: 0
-                property real targetX: 0
-
-                function clampY(v) {
-                    return Math.max(0, Math.min(Math.max(0, contentHeight - height), v));
-                }
-
-                function clampX(v) {
-                    return Math.max(0, Math.min(Math.max(0, contentWidth - width), v));
-                }
-
-                function stopScrollAnims() {
-                    scrollYAnim.stop();
-                    scrollXAnim.stop();
-                    targetY = contentY;
-                    targetX = contentX;
-                }
-
-                function smoothScrollBy(dx, dy, animDuration) {
-                    if (dy !== 0) {
-                        const baseY = scrollYAnim.running ? targetY : contentY;
-                        const nextY = clampY(baseY + dy);
-                        targetY = nextY;
-                        if (animDuration > 0) {
-                            scrollYAnim.duration = animDuration;
-                            scrollYAnim.to = nextY;
-                            scrollYAnim.restart();
-                        } else {
-                            scrollYAnim.stop();
-                            contentY = nextY;
-                        }
-                    }
-                    if (dx !== 0) {
-                        const baseX = scrollXAnim.running ? targetX : contentX;
-                        const nextX = clampX(baseX + dx);
-                        targetX = nextX;
-                        if (animDuration > 0) {
-                            scrollXAnim.duration = animDuration;
-                            scrollXAnim.to = nextX;
-                            scrollXAnim.restart();
-                        } else {
-                            scrollXAnim.stop();
-                            contentX = nextX;
-                        }
-                    }
-                }
-
-                onContentYChanged: {
-                    if (editorHover.hovered) {
-                        pane.updateHoverGuide(editorHover.point.position.x, editorHover.point.position.y);
-                    }
-                }
-
-                onContentXChanged: {
-                    if (editorHover.hovered) {
-                        pane.updateHoverGuide(editorHover.point.position.x, editorHover.point.position.y);
-                    }
-                }
-
-                onContentHeightChanged: {
-                    const maxY = Math.max(0, contentHeight - height);
-                    if (contentY > maxY) {
-                        scrollYAnim.stop();
-                        contentY = maxY;
-                        targetY = maxY;
-                    }
-                }
-
-                onContentWidthChanged: {
-                    const maxX = Math.max(0, contentWidth - width);
-                    if (contentX > maxX) {
-                        scrollXAnim.stop();
-                        contentX = maxX;
-                        targetX = maxX;
-                    }
-                }
-
-                onHeightChanged: {
-                    const maxY = Math.max(0, contentHeight - height);
-                    if (contentY > maxY) {
-                        scrollYAnim.stop();
-                        contentY = maxY;
-                        targetY = maxY;
-                    }
-                }
-
-                onWidthChanged: {
-                    const maxX = Math.max(0, contentWidth - width);
-                    if (contentX > maxX) {
-                        scrollXAnim.stop();
-                        contentX = maxX;
-                        targetX = maxX;
-                    }
-                }
-
-                NumberAnimation {
-                    id: scrollYAnim
-                    target: flick
-                    property: "contentY"
-                    duration: 240
-                    easing.type: Easing.OutCubic
-                }
-
-                NumberAnimation {
-                    id: scrollXAnim
-                    target: flick
-                    property: "contentX"
-                    duration: 200
-                    easing.type: Easing.OutCubic
-                }
-
-                ScrollBar.vertical: ScrollBar {
-                    id: vScroll
-                    policy: ScrollBar.AsNeeded
-                    width: 8
-                    onPressedChanged: if (pressed)
-                        flick.stopScrollAnims()
-                    contentItem: Rectangle {
-                        implicitWidth: 5
-                        radius: 3
-                        color: vScroll.pressed ? (pane.theme.scrollPress || (pane.darkMode ? "#7d8594" : "#6c7382")) : (vScroll.hovered ? (pane.theme.scrollHover || (pane.darkMode ? "#5a606e" : "#8d94a3")) : (pane.theme.scrollIdle || (pane.darkMode ? "#373b46" : "#c1c6d0")))
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 100
-                            }
-                        }
-                    }
-                }
-
-                ScrollBar.horizontal: ScrollBar {
-                    id: hScroll
-                    policy: ScrollBar.AsNeeded
-                    height: 8
-                    onPressedChanged: if (pressed)
-                        flick.stopScrollAnims()
-                    contentItem: Rectangle {
-                        implicitHeight: 5
-                        radius: 3
-                        color: hScroll.pressed ? (pane.theme.scrollPress || (pane.darkMode ? "#7d8594" : "#6c7382")) : (hScroll.hovered ? (pane.theme.scrollHover || (pane.darkMode ? "#5a606e" : "#8d94a3")) : (pane.theme.scrollIdle || (pane.darkMode ? "#373b46" : "#c1c6d0")))
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 100
-                            }
-                        }
-                    }
-                }
-
-                FontMetrics {
-                    id: editorMetrics
-                    font: editor.font
                 }
 
                 Rectangle {
-                    id: hoverLineBand
-                    x: 0
-                    y: editor.y + pane.hoverLineRect.y
-                    width: Math.max(flick.width, flick.contentWidth)
-                    height: Math.max(editorMetrics.height, pane.hoverLineRect.height)
-                    color: pane.theme.hoverLineBand || (pane.darkMode ? "#0effffff" : "#07000000")
-                    opacity: (pane.hoverInsideTextArea && !contextMenu.visible && !pane.hoverOnActiveLine) ? 1.0 : 0.0
-                    visible: opacity > 0.01
+                    width: 2
+                    height: parent.height
+                    anchors.left: parent.left
+                    color: pane.hasSelection ? (pane.theme.accent || (pane.darkMode ? "#7aa2f7" : "#2563eb")) : pane.fgMain
+                    opacity: pane.hasSelection ? 0.95 : (editorView.hoverInside ? 0.85 : 0.45)
 
                     Behavior on opacity {
                         NumberAnimation {
-                            duration: 75
-                            easing.type: Easing.OutCubic
+                            duration: 90
                         }
                     }
-
-                    Rectangle {
-                        width: 2
-                        height: parent.height
-                        anchors.left: parent.left
-                        color: pane.borderFocus
-                        opacity: 0.6
-                    }
-                }
-
-                Rectangle {
-                    id: currentLineBand
-                    visible: editor.activeFocus
-                    x: 0
-                    y: editor.y + editor.liveCursorRect.y
-                    width: Math.max(flick.width, flick.contentWidth)
-                    height: Math.max(editorMetrics.height, editor.liveCursorRect.height)
-                    color: pane.hasSelection ? (pane.theme.bgLineHighlightSel || (pane.darkMode ? "#1f2738" : "#eaf0fb")) : pane.bgLineHighlight
-
                     Behavior on color {
                         ColorAnimation {
                             duration: 90
                         }
                     }
-
-                    Rectangle {
-                        width: 2
-                        height: parent.height
-                        anchors.left: parent.left
-                        color: pane.hasSelection ? (pane.theme.accent || (pane.darkMode ? "#7aa2f7" : "#2563eb")) : pane.fgMain
-                        opacity: pane.hasSelection ? 0.95 : (pane.hoverInsideTextArea ? 0.85 : 0.45)
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 90
-                            }
-                        }
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 90
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        visible: pane.hasSelection || pane.hoverInsideTextArea
-                        width: parent.width
-                        height: 1
-                        anchors.top: parent.top
-                        color: pane.borderFocus
-                        opacity: pane.hasSelection ? 0.28 : 0.14
-                    }
-
-                    Rectangle {
-                        visible: pane.hasSelection || pane.hoverInsideTextArea
-                        width: parent.width
-                        height: 1
-                        anchors.bottom: parent.bottom
-                        color: pane.borderFocus
-                        opacity: pane.hasSelection ? 0.28 : 0.14
-                    }
                 }
 
                 Rectangle {
-                    id: caretHalo
-                    visible: editor.activeFocus
-                    x: editor.x + editor.liveCursorRect.x - 2
-                    y: editor.y + editor.liveCursorRect.y
-                    width: 6
-                    height: Math.max(editorMetrics.height, editor.liveCursorRect.height)
+                    visible: pane.hasSelection || editorView.hoverInside
+                    width: parent.width
+                    height: 1
+                    anchors.top: parent.top
+                    color: pane.borderFocus
+                    opacity: pane.hasSelection ? 0.28 : 0.14
+                }
+
+                Rectangle {
+                    visible: pane.hasSelection || editorView.hoverInside
+                    width: parent.width
+                    height: 1
+                    anchors.bottom: parent.bottom
+                    color: pane.borderFocus
+                    opacity: pane.hasSelection ? 0.28 : 0.14
+                }
+            }
+
+            Rectangle {
+                id: caretHalo
+                visible: editorView.activeFocus
+                x: editorView.cursorRect.x - 2
+                y: editorView.cursorRect.y
+                width: 6
+                height: Math.max(editorView.lineHeight, editorView.cursorRect.height)
+                radius: 3
+                color: pane.hasSelection ? (pane.theme.accent || (pane.darkMode ? "#7aa2f7" : "#2563eb")) : pane.fgMain
+                opacity: pane.hasSelection ? 0.24 : (pane.typingBurst ? 0.22 : (editorView.hoverInside ? 0.1 : 0.0))
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 130
+                        easing.type: Easing.OutCubic
+                    }
+                }
+            }
+
+            Rectangle {
+                id: ghostCaret
+                x: editorView.hoverRect.x
+                y: editorView.hoverRect.y
+                width: 1.5
+                height: Math.max(editorView.lineHeight, editorView.hoverRect.height)
+                radius: 1
+                color: pane.fgMain
+                opacity: (editorView.hoverInside && !contextMenu.visible && !pane.hasSelection && (Math.abs(editorView.hoverRect.x - editorView.cursorRect.x) > 3 || !pane.hoverOnActiveLine)) ? 0.34 : 0.0
+                visible: opacity > 0.01
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 75
+                        easing.type: Easing.OutCubic
+                    }
+                }
+            }
+        }
+
+        NullaEditorView {
+            id: editorView
+            anchors.fill: parent
+            darkMode: pane.darkMode
+            showLineNumbers: pane.showLineNumbers
+            showIndentGuides: pane.showIndentGuides
+            font.family: pane.monoFontFamily
+            font.pixelSize: Math.round(14 * pane.zoomPercent / 100)
+            contentX: flick.contentX
+            contentY: flick.contentY
+            rightInset: (vScroll.visible && vScroll.size < 1.0) ? 8 : 0
+            bottomInset: (hScroll.visible && hScroll.size < 1.0) ? 8 : 0
+            textColor: pane.fgMain
+            gutterBackground: pane.bgGutter
+            gutterBorder: pane.borderSubtle
+            gutterTextColor: pane.fgGutter
+            gutterActiveTextColor: pane.fgMain
+            gutterActiveLineColor: editorView.activeFocus ? pane.bgLineHighlight : "transparent"
+            selectionColor: pane.selBg
+            caretColor: pane.fgMain
+            caretSelectionColor: pane.theme.accentStrong || (pane.darkMode ? "#8fb4ff" : "#1d4ed8")
+            guideColor: pane.theme.indentGuide || (pane.darkMode ? "#262b36" : "#e5e8ef")
+            activeGuideColor: pane.theme.indentGuideActive || (pane.darkMode ? "#4e586e" : "#aeb6c7")
+
+            onEdited: {
+                pane.typingBurst = true;
+                typingBurstTimer.restart();
+            }
+
+            onCursorMoved: {
+                pane.typingBurst = true;
+                typingBurstTimer.restart();
+                pane.ensureCursorVisible();
+            }
+
+            onContextMenuRequested: function (mx, my) {
+                contextMenu.canPaste = editorView.clipboardHasText();
+                contextMenu.openAt(mx, my, pane.width, pane.height);
+            }
+
+            onScrollByRequested: function (dx, dy) {
+                flick.smoothScrollBy(dx, dy, 0);
+            }
+
+            onActionRequested: function (act) {
+                if (act === "find") {
+                    pane.openFindRequested();
+                } else if (act === "replace") {
+                    pane.openReplaceRequested();
+                } else if (act === "goto") {
+                    pane.openGotoRequested();
+                } else if (act === "save") {
+                    pane.saveFileRequested();
+                } else if (act === "saveAs") {
+                    pane.saveAsRequested();
+                } else if (act === "open") {
+                    pane.openFileRequested();
+                } else if (act === "newTab") {
+                    pane.newTabRequested();
+                } else if (act === "closeTab") {
+                    pane.closeTabRequested();
+                } else if (act === "quit") {
+                    pane.quitRequested();
+                } else if (act === "settings") {
+                    pane.toggleSettingsRequested();
+                }
+            }
+        }
+
+        Flickable {
+            id: flick
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            anchors.left: parent.left
+            anchors.leftMargin: editorView.gutterWidth
+            interactive: false
+            contentWidth: Math.max(width, editorView.docContentWidth)
+            contentHeight: Math.max(height, editorView.docContentHeight)
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+
+            property real targetY: 0
+            property real targetX: 0
+
+            function clampY(v) {
+                return Math.max(0, Math.min(Math.max(0, contentHeight - height), v));
+            }
+
+            function clampX(v) {
+                return Math.max(0, Math.min(Math.max(0, contentWidth - width), v));
+            }
+
+            function stopScrollAnims() {
+                scrollYAnim.stop();
+                scrollXAnim.stop();
+                targetY = contentY;
+                targetX = contentX;
+            }
+
+            function smoothScrollBy(dx, dy, animDuration) {
+                if (dy !== 0) {
+                    const baseY = scrollYAnim.running ? targetY : contentY;
+                    const nextY = clampY(baseY + dy);
+                    targetY = nextY;
+                    if (animDuration > 0) {
+                        scrollYAnim.duration = animDuration;
+                        scrollYAnim.to = nextY;
+                        scrollYAnim.restart();
+                    } else {
+                        scrollYAnim.stop();
+                        contentY = nextY;
+                    }
+                }
+                if (dx !== 0) {
+                    const baseX = scrollXAnim.running ? targetX : contentX;
+                    const nextX = clampX(baseX + dx);
+                    targetX = nextX;
+                    if (animDuration > 0) {
+                        scrollXAnim.duration = animDuration;
+                        scrollXAnim.to = nextX;
+                        scrollXAnim.restart();
+                    } else {
+                        scrollXAnim.stop();
+                        contentX = nextX;
+                    }
+                }
+            }
+
+            onContentYChanged: {
+                if (!pane.restoringScroll && pane.session && editorView.session === pane.session) {
+                    pane.session.scrollY = contentY;
+                }
+            }
+
+            onContentXChanged: {
+                if (!pane.restoringScroll && pane.session && editorView.session === pane.session) {
+                    pane.session.scrollX = contentX;
+                }
+            }
+
+            onContentHeightChanged: {
+                if (pane.restoringScroll) {
+                    return;
+                }
+                const maxY = Math.max(0, contentHeight - height);
+                if (contentY > maxY) {
+                    scrollYAnim.stop();
+                    contentY = maxY;
+                    targetY = maxY;
+                }
+            }
+
+            onContentWidthChanged: {
+                if (pane.restoringScroll) {
+                    return;
+                }
+                const maxX = Math.max(0, contentWidth - width);
+                if (contentX > maxX) {
+                    scrollXAnim.stop();
+                    contentX = maxX;
+                    targetX = maxX;
+                }
+            }
+
+            onHeightChanged: {
+                const maxY = Math.max(0, contentHeight - height);
+                if (contentY > maxY) {
+                    scrollYAnim.stop();
+                    contentY = maxY;
+                    targetY = maxY;
+                }
+            }
+
+            onWidthChanged: {
+                const maxX = Math.max(0, contentWidth - width);
+                if (contentX > maxX) {
+                    scrollXAnim.stop();
+                    contentX = maxX;
+                    targetX = maxX;
+                }
+            }
+
+            NumberAnimation {
+                id: scrollYAnim
+                target: flick
+                property: "contentY"
+                duration: 240
+                easing.type: Easing.OutCubic
+            }
+
+            NumberAnimation {
+                id: scrollXAnim
+                target: flick
+                property: "contentX"
+                duration: 200
+                easing.type: Easing.OutCubic
+            }
+
+            ScrollBar.vertical: ScrollBar {
+                id: vScroll
+                policy: ScrollBar.AsNeeded
+                width: 8
+                onPressedChanged: if (pressed)
+                    flick.stopScrollAnims()
+                contentItem: Rectangle {
+                    implicitWidth: 5
                     radius: 3
-                    color: pane.hasSelection ? (pane.theme.accent || (pane.darkMode ? "#7aa2f7" : "#2563eb")) : pane.fgMain
-                    opacity: pane.hasSelection ? 0.24 : (pane.typingBurst ? 0.22 : (pane.hoverInsideTextArea ? 0.1 : 0.0))
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 130
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-                }
-
-                Rectangle {
-                    id: ghostCaret
-                    x: editor.x + pane.hoverLineRect.x
-                    y: editor.y + pane.hoverLineRect.y
-                    width: 1.5
-                    height: Math.max(editorMetrics.height, pane.hoverLineRect.height)
-                    radius: 1
-                    color: pane.fgMain
-                    opacity: (pane.hoverInsideTextArea && !contextMenu.visible && !pane.hasSelection && (Math.abs(pane.hoverLineRect.x - editor.liveCursorRect.x) > 3 || !pane.hoverOnActiveLine)) ? 0.34 : 0.0
-                    visible: opacity > 0.01
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 75
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-                }
-
-                MouseArea {
-                    x: 0
-                    y: 0
-                    width: Math.max(flick.width, flick.contentWidth)
-                    height: Math.max(flick.height, flick.contentHeight)
-                    acceptedButtons: Qt.LeftButton
-                    cursorShape: Qt.IBeamCursor
-                    property int dragAnchor: 0
-                    onPressed: function (mouse) {
-                        editor.forceActiveFocus();
-                        dragAnchor = editor.positionAt(mouse.x - editor.x, mouse.y - editor.y);
-                        editor.cursorPosition = dragAnchor;
-                    }
-                    onPositionChanged: function (mouse) {
-                        if ((mouse.buttons & Qt.LeftButton) !== 0) {
-                            const pos = editor.positionAt(mouse.x - editor.x, mouse.y - editor.y);
-                            editor.select(dragAnchor, pos);
-                        }
-                    }
-                }
-
-                TextEdit {
-                    id: editor
-                    x: 10
-                    y: 8
-                    width: Math.max(flick.width - 10, contentWidth + 10)
-                    height: Math.max(flick.height - 8, contentHeight + 8)
-                    textFormat: TextEdit.PlainText
-                    selectByMouse: true
-                    persistentSelection: true
-                    wrapMode: TextEdit.NoWrap
-                    color: pane.fgMain
-                    selectionColor: pane.selBg
-                    selectedTextColor: pane.fgMain
-                    cursorVisible: activeFocus
-                    font.family: pane.monoFontFamily
-                    font.pixelSize: Math.round(14 * pane.zoomPercent / 100)
-
-                    cursorDelegate: Component {
-                        Item {
-                            width: pane.hasSelection ? 2.5 : 2
-
-                            Rectangle {
-                                anchors.fill: parent
-                                radius: 1
-                                color: pane.hasSelection ? (pane.theme.accentStrong || (pane.darkMode ? "#8fb4ff" : "#1d4ed8")) : pane.fgMain
-                            }
-                        }
-                    }
-
-                    property bool suppressCursorScroll: false
-                    property int lastZoomPercent: pane.zoomPercent
-                    property rect liveCursorRect: Qt.rect(0, 0, 1, 18)
-
-                    function syncCursorBand() {
-                        let r = editor.positionToRectangle(editor.cursorPosition);
-                        if (r.height <= 0) {
-                            r = Qt.rect(r.x, r.y, Math.max(1, r.width), editorMetrics.height);
-                        }
-                        liveCursorRect = r;
-                    }
-
-                    Component.onCompleted: Qt.callLater(syncCursorBand)
-
-                    onFontChanged: {
-                        if (lastZoomPercent !== pane.zoomPercent) {
-                            lastZoomPercent = pane.zoomPercent;
-                            suppressCursorScroll = true;
-                            zoomSuppressTimer.restart();
-                        }
-                        Qt.callLater(syncCursorBand);
-                    }
-
-                    onContentHeightChanged: {
-                        syncCursorBand();
-                        gutter.refresh();
-                    }
-
-                    onTextChanged: {
-                        pane.typingBurst = true;
-                        typingBurstTimer.restart();
-                        Qt.callLater(syncCursorBand);
-                        if (editorHover.hovered) {
-                            Qt.callLater(function () {
-                                pane.updateHoverGuide(editorHover.point.position.x, editorHover.point.position.y);
-                            });
-                        }
-                    }
-
-                    Timer {
-                        id: zoomSuppressTimer
-                        interval: 140
-                        onTriggered: editor.suppressCursorScroll = false
-                    }
-
-                    Timer {
-                        id: typingBurstTimer
-                        interval: 420
-                        onTriggered: pane.typingBurst = false
-                    }
-
-                    onCursorPositionChanged: {
-                        syncCursorBand();
-                        pane.typingBurst = true;
-                        typingBurstTimer.restart();
-                        if (pane.session) {
-                            pane.session.updateCursorPosition(cursorPosition);
-                        }
-                    }
-
-                    onCursorRectangleChanged: {
-                        syncCursorBand();
-                        if (suppressCursorScroll || flick.height <= 24 || flick.width <= 24) {
-                            return;
-                        }
-                        let r = cursorRectangle;
-                        const cy = r.y + y;
-                        const cx = r.x + x;
-                        if (cy - flick.contentY < 8) {
-                            flick.stopScrollAnims();
-                            flick.contentY = Math.max(0, cy - 8);
-                            flick.targetY = flick.contentY;
-                        } else if (cy + r.height - flick.contentY > flick.height - 8) {
-                            flick.stopScrollAnims();
-                            flick.contentY = Math.max(0, cy + r.height - flick.height + 8);
-                            flick.targetY = flick.contentY;
-                        }
-                        if (cx - flick.contentX < 10) {
-                            flick.stopScrollAnims();
-                            flick.contentX = Math.max(0, cx - 10);
-                            flick.targetX = flick.contentX;
-                        } else if (cx + r.width - flick.contentX > flick.width - 10) {
-                            flick.stopScrollAnims();
-                            flick.contentX = Math.max(0, cx + r.width - flick.width + 10);
-                            flick.targetX = flick.contentX;
-                        }
-                    }
-
-                    Keys.onPressed: function (event) {
-                        const k = event.key;
-                        const ctrl = (event.modifiers & Qt.ControlModifier) !== 0;
-                        const shift = (event.modifiers & Qt.ShiftModifier) !== 0;
-                        const alt = (event.modifiers & Qt.AltModifier) !== 0;
-                        const meta = (event.modifiers & Qt.MetaModifier) !== 0;
-
-                        if (k === Qt.Key_Menu && !ctrl && !alt && !meta) {
-                            editor.forceActiveFocus();
-                            const cr = editor.liveCursorRect;
-                            const mx = gutterContainer.width + editor.x + cr.x - flick.contentX;
-                            const my = editor.y + cr.y + cr.height - flick.contentY;
-                            contextMenu.openAt(mx, my, pane.width, pane.height);
-                            event.accepted = true;
-                            return;
-                        }
-                        if (k === Qt.Key_Tab && !ctrl && !alt && !shift) {
-                            indentSelection(false);
-                            event.accepted = true;
-                            return;
-                        }
-                        if ((k === Qt.Key_Backtab || (k === Qt.Key_Tab && shift)) && !ctrl && !alt) {
-                            indentSelection(true);
-                            event.accepted = true;
-                            return;
-                        }
-                        if (alt && !ctrl && !meta) {
-                            if (k === Qt.Key_Up) {
-                                moveCurrentLine(false);
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === Qt.Key_Down) {
-                                moveCurrentLine(true);
-                                event.accepted = true;
-                                return;
-                            }
-                        }
-                        if (ctrl && !alt && !meta) {
-                            if (k === Qt.Key_Return || k === Qt.Key_Enter) {
-                                insertLine(shift);
-                                event.accepted = true;
-                                return;
-                            }
-                            if ((k === Qt.Key_Z && shift) || k === Qt.Key_Y || k === 0x041d || k === 0x043d) {
-                                editor.redo();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === 0x042f || k === 0x044f) {
-                                if (shift)
-                                    editor.redo();
-                                else
-                                    editor.undo();
-                                event.accepted = true;
-                                return;
-                            }
-                            if ((k === Qt.Key_X || k === 0x0427 || k === 0x0447) && !shift) {
-                                if (editor.selectionStart === editor.selectionEnd) {
-                                    cutCurrentLine();
-                                } else {
-                                    editor.cut();
-                                }
-                                event.accepted = true;
-                                return;
-                            }
-                            if ((k === Qt.Key_C || k === 0x0421 || k === 0x0441) && !shift) {
-                                if (editor.selectionStart === editor.selectionEnd) {
-                                    copyCurrentLine();
-                                } else {
-                                    editor.copy();
-                                }
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === 0x041c || k === 0x043c) {
-                                editor.paste();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === 0x0424 || k === 0x0444) {
-                                editor.selectAll();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === Qt.Key_D || k === 0x0412 || k === 0x0432) {
-                                duplicateCurrentLine();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (shift && (k === Qt.Key_K || k === 0x041b || k === 0x043b)) {
-                                deleteCurrentLine();
-                                event.accepted = true;
-                                return;
-                            }
-                            if ((k === Qt.Key_L || k === 0x0414 || k === 0x0434) && !shift) {
-                                selectCurrentLine();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === Qt.Key_Slash || k === Qt.Key_Question) {
-                                toggleLineComment();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === 0x0410 || k === 0x0430) {
-                                pane.openFindRequested();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === 0x0420 || k === 0x0440) {
-                                pane.openReplaceRequested();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === 0x041f || k === 0x043f) {
-                                pane.openGotoRequested();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === 0x042b || k === 0x044b) {
-                                if (shift)
-                                    pane.saveAsRequested();
-                                else
-                                    pane.saveFileRequested();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === 0x0429 || k === 0x0449) {
-                                pane.openFileRequested();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === 0x0415 || k === 0x0435 || k === 0x0422 || k === 0x0442) {
-                                pane.newTabRequested();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === 0x0426 || k === 0x0446) {
-                                pane.closeTabRequested();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === 0x0419 || k === 0x0439) {
-                                pane.quitRequested();
-                                event.accepted = true;
-                                return;
-                            }
-                            if (k === 0x0411 || k === 0x0431) {
-                                pane.toggleSettingsRequested();
-                                event.accepted = true;
-                                return;
-                            }
+                    color: vScroll.pressed ? (pane.theme.scrollPress || (pane.darkMode ? "#7d8594" : "#6c7382")) : (vScroll.hovered ? (pane.theme.scrollHover || (pane.darkMode ? "#5a606e" : "#8d94a3")) : (pane.theme.scrollIdle || (pane.darkMode ? "#373b46" : "#c1c6d0")))
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 100
                         }
                     }
                 }
             }
 
-            IndentGuides {
-                id: indentGuides
-                visible: pane.showIndentGuides
-                anchors.fill: parent
-                anchors.rightMargin: (vScroll.visible && vScroll.size < 1.0) ? 8 : 0
-                anchors.bottomMargin: (hScroll.visible && hScroll.size < 1.0) ? 8 : 0
-                document: editor.textDocument
-                contentX: flick.contentX
-                contentY: flick.contentY
-                currentLine: pane.session ? pane.session.cursorLine : 1
-                font: editor.font
-                guideColor: pane.theme.indentGuide || (pane.darkMode ? "#262b36" : "#e5e8ef")
-                activeGuideColor: pane.theme.indentGuideActive || (pane.darkMode ? "#4e586e" : "#aeb6c7")
-                leftPadding: editor.x
-                topPadding: editor.y
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.RightButton
-                onPressed: function (mouse) {
-                    editor.forceActiveFocus();
-                    const clickPos = editor.positionAt(mouse.x + flick.contentX - editor.x, mouse.y + flick.contentY - editor.y);
-                    if (!pane.hasSelection || clickPos < editor.selectionStart || clickPos > editor.selectionEnd) {
-                        editor.cursorPosition = clickPos;
+            ScrollBar.horizontal: ScrollBar {
+                id: hScroll
+                policy: ScrollBar.AsNeeded
+                height: 8
+                onPressedChanged: if (pressed)
+                    flick.stopScrollAnims()
+                contentItem: Rectangle {
+                    implicitHeight: 5
+                    radius: 3
+                    color: hScroll.pressed ? (pane.theme.scrollPress || (pane.darkMode ? "#7d8594" : "#6c7382")) : (hScroll.hovered ? (pane.theme.scrollHover || (pane.darkMode ? "#5a606e" : "#8d94a3")) : (pane.theme.scrollIdle || (pane.darkMode ? "#373b46" : "#c1c6d0")))
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 100
+                        }
                     }
-                    contextMenu.openAt(mouse.x + gutterContainer.width, mouse.y, pane.width, pane.height);
-                    mouse.accepted = true;
                 }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                anchors.rightMargin: (vScroll.visible && vScroll.size < 1.0) ? 8 : 0
-                anchors.bottomMargin: (hScroll.visible && hScroll.size < 1.0) ? 8 : 0
-                acceptedButtons: Qt.NoButton
-                hoverEnabled: true
-                cursorShape: Qt.IBeamCursor
             }
         }
     }
@@ -1027,12 +540,12 @@ Item {
         darkMode: pane.darkMode
         theme: pane.theme
         ui: pane.ui
-        canUndo: editor.canUndo
-        canRedo: editor.canRedo
-        canPaste: editor.canPaste
+        canUndo: pane.session ? pane.session.canUndo : false
+        canRedo: pane.session ? pane.session.canRedo : false
+        canPaste: false
         hasSelection: pane.hasSelection
-        hasText: editor.length > 0
-        hasSingleLineSelection: pane.hasSelection && (!contextMenu.visible || (editor.selectedText.indexOf("\n") === -1 && editor.selectedText.indexOf("\u2029") === -1))
+        hasText: pane.session ? pane.session.hasText : false
+        hasSingleLineSelection: pane.session ? pane.session.hasSingleLineSelection : false
         canComment: pane.session ? (pane.session.commentPrefix !== "") : true
         bgSurfaceElev: pane.bgSurfaceElev
         bgHover: pane.bgHover
@@ -1044,35 +557,7 @@ Item {
 
         onClosed: pane.focusEditor()
         onActionTriggered: function (act) {
-            if (act === "undo") {
-                editor.undo();
-            } else if (act === "redo") {
-                editor.redo();
-            } else if (act === "cut") {
-                if (pane.hasSelection)
-                    editor.cut();
-                else
-                    pane.cutCurrentLine();
-            } else if (act === "copy") {
-                if (pane.hasSelection)
-                    editor.copy();
-                else
-                    pane.copyCurrentLine();
-            } else if (act === "paste") {
-                editor.paste();
-            } else if (act === "delete") {
-                if (pane.hasSelection) {
-                    editor.remove(editor.selectionStart, editor.selectionEnd);
-                }
-            } else if (act === "duplicate") {
-                pane.duplicateCurrentLine();
-            } else if (act === "comment") {
-                pane.toggleLineComment();
-            } else if (act === "selectall") {
-                editor.selectAll();
-            } else if (act === "find") {
-                pane.openFindRequested();
-            }
+            editorView.performAction(act);
         }
     }
 
@@ -1118,7 +603,7 @@ Item {
                 dy = -wheel.pixelDelta.y * 1.45;
                 animMs = 90;
             } else if (wheel.angleDelta.y !== 0) {
-                const stepPx = Math.max(150, editor.font.pixelSize * 10.5);
+                const stepPx = Math.max(150, editorView.font.pixelSize * 10.5);
                 dy = -(wheel.angleDelta.y / 120.0) * stepPx;
             }
 
@@ -1126,7 +611,7 @@ Item {
                 dx = -wheel.pixelDelta.x * 1.45;
                 animMs = 90;
             } else if (wheel.angleDelta.x !== 0) {
-                const stepX = Math.max(120, editor.font.pixelSize * 8);
+                const stepX = Math.max(120, editorView.font.pixelSize * 8);
                 dx = -(wheel.angleDelta.x / 120.0) * stepX;
             }
 

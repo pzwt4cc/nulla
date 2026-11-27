@@ -1,4 +1,5 @@
 CXX := g++
+CARGO ?= cargo
 QT_LIBEXEC := $(shell pkg-config --variable=libexecdir Qt6Core)
 MOC := $(QT_LIBEXEC)/moc
 RCC := $(QT_LIBEXEC)/rcc
@@ -12,9 +13,11 @@ QT_LIBS := $(shell pkg-config --libs $(QT_PKGS))
 CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Werror -Wpedantic -fPIC -Iinclude $(QT_CFLAGS)
 TARGET := nulla
 BUILD_DIR := build
+RUST_LIB := core/target/release/libnulla_core.a
+RUST_SRCS := $(shell find core/src -name '*.rs')
 
-SRCS := src/main.cpp src/editor_backend.cpp src/tab_session.cpp src/highlighter.cpp src/gutter.cpp src/indent_guides.cpp
-MOC_HDRS := include/editor_backend.h include/tab_session.h include/highlighter.h include/gutter.h include/indent_guides.h
+SRCS := src/main.cpp src/editor_backend.cpp src/tab_session.cpp src/editor_view.cpp
+MOC_HDRS := include/editor_backend.h include/tab_session.h include/editor_view.h
 
 OBJS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 MOC_OBJS := $(patsubst include/%.h,$(BUILD_DIR)/moc_%.o,$(MOC_HDRS))
@@ -28,6 +31,9 @@ all: $(TARGET) compile_commands.json
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+
+$(RUST_LIB): core/Cargo.toml $(RUST_SRCS)
+	$(CARGO) build --release --manifest-path core/Cargo.toml
 
 $(BUILD_DIR)/%.o: src/%.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -44,8 +50,8 @@ $(BUILD_DIR)/qrc_resources.cpp: resources.qrc $(shell find qml -maxdepth 1 -name
 $(QRC_OBJ): $(BUILD_DIR)/qrc_resources.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(TARGET): $(OBJS) $(MOC_OBJS) $(QRC_OBJ)
-	$(CXX) $^ -o $@ $(QT_LIBS)
+$(TARGET): $(OBJS) $(MOC_OBJS) $(QRC_OBJ) $(RUST_LIB)
+	$(CXX) $^ -o $@ $(QT_LIBS) -lpthread -ldl -lm
 
 compile_commands.json: Makefile
 	@printf '[\n' > $@
@@ -61,13 +67,12 @@ qmltypes: $(MOC_HDRS) | $(BUILD_DIR)
 	mkdir -p qml/Nulla
 	$(MOC) -Iinclude $(QT_CFLAGS) --output-json -o $(BUILD_DIR)/moc_editor_backend.cpp include/editor_backend.h
 	$(MOC) -Iinclude $(QT_CFLAGS) --output-json -o $(BUILD_DIR)/moc_tab_session.cpp include/tab_session.h
-	$(MOC) -Iinclude $(QT_CFLAGS) --output-json -o $(BUILD_DIR)/moc_gutter.cpp include/gutter.h
-	$(MOC) -Iinclude $(QT_CFLAGS) --output-json -o $(BUILD_DIR)/moc_indent_guides.cpp include/indent_guides.h
+	$(MOC) -Iinclude $(QT_CFLAGS) --output-json -o $(BUILD_DIR)/moc_editor_view.cpp include/editor_view.h
 	$(QMLTYPEREGISTRAR) --import-name Nulla --major-version 1 --minor-version 0 \
 		--foreign-types=$(QT_METATYPES_DIR)/qt6core_metatypes.json,$(QT_METATYPES_DIR)/qt6gui_metatypes.json,$(QT_METATYPES_DIR)/qt6qml_metatypes.json,$(QT_METATYPES_DIR)/qt6quick_metatypes.json \
 		--generate-qmltypes=qml/Nulla/nulla.qmltypes \
 		-o $(BUILD_DIR)/nulla_qmltyperegistrations.cpp \
-		$(BUILD_DIR)/moc_editor_backend.cpp.json $(BUILD_DIR)/moc_tab_session.cpp.json $(BUILD_DIR)/moc_gutter.cpp.json $(BUILD_DIR)/moc_indent_guides.cpp.json
+		$(BUILD_DIR)/moc_editor_backend.cpp.json $(BUILD_DIR)/moc_tab_session.cpp.json $(BUILD_DIR)/moc_editor_view.cpp.json
 	python3 -c "p='qml/Nulla/nulla.qmltypes'; data=open(p).read(); open(p,'w').write(''.join(l for l in data.splitlines(True) if not l.startswith('//')))"
 
 install: $(TARGET)

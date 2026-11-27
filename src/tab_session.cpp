@@ -1,25 +1,57 @@
 #include "tab_session.h"
 
+#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
-#include <QSaveFile>
-#include <QTextBlock>
-#include <QTextCursor>
-#include <QTextDocument>
 #include <QUrl>
 
-TabSession::TabSession(QObject *parent) : QObject(parent) {
+namespace {
+
+const uint8_t *u8(const QByteArray &b) {
+  return reinterpret_cast<const uint8_t *>(b.constData());
+}
+
+size_t u8len(const QByteArray &b) { return static_cast<size_t>(b.size()); }
+
+QString fromOut(const uint8_t *p, size_t n) {
+  if (!p || n == 0) {
+    return QString();
+  }
+  return QString::fromUtf8(reinterpret_cast<const char *>(p),
+                           static_cast<qsizetype>(n));
+}
+
+uint64_t nowMs() {
+  static QElapsedTimer timer = [] {
+    QElapsedTimer t;
+    t.start();
+    return t;
+  }();
+  return static_cast<uint64_t>(timer.elapsed()) + 1;
+}
+
+constexpr size_t kWidthScanChunk = 20000;
+
+}
+
+TabSession::TabSession(QObject *parent)
+    : QObject(parent), m_doc(nulla_doc_new()) {
   m_autoDetectTimer.setSingleShot(true);
   m_autoDetectTimer.setInterval(120);
   connect(&m_autoDetectTimer, &QTimer::timeout, this,
           &TabSession::runAutoDetect);
+  m_widthScanTimer.setSingleShot(true);
+  m_widthScanTimer.setInterval(0);
+  connect(&m_widthScanTimer, &QTimer::timeout, this,
+          &TabSession::scanWidthChunk);
+  applyLanguage();
 }
 
 TabSession::~TabSession() {
   m_autoDetectTimer.stop();
-  if (m_quickDoc && m_quickDoc->textDocument()) {
-    disconnect(m_quickDoc->textDocument(), nullptr, this, nullptr);
-  }
+  m_widthScanTimer.stop();
+  nulla_doc_free(m_doc);
+  m_doc = nullptr;
 }
 
 QString TabSession::fileName() const {
@@ -34,28 +66,38 @@ QString TabSession::statusLanguage() const {
   if (!m_syntaxEnabled) {
     return QStringLiteral("Plain");
   }
-  return NullaHighlighter::languageDisplayName(m_resolvedLanguageId);
+  const uint8_t *p = nullptr;
+  size_t n = 0;
+  nulla_doc_language_name(m_doc, &p, &n);
+  return fromOut(p, n);
 }
 
 QString TabSession::commentPrefix() const {
-  return NullaHighlighter::commentPrefix(m_resolvedLanguageId);
+  const uint8_t *p = nullptr;
+  size_t n = 0;
+  nulla_doc_comment_prefix(m_doc, &p, &n);
+  return fromOut(p, n);
 }
 
 int TabSession::lineCount() const {
-  if (m_quickDoc && m_quickDoc->textDocument()) {
-    return qMax(1, m_quickDoc->textDocument()->blockCount());
-  }
-  return 1;
+  const size_t n = nulla_doc_line_count(m_doc);
+  return static_cast<int>(qMin<size_t>(n, static_cast<size_t>(INT_MAX)));
+}
+
+bool TabSession::hasText() const { return nulla_doc_byte_len(m_doc) > 0; }
+
+bool TabSession::canUndo() const { return nulla_doc_can_undo(m_doc); }
+
+bool TabSession::canRedo() const { return nulla_doc_can_redo(m_doc); }
+
+bool TabSession::hasSelection() const { return nulla_doc_has_selection(m_doc); }
+
+bool TabSession::hasSingleLineSelection() const {
+  return nulla_doc_has_single_line_selection(m_doc);
 }
 
 bool TabSession::isPristineUntitled() const {
-  if (m_modified || !m_filePath.isEmpty() || !m_pendingPath.isEmpty()) {
-    return false;
-  }
-  if (!m_quickDoc || !m_quickDoc->textDocument()) {
-    return true;
-  }
-  return m_quickDoc->textDocument()->isEmpty();
+  return !m_modified && m_filePath.isEmpty() && nulla_doc_byte_len(m_doc) == 0;
 }
 
 void TabSession::setLanguageId(const QString &id) {
@@ -64,99 +106,169 @@ void TabSession::setLanguageId(const QString &id) {
     return;
   }
   m_languageId = normalized;
-  applyHighlighter();
+  applyLanguage();
   emit languageChanged();
   emit languageStatusChanged();
+  emit contentChanged();
+}
+
+void TabSession::setScrollX(qreal x) {
+  if (qFuzzyCompare(m_scrollX + 1.0, x + 1.0)) {
+    return;
+  }
+  m_scrollX = x;
+  emit scrollChanged();
+}
+
+void TabSession::setScrollY(qreal y) {
+  if (qFuzzyCompare(m_scrollY + 1.0, y + 1.0)) {
+    return;
+  }
+  m_scrollY = y;
+  emit scrollChanged();
 }
 
 void TabSession::setPendingInitialFile(const QString &path, bool allowMissing) {
-  if (path.isEmpty()) {
-    return;
-  }
-  if (m_quickDoc && m_quickDoc->textDocument()) {
+  if (!path.isEmpty()) {
     loadFile(path, allowMissing);
-  } else {
-    m_pendingPath = path;
-    m_pendingAllowMissing = allowMissing;
   }
 }
 
-void TabSession::applyThemeAndSyntax(bool syntaxEnabled, bool darkMode) {
-  const bool changed =
-      (m_syntaxEnabled != syntaxEnabled) || (m_darkMode != darkMode);
-  m_syntaxEnabled = syntaxEnabled;
-  m_darkMode = darkMode;
-  if (changed) {
-    applyHighlighter();
-    emit languageStatusChanged();
-  }
-}
-
-void TabSession::attachDocument(QQuickTextDocument *doc) {
-  if (m_quickDoc == doc) {
+void TabSession::setSyntaxEnabled(bool enabled) {
+  if (m_syntaxEnabled == enabled) {
     return;
   }
-  if (m_quickDoc && m_quickDoc->textDocument()) {
-    disconnect(m_quickDoc->textDocument(), nullptr, this, nullptr);
-  }
-  m_quickDoc = doc;
-  if (m_highlighter) {
-    delete m_highlighter;
-    m_highlighter = nullptr;
-  }
-  if (m_quickDoc && m_quickDoc->textDocument()) {
-    QTextDocument *td = m_quickDoc->textDocument();
-    td->setDocumentMargin(0.0);
-    m_highlighter = new NullaHighlighter(td);
-    connect(td, &QTextDocument::modificationChanged, this,
-            &TabSession::onDocumentModifiedChanged);
-    connect(td, &QTextDocument::contentsChanged, this,
-            &TabSession::onDocumentContentsChanged);
-    connect(td, &QTextDocument::blockCountChanged, this,
-            &TabSession::cursorStatsChanged);
+  m_syntaxEnabled = enabled;
+  applyLanguage();
+  emit languageStatusChanged();
+  emit contentChanged();
+}
 
-    if (!m_pendingPath.isEmpty()) {
-      const QString target = m_pendingPath;
-      const bool allow = m_pendingAllowMissing;
-      m_pendingPath.clear();
-      loadFile(target, allow);
-    } else {
-      applyHighlighter(true);
-      emit languageStatusChanged();
-    }
+void TabSession::noteLineColumns(int cols) {
+  if (cols > m_maxLineColumns) {
+    m_maxLineColumns = cols;
+    emit maxLineColumnsChanged();
   }
 }
 
-void TabSession::updateCursorPosition(int position) {
-  if (!m_quickDoc || !m_quickDoc->textDocument()) {
-    return;
+size_t TabSession::cursorByte() const { return nulla_doc_cursor_byte(m_doc); }
+
+size_t TabSession::anchorByte() const { return nulla_doc_anchor_byte(m_doc); }
+
+size_t TabSession::hitTest(size_t line, size_t visCol) const {
+  return nulla_doc_hit_test_byte(m_doc, line, visCol);
+}
+
+void TabSession::cursorLineVisCol(size_t &line, size_t &visCol) const {
+  line = 0;
+  visCol = 0;
+  nulla_doc_byte_to_line_vis_col(m_doc, nulla_doc_cursor_byte(m_doc), &line,
+                                 &visCol);
+}
+
+void TabSession::moveCursor(int dir, bool extend, int pageLines) {
+  nulla_doc_move_cursor(m_doc, dir, extend,
+                        static_cast<size_t>(qMax(1, pageLines)));
+  finishMove();
+}
+
+void TabSession::setSelectionBytes(size_t anchor, size_t cursor) {
+  nulla_doc_set_selection(m_doc, anchor, cursor);
+  finishMove();
+}
+
+void TabSession::selectWordAt(size_t line, size_t visCol) {
+  nulla_doc_select_word_at(m_doc, line, visCol);
+  finishMove();
+}
+
+void TabSession::selectLineAt(size_t line) {
+  nulla_doc_select_line_at(m_doc, line);
+  finishMove();
+}
+
+void TabSession::insertText(const QString &text) {
+  const QByteArray b = text.toUtf8();
+  nulla_doc_insert_text(m_doc, u8(b), u8len(b), nowMs());
+  finishEdit();
+  if (b.size() > 256) {
+    restartWidthScan();
   }
-  QTextDocument *td = m_quickDoc->textDocument();
-  const int clamped = qBound(0, position, qMax(0, td->characterCount() - 1));
-  const QTextBlock block = td->findBlock(clamped);
-  const int line = block.isValid() ? (block.blockNumber() + 1) : 1;
-  const int col = block.isValid() ? (clamped - block.position() + 1) : 1;
-  if (m_cursorLine != line || m_cursorColumn != col) {
-    m_cursorLine = line;
-    m_cursorColumn = col;
-    emit cursorStatsChanged();
+}
+
+void TabSession::insertNewline() {
+  nulla_doc_insert_newline(m_doc, nowMs());
+  finishEdit();
+}
+
+void TabSession::backspace(bool word) {
+  nulla_doc_backspace(m_doc, word, nowMs());
+  finishEdit();
+}
+
+void TabSession::deleteForward(bool word) {
+  nulla_doc_delete_forward(m_doc, word, nowMs());
+  finishEdit();
+}
+
+void TabSession::indent(bool unindent) {
+  nulla_doc_indent(m_doc, unindent, nowMs());
+  finishEdit();
+}
+
+void TabSession::toggleComment() {
+  nulla_doc_toggle_comment(m_doc, nowMs());
+  finishEdit();
+}
+
+void TabSession::duplicate() {
+  nulla_doc_duplicate(m_doc, nowMs());
+  finishEdit();
+}
+
+void TabSession::deleteLines() {
+  nulla_doc_delete_lines(m_doc, nowMs());
+  finishEdit();
+}
+
+void TabSession::insertLineSibling(bool above) {
+  nulla_doc_insert_line_sibling(m_doc, above, nowMs());
+  finishEdit();
+}
+
+bool TabSession::moveLines(bool up) {
+  const bool moved = nulla_doc_move_lines(m_doc, up, nowMs());
+  if (moved) {
+    finishEdit();
   }
+  return moved;
+}
+
+QString TabSession::copySelectionOrLine() {
+  const uint8_t *p = nullptr;
+  size_t n = 0;
+  nulla_doc_copy_or_line(m_doc, &p, &n);
+  return fromOut(p, n);
+}
+
+QString TabSession::cutSelectionOrLine() {
+  const uint8_t *p = nullptr;
+  size_t n = 0;
+  nulla_doc_cut_or_line(m_doc, nowMs(), &p, &n);
+  const QString out = fromOut(p, n);
+  finishEdit();
+  return out;
 }
 
 bool TabSession::loadFile(const QString &rawPath, bool allowMissing) {
-  if (!m_quickDoc || !m_quickDoc->textDocument()) {
-    setPendingInitialFile(rawPath, allowMissing);
-    return true;
-  }
-
   QString path = rawPath;
   const QUrl url(rawPath);
   if (url.isValid() && url.isLocalFile()) {
     path = url.toLocalFile();
   }
   const QString absPath = QFileInfo(path).absoluteFilePath();
-
   const QFileInfo fi(absPath);
+
   if (fi.isDir()) {
     emit errorOccurred(
         QStringLiteral("Failed to open file"),
@@ -164,163 +276,193 @@ bool TabSession::loadFile(const QString &rawPath, bool allowMissing) {
     return false;
   }
 
-  QTextDocument *td = m_quickDoc->textDocument();
-  QFile file(absPath);
-
-  if (!file.exists()) {
+  if (!fi.exists()) {
     if (!allowMissing) {
       emit errorOccurred(
           QStringLiteral("Failed to open file"),
           QStringLiteral("File does not exist: %1").arg(absPath));
       return false;
     }
-    m_loading = true;
-    td->setPlainText(QString());
-    td->clearUndoRedoStacks();
-    td->setModified(false);
-    m_loading = false;
+    nulla_doc_clear(m_doc);
     m_filePath = absPath;
-    m_modified = false;
-    m_cursorLine = 1;
-    m_cursorColumn = 1;
-    applyHighlighter(true);
-    emit fileInfoChanged();
-    emit modifiedChanged();
-    emit languageStatusChanged();
-    emit cursorStatsChanged();
-    emit documentLoaded();
+    applyLanguage();
+    m_maxLineColumns = 0;
+    emit maxLineColumnsChanged();
+    emitAllAfterReset();
     return true;
   }
 
-  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+  QFile probe(absPath);
+  if (!probe.open(QIODevice::ReadOnly)) {
     emit errorOccurred(QStringLiteral("Failed to open file"),
-                       file.errorString());
+                       probe.errorString());
+    return false;
+  }
+  probe.close();
+
+  const QByteArray p = absPath.toUtf8();
+  if (!nulla_doc_load_file(m_doc, u8(p), u8len(p))) {
+    emit errorOccurred(QStringLiteral("Failed to open file"),
+                       QStringLiteral("Unable to read: %1").arg(absPath));
     return false;
   }
 
-  const QByteArray bytes = file.readAll();
-  const QString text = QString::fromUtf8(bytes);
-
-  m_loading = true;
-  td->clear();
   m_filePath = absPath;
-  if (m_highlighter) {
-    const QString resolved = !m_syntaxEnabled
-                                 ? QStringLiteral("plain")
-                                 : (m_languageId != QStringLiteral("auto")
-                                        ? m_languageId
-                                        : NullaHighlighter::detectLanguage(
-                                              absPath, text.left(4096)));
-    m_resolvedLanguageId = resolved;
-    m_highlighter->configure(m_syntaxEnabled, m_resolvedLanguageId, m_darkMode);
-  }
-  td->setPlainText(text);
-  td->clearUndoRedoStacks();
-  td->setModified(false);
-  m_loading = false;
-
-  m_modified = false;
-  m_cursorLine = 1;
-  m_cursorColumn = 1;
-  emit fileInfoChanged();
-  emit modifiedChanged();
-  emit languageStatusChanged();
-  emit cursorStatsChanged();
-  emit documentLoaded();
+  applyLanguage();
+  m_maxLineColumns = 0;
+  emit maxLineColumnsChanged();
+  emitAllAfterReset();
+  restartWidthScan();
   return true;
 }
 
 bool TabSession::writeToFile(const QString &path) {
-  if (!m_quickDoc || !m_quickDoc->textDocument()) {
-    return false;
+  const QString target = QFileInfo(path).absoluteFilePath();
+  const QFileInfo fi(target);
+  QString writePath = target;
+  if (fi.isSymLink()) {
+    const QString linkTarget = fi.symLinkTarget();
+    if (!linkTarget.isEmpty()) {
+      writePath = linkTarget;
+    }
   }
-  QTextDocument *td = m_quickDoc->textDocument();
-  QSaveFile out(path);
-  if (!out.open(QIODevice::WriteOnly | QIODevice::Text)) {
+
+  const bool existed = QFileInfo::exists(writePath);
+  const QFileDevice::Permissions perms =
+      existed ? QFile::permissions(writePath) : QFileDevice::Permissions();
+  const QFileInfo dirInfo(QFileInfo(writePath).absolutePath());
+  if (!dirInfo.exists()) {
     emit errorOccurred(QStringLiteral("Failed to save file"),
-                       out.errorString());
-    return false;
-  }
-  const QByteArray utf8 = td->toPlainText().toUtf8();
-  if (out.write(utf8) != utf8.size() || !out.commit()) {
-    emit errorOccurred(QStringLiteral("Failed to save file"),
-                       out.errorString());
+                       QStringLiteral("Directory does not exist: %1")
+                           .arg(dirInfo.absoluteFilePath()));
     return false;
   }
 
-  m_filePath = QFileInfo(path).absoluteFilePath();
-  m_loading = true;
-  td->setModified(false);
-  m_loading = false;
-  if (m_modified) {
-    m_modified = false;
-    emit modifiedChanged();
+  const QByteArray p = writePath.toUtf8();
+  if (!nulla_doc_save_file(m_doc, u8(p), u8len(p))) {
+    const bool denied = !dirInfo.isWritable() ||
+                        (existed && !QFileInfo(writePath).isWritable());
+    emit errorOccurred(
+        QStringLiteral("Failed to save file"),
+        denied ? QStringLiteral("Permission denied: %1").arg(writePath)
+               : QStringLiteral("Unable to write: %1").arg(writePath));
+    return false;
   }
-  applyHighlighter();
+  if (existed) {
+    QFile::setPermissions(writePath, perms);
+  }
+
+  m_filePath = target;
+  refreshModified();
+  applyLanguage();
   emit fileInfoChanged();
   emit languageStatusChanged();
+  emit contentChanged();
   return true;
 }
 
 void TabSession::resetEmpty() {
-  if (!m_quickDoc || !m_quickDoc->textDocument()) {
-    m_filePath.clear();
-    m_pendingPath.clear();
-    m_modified = false;
-    emit fileInfoChanged();
-    emit modifiedChanged();
-    return;
-  }
-  QTextDocument *td = m_quickDoc->textDocument();
-  m_loading = true;
-  td->setPlainText(QString());
-  td->clearUndoRedoStacks();
-  td->setModified(false);
-  m_loading = false;
-
+  nulla_doc_clear(m_doc);
   m_filePath.clear();
-  m_pendingPath.clear();
-  m_modified = false;
-  m_cursorLine = 1;
-  m_cursorColumn = 1;
-  applyHighlighter(true);
-  emit fileInfoChanged();
-  emit modifiedChanged();
-  emit languageStatusChanged();
-  emit cursorStatsChanged();
-  emit documentLoaded();
+  applyLanguage();
+  m_maxLineColumns = 0;
+  emit maxLineColumnsChanged();
+  emitAllAfterReset();
 }
 
 void TabSession::discardChanges() {
-  if (m_quickDoc && m_quickDoc->textDocument()) {
-    m_loading = true;
-    m_quickDoc->textDocument()->setModified(false);
-    m_loading = false;
-  }
-  if (m_modified) {
-    m_modified = false;
-    emit modifiedChanged();
+  nulla_doc_mark_saved(m_doc);
+  refreshModified();
+}
+
+void TabSession::undo() {
+  if (nulla_doc_undo(m_doc)) {
+    finishEdit();
   }
 }
 
-void TabSession::onDocumentModifiedChanged(bool m) {
-  if (m_loading) {
-    return;
-  }
-  if (m_modified != m) {
-    m_modified = m;
-    emit modifiedChanged();
+void TabSession::redo() {
+  if (nulla_doc_redo(m_doc)) {
+    finishEdit();
   }
 }
 
-void TabSession::onDocumentContentsChanged() {
-  if (m_loading) {
-    return;
+void TabSession::selectAll() {
+  nulla_doc_select_all(m_doc);
+  finishMove();
+}
+
+void TabSession::selectCurrentLine() {
+  nulla_doc_select_current_line(m_doc);
+  finishMove();
+}
+
+QString TabSession::selectedText() const {
+  const uint8_t *p = nullptr;
+  size_t n = 0;
+  nulla_doc_selected_text(m_doc, &p, &n);
+  return fromOut(p, n);
+}
+
+bool TabSession::findNext(const QString &query, bool backward) {
+  if (query.isEmpty()) {
+    return false;
   }
-  if (m_languageId == QStringLiteral("auto") && m_filePath.isEmpty() &&
-      m_syntaxEnabled) {
-    m_autoDetectTimer.start();
+  const QByteArray q = query.toUtf8();
+  const bool found = nulla_doc_find(m_doc, u8(q), u8len(q), !backward, true);
+  finishMove();
+  return found;
+}
+
+QVariantMap TabSession::matchStats(const QString &query) const {
+  size_t cur = 0;
+  size_t total = 0;
+  if (!query.isEmpty()) {
+    const QByteArray q = query.toUtf8();
+    nulla_doc_match_stats(m_doc, u8(q), u8len(q), &cur, &total);
   }
+  QVariantMap res;
+  res.insert(QStringLiteral("current"), static_cast<int>(cur));
+  res.insert(QStringLiteral("total"), static_cast<int>(total));
+  return res;
+}
+
+bool TabSession::replaceMatch(const QString &query,
+                              const QString &replacement) {
+  if (query.isEmpty()) {
+    return false;
+  }
+  const QByteArray q = query.toUtf8();
+  const QByteArray r = replacement.toUtf8();
+  const bool ok = nulla_doc_replace_current_and_find(m_doc, u8(q), u8len(q),
+                                                     u8(r), u8len(r), nowMs());
+  finishEdit();
+  return ok;
+}
+
+int TabSession::replaceAllMatches(const QString &query,
+                                  const QString &replacement) {
+  if (query.isEmpty()) {
+    return 0;
+  }
+  const QByteArray q = query.toUtf8();
+  const QByteArray r = replacement.toUtf8();
+  const size_t count =
+      nulla_doc_replace_all(m_doc, u8(q), u8len(q), u8(r), u8len(r), nowMs());
+  if (count > 0) {
+    finishEdit();
+    restartWidthScan();
+  }
+  return static_cast<int>(qMin<size_t>(count, static_cast<size_t>(INT_MAX)));
+}
+
+void TabSession::gotoLine(int lineNumber) {
+  const size_t total = nulla_doc_line_count(m_doc);
+  const size_t line0 = static_cast<size_t>(qBound<qint64>(
+      0, static_cast<qint64>(lineNumber) - 1, static_cast<qint64>(total) - 1));
+  const size_t pos = nulla_doc_line_start_byte(m_doc, line0);
+  nulla_doc_set_selection(m_doc, pos, pos);
+  finishMove();
 }
 
 void TabSession::runAutoDetect() {
@@ -328,185 +470,101 @@ void TabSession::runAutoDetect() {
       !m_syntaxEnabled) {
     return;
   }
-  const QString nextLang = computeResolvedLanguageId();
-  if (nextLang != m_resolvedLanguageId) {
-    applyHighlighter();
+  if (nulla_doc_refresh_auto_language(m_doc, nullptr, 0)) {
     emit languageStatusChanged();
+    emit contentChanged();
   }
 }
 
-QString TabSession::sampleDocumentHead() const {
-  if (!m_quickDoc || !m_quickDoc->textDocument()) {
-    return QString();
-  }
-  QString out;
-  out.reserve(1024);
-  QTextBlock block = m_quickDoc->textDocument()->begin();
-  while (block.isValid() && out.size() < 4096) {
-    if (!out.isEmpty()) {
-      out.append(QLatin1Char('\n'));
-    }
-    out.append(block.text());
-    block = block.next();
-  }
-  return out;
-}
-
-QString TabSession::computeResolvedLanguageId() const {
-  if (!m_syntaxEnabled) {
-    return QStringLiteral("plain");
-  }
-  if (m_languageId != QStringLiteral("auto")) {
-    return m_languageId;
-  }
-  return NullaHighlighter::detectLanguage(m_filePath, sampleDocumentHead());
-}
-
-void TabSession::applyHighlighter(bool forceRehighlight) {
-  const QString resolved = computeResolvedLanguageId();
-  const bool langChanged = (resolved != m_resolvedLanguageId);
-  m_resolvedLanguageId = resolved;
-  if (!m_highlighter) {
+void TabSession::scanWidthChunk() {
+  const size_t total = nulla_doc_line_count(m_doc);
+  if (m_widthScanLine >= total) {
     return;
   }
-  if (forceRehighlight || langChanged || m_highlighter->document()) {
-    m_highlighter->configure(m_syntaxEnabled, m_resolvedLanguageId, m_darkMode);
+  nulla_doc_set_syntax_enabled(m_doc, false);
+  NullaViewportSnapshot snap{};
+  const bool ok = nulla_doc_build_viewport(m_doc, m_widthScanLine,
+                                           kWidthScanChunk, 0, 1, false, &snap);
+  nulla_doc_set_syntax_enabled(m_doc, m_syntaxEnabled);
+  if (!ok) {
+    return;
+  }
+  size_t best = static_cast<size_t>(qMax(0, m_maxLineColumns));
+  for (size_t i = 0; i < snap.line_count; ++i) {
+    best = qMax(best, snap.lines[i].line_total_vis_cols);
+  }
+  noteLineColumns(static_cast<int>(qMin<size_t>(best, 50000000)));
+  m_widthScanLine += kWidthScanChunk;
+  if (m_widthScanLine < total) {
+    m_widthScanTimer.start();
   }
 }
 
-QVariantMap TabSession::findText(const QString &query, int fromPos,
-                                 bool backward) {
-  QVariantMap res;
-  res.insert(QStringLiteral("found"), false);
-  res.insert(QStringLiteral("start"), -1);
-  res.insert(QStringLiteral("end"), -1);
-
-  if (query.isEmpty() || !m_quickDoc || !m_quickDoc->textDocument()) {
-    return res;
+void TabSession::finishEdit() {
+  refreshModified();
+  refreshCursorStats();
+  m_selectedChars = static_cast<int>(qMin<size_t>(
+      nulla_doc_selected_chars(m_doc), static_cast<size_t>(INT_MAX)));
+  emit contentChanged();
+  emit selectionChanged();
+  if (m_languageId == QStringLiteral("auto") && m_filePath.isEmpty() &&
+      m_syntaxEnabled) {
+    m_autoDetectTimer.start();
   }
-  QTextDocument *td = m_quickDoc->textDocument();
-  QTextDocument::FindFlags flags;
-  if (backward) {
-    flags |= QTextDocument::FindBackward;
-  }
-
-  const int safeFrom = qBound(0, fromPos, qMax(0, td->characterCount() - 1));
-  QTextCursor found = td->find(query, safeFrom, flags);
-  if (found.isNull()) {
-    const int wrapPos = backward ? qMax(0, td->characterCount() - 1) : 0;
-    found = td->find(query, wrapPos, flags);
-  }
-
-  if (!found.isNull()) {
-    res.insert(QStringLiteral("found"), true);
-    res.insert(QStringLiteral("start"), found.selectionStart());
-    res.insert(QStringLiteral("end"), found.selectionEnd());
-  }
-  return res;
 }
 
-QVariantMap TabSession::matchStats(const QString &query, int selectionStart) {
-  QVariantMap res;
-  res.insert(QStringLiteral("total"), 0);
-  res.insert(QStringLiteral("current"), 0);
-
-  if (query.isEmpty() || !m_quickDoc || !m_quickDoc->textDocument()) {
-    return res;
-  }
-  QTextDocument *td = m_quickDoc->textDocument();
-  int total = 0;
-  int current = 0;
-  const int maxMatches = 10000;
-
-  if (!query.contains(QLatin1Char('\n'))) {
-    const qsizetype qLen = query.size();
-    for (QTextBlock b = td->begin(); b.isValid(); b = b.next()) {
-      const QString line = b.text();
-      const int blockPos = b.position();
-      qsizetype idx = 0;
-      while ((idx = line.indexOf(query, idx, Qt::CaseInsensitive)) != -1) {
-        total++;
-        if (blockPos + idx == selectionStart) {
-          current = total;
-        }
-        idx += qLen;
-        if (total >= maxMatches) {
-          res.insert(QStringLiteral("total"), total);
-          res.insert(QStringLiteral("current"), current);
-          return res;
-        }
-      }
-    }
-  } else {
-    QTextCursor cur(td);
-    while (total < maxMatches) {
-      cur = td->find(query, cur);
-      if (cur.isNull()) {
-        break;
-      }
-      total++;
-      if (cur.selectionStart() == selectionStart) {
-        current = total;
-      }
-    }
-  }
-  res.insert(QStringLiteral("total"), total);
-  res.insert(QStringLiteral("current"), current);
-  return res;
+void TabSession::finishMove() {
+  refreshCursorStats();
+  m_selectedChars = static_cast<int>(qMin<size_t>(
+      nulla_doc_selected_chars(m_doc), static_cast<size_t>(INT_MAX)));
+  emit selectionChanged();
 }
 
-QVariantMap TabSession::replaceMatch(const QString &query,
-                                     const QString &replacement, int selStart,
-                                     int selEnd) {
-  if (query.isEmpty() || !m_quickDoc || !m_quickDoc->textDocument()) {
-    return findText(query, selEnd, false);
+void TabSession::refreshCursorStats() {
+  size_t line = 1;
+  size_t col = 1;
+  size_t vis = 0;
+  nulla_doc_cursor_pos(m_doc, &line, &col, &vis);
+  const int l =
+      static_cast<int>(qMin<size_t>(line, static_cast<size_t>(INT_MAX)));
+  const int c =
+      static_cast<int>(qMin<size_t>(col, static_cast<size_t>(INT_MAX)));
+  if (l != m_cursorLine || c != m_cursorColumn) {
+    m_cursorLine = l;
+    m_cursorColumn = c;
+    emit cursorStatsChanged();
   }
-  QTextDocument *td = m_quickDoc->textDocument();
-  const int maxPos = qMax(0, td->characterCount() - 1);
-  QTextCursor cur(td);
-  cur.setPosition(qBound(0, selStart, maxPos));
-  cur.setPosition(qBound(0, selEnd, maxPos), QTextCursor::KeepAnchor);
-  int nextFrom = qBound(0, selEnd, maxPos);
-  QString selected = cur.selectedText();
-  selected.replace(QChar::ParagraphSeparator, QLatin1Char('\n'));
-  if (selected.compare(query, Qt::CaseInsensitive) == 0) {
-    cur.beginEditBlock();
-    cur.insertText(replacement);
-    cur.endEditBlock();
-    nextFrom = cur.position();
-  }
-  return findText(query, nextFrom, false);
 }
 
-int TabSession::replaceAllMatches(const QString &query,
-                                  const QString &replacement) {
-  if (query.isEmpty() || !m_quickDoc || !m_quickDoc->textDocument()) {
-    return 0;
+void TabSession::refreshModified() {
+  const bool m = nulla_doc_is_modified(m_doc);
+  if (m != m_modified) {
+    m_modified = m;
+    emit modifiedChanged();
   }
-  QTextDocument *td = m_quickDoc->textDocument();
-  QTextCursor edit(td);
-  edit.beginEditBlock();
-  int count = 0;
-  int pos = 0;
-  while (true) {
-    QTextCursor found = td->find(query, pos);
-    if (found.isNull()) {
-      break;
-    }
-    found.insertText(replacement);
-    pos = found.position();
-    count++;
-  }
-  edit.endEditBlock();
-  return count;
 }
 
-int TabSession::lineStartPosition(int lineNumber) const {
-  if (!m_quickDoc || !m_quickDoc->textDocument()) {
-    return 0;
-  }
-  QTextDocument *td = m_quickDoc->textDocument();
-  const int target = qBound(1, lineNumber, qMax(1, td->blockCount()));
-  const QTextBlock block = td->findBlockByNumber(target - 1);
-  return block.isValid() ? block.position() : 0;
+void TabSession::applyLanguage() {
+  nulla_doc_set_syntax_enabled(m_doc, m_syntaxEnabled);
+  const QByteArray lang = m_languageId.toUtf8();
+  const QByteArray p = m_filePath.toUtf8();
+  nulla_doc_set_language(m_doc, u8(lang), u8len(lang), u8(p), u8len(p));
+}
+
+void TabSession::restartWidthScan() {
+  m_widthScanLine = 0;
+  m_widthScanTimer.start();
+}
+
+void TabSession::emitAllAfterReset() {
+  m_modified = nulla_doc_is_modified(m_doc);
+  m_selectedChars = 0;
+  m_cursorLine = 0;
+  refreshCursorStats();
+  emit fileInfoChanged();
+  emit modifiedChanged();
+  emit languageStatusChanged();
+  emit contentChanged();
+  emit selectionChanged();
+  emit documentLoaded();
 }

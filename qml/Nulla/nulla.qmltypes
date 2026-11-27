@@ -378,197 +378,314 @@ Module {
         }
     }
     Component {
-        file: "indent_guides.h"
-        lineNumber: 11
-        name: "IndentGuides"
+        file: "editor_view.h"
+        lineNumber: 19
+        name: "NullaEditorView"
         accessSemantics: "reference"
         prototype: "QQuickPaintedItem"
-        exports: ["Nulla/IndentGuides 1.0"]
+        exports: ["Nulla/NullaEditorView 1.0"]
         exportMetaObjectRevisions: [256]
         Property {
-            name: "document"
-            type: "QQuickTextDocument"
+            name: "session"
+            type: "TabSession"
             isPointer: true
-            read: "document"
-            write: "setDocument"
-            notify: "documentChanged"
+            read: "session"
+            write: "setSession"
+            notify: "sessionChanged"
             index: 0
-            lineNumber: 14
+            lineNumber: 22
+        }
+        Property {
+            name: "font"
+            type: "QFont"
+            read: "font"
+            write: "setFont"
+            notify: "metricsChanged"
+            index: 1
+            lineNumber: 24
+        }
+        Property {
+            name: "darkMode"
+            type: "bool"
+            read: "darkMode"
+            write: "setDarkMode"
+            notify: "appearanceChanged"
+            index: 2
+            lineNumber: 25
+        }
+        Property {
+            name: "showLineNumbers"
+            type: "bool"
+            read: "showLineNumbers"
+            write: "setShowLineNumbers"
+            notify: "metricsChanged"
+            index: 3
+            lineNumber: 27
+        }
+        Property {
+            name: "showIndentGuides"
+            type: "bool"
+            read: "showIndentGuides"
+            write: "setShowIndentGuides"
+            notify: "appearanceChanged"
+            index: 4
+            lineNumber: 29
         }
         Property {
             name: "contentX"
             type: "double"
             read: "contentX"
             write: "setContentX"
-            notify: "contentXChanged"
-            index: 1
-            lineNumber: 16
-        }
-        Property {
-            name: "contentY"
-            type: "double"
-            read: "contentY"
-            write: "setContentY"
-            notify: "contentYChanged"
-            index: 2
-            lineNumber: 18
-        }
-        Property {
-            name: "currentLine"
-            type: "int"
-            read: "currentLine"
-            write: "setCurrentLine"
-            notify: "currentLineChanged"
-            index: 3
-            lineNumber: 20
-        }
-        Property {
-            name: "font"
-            type: "QFont"
-            read: "font"
-            write: "setFont"
-            notify: "fontChanged"
-            index: 4
-            lineNumber: 22
-        }
-        Property {
-            name: "guideColor"
-            type: "QColor"
-            read: "guideColor"
-            write: "setGuideColor"
-            notify: "guideColorChanged"
+            notify: "scrollChanged"
             index: 5
-            lineNumber: 23
-        }
-        Property {
-            name: "activeGuideColor"
-            type: "QColor"
-            read: "activeGuideColor"
-            write: "setActiveGuideColor"
-            notify: "activeGuideColorChanged"
-            index: 6
-            lineNumber: 25
-        }
-        Property {
-            name: "leftPadding"
-            type: "double"
-            read: "leftPadding"
-            write: "setLeftPadding"
-            notify: "leftPaddingChanged"
-            index: 7
-            lineNumber: 27
-        }
-        Property {
-            name: "topPadding"
-            type: "double"
-            read: "topPadding"
-            write: "setTopPadding"
-            notify: "topPaddingChanged"
-            index: 8
-            lineNumber: 29
-        }
-        Signal { name: "documentChanged"; lineNumber: 68 }
-        Signal { name: "contentXChanged"; lineNumber: 69 }
-        Signal { name: "contentYChanged"; lineNumber: 70 }
-        Signal { name: "currentLineChanged"; lineNumber: 71 }
-        Signal { name: "fontChanged"; lineNumber: 72 }
-        Signal { name: "guideColorChanged"; lineNumber: 73 }
-        Signal { name: "activeGuideColorChanged"; lineNumber: 74 }
-        Signal { name: "leftPaddingChanged"; lineNumber: 75 }
-        Signal { name: "topPaddingChanged"; lineNumber: 76 }
-        Method { name: "refresh"; lineNumber: 65 }
-        Method { name: "onContentsChanged"; lineNumber: 79 }
-    }
-    Component {
-        file: "gutter.h"
-        lineNumber: 11
-        name: "LineNumberGutter"
-        accessSemantics: "reference"
-        prototype: "QQuickPaintedItem"
-        exports: ["Nulla/LineNumberGutter 1.0"]
-        exportMetaObjectRevisions: [256]
-        Property {
-            name: "document"
-            type: "QQuickTextDocument"
-            isPointer: true
-            read: "document"
-            write: "setDocument"
-            notify: "documentChanged"
-            index: 0
-            lineNumber: 14
+            lineNumber: 31
         }
         Property {
             name: "contentY"
             type: "double"
             read: "contentY"
             write: "setContentY"
-            notify: "contentYChanged"
-            index: 1
-            lineNumber: 15
+            notify: "scrollChanged"
+            index: 6
+            lineNumber: 33
         }
         Property {
-            name: "currentLine"
-            type: "int"
-            read: "currentLine"
-            write: "setCurrentLine"
-            notify: "currentLineChanged"
-            index: 2
-            lineNumber: 16
+            name: "rightInset"
+            type: "double"
+            read: "rightInset"
+            write: "setRightInset"
+            notify: "insetsChanged"
+            index: 7
+            lineNumber: 35
         }
         Property {
-            name: "font"
-            type: "QFont"
-            read: "font"
-            write: "setFont"
-            notify: "fontChanged"
-            index: 3
-            lineNumber: 17
+            name: "bottomInset"
+            type: "double"
+            read: "bottomInset"
+            write: "setBottomInset"
+            notify: "insetsChanged"
+            index: 8
+            lineNumber: 37
         }
         Property {
             name: "textColor"
             type: "QColor"
             read: "textColor"
             write: "setTextColor"
-            notify: "textColorChanged"
-            index: 4
-            lineNumber: 18
+            notify: "appearanceChanged"
+            index: 9
+            lineNumber: 39
         }
         Property {
-            name: "activeTextColor"
+            name: "gutterBackground"
             type: "QColor"
-            read: "activeTextColor"
-            write: "setActiveTextColor"
-            notify: "activeTextColorChanged"
-            index: 5
-            lineNumber: 19
+            read: "gutterBackground"
+            write: "setGutterBackground"
+            notify: "appearanceChanged"
+            index: 10
+            lineNumber: 41
         }
         Property {
-            name: "activeLineColor"
+            name: "gutterBorder"
             type: "QColor"
-            read: "activeLineColor"
-            write: "setActiveLineColor"
-            notify: "activeLineColorChanged"
-            index: 6
-            lineNumber: 20
+            read: "gutterBorder"
+            write: "setGutterBorder"
+            notify: "appearanceChanged"
+            index: 11
+            lineNumber: 43
         }
         Property {
-            name: "topPadding"
+            name: "gutterTextColor"
+            type: "QColor"
+            read: "gutterTextColor"
+            write: "setGutterTextColor"
+            notify: "appearanceChanged"
+            index: 12
+            lineNumber: 45
+        }
+        Property {
+            name: "gutterActiveTextColor"
+            type: "QColor"
+            read: "gutterActiveTextColor"
+            write: "setGutterActiveTextColor"
+            notify: "appearanceChanged"
+            index: 13
+            lineNumber: 47
+        }
+        Property {
+            name: "gutterActiveLineColor"
+            type: "QColor"
+            read: "gutterActiveLineColor"
+            write: "setGutterActiveLineColor"
+            notify: "appearanceChanged"
+            index: 14
+            lineNumber: 49
+        }
+        Property {
+            name: "selectionColor"
+            type: "QColor"
+            read: "selectionColor"
+            write: "setSelectionColor"
+            notify: "appearanceChanged"
+            index: 15
+            lineNumber: 51
+        }
+        Property {
+            name: "caretColor"
+            type: "QColor"
+            read: "caretColor"
+            write: "setCaretColor"
+            notify: "appearanceChanged"
+            index: 16
+            lineNumber: 53
+        }
+        Property {
+            name: "caretSelectionColor"
+            type: "QColor"
+            read: "caretSelectionColor"
+            write: "setCaretSelectionColor"
+            notify: "appearanceChanged"
+            index: 17
+            lineNumber: 55
+        }
+        Property {
+            name: "guideColor"
+            type: "QColor"
+            read: "guideColor"
+            write: "setGuideColor"
+            notify: "appearanceChanged"
+            index: 18
+            lineNumber: 57
+        }
+        Property {
+            name: "activeGuideColor"
+            type: "QColor"
+            read: "activeGuideColor"
+            write: "setActiveGuideColor"
+            notify: "appearanceChanged"
+            index: 19
+            lineNumber: 59
+        }
+        Property {
+            name: "gutterWidth"
             type: "double"
-            read: "topPadding"
-            write: "setTopPadding"
-            notify: "topPaddingChanged"
-            index: 7
-            lineNumber: 21
+            read: "gutterWidth"
+            notify: "metricsChanged"
+            index: 20
+            lineNumber: 61
+            isReadonly: true
         }
-        Signal { name: "documentChanged"; lineNumber: 56 }
-        Signal { name: "contentYChanged"; lineNumber: 57 }
-        Signal { name: "currentLineChanged"; lineNumber: 58 }
-        Signal { name: "fontChanged"; lineNumber: 59 }
-        Signal { name: "textColorChanged"; lineNumber: 60 }
-        Signal { name: "activeTextColorChanged"; lineNumber: 61 }
-        Signal { name: "activeLineColorChanged"; lineNumber: 62 }
-        Signal { name: "topPaddingChanged"; lineNumber: 63 }
-        Method { name: "refresh"; lineNumber: 53 }
+        Property {
+            name: "lineHeight"
+            type: "double"
+            read: "lineHeight"
+            notify: "metricsChanged"
+            index: 21
+            lineNumber: 62
+            isReadonly: true
+        }
+        Property {
+            name: "charWidth"
+            type: "double"
+            read: "charWidth"
+            notify: "metricsChanged"
+            index: 22
+            lineNumber: 63
+            isReadonly: true
+        }
+        Property {
+            name: "docContentWidth"
+            type: "double"
+            read: "docContentWidth"
+            notify: "contentSizeChanged"
+            index: 23
+            lineNumber: 64
+            isReadonly: true
+        }
+        Property {
+            name: "docContentHeight"
+            type: "double"
+            read: "docContentHeight"
+            notify: "contentSizeChanged"
+            index: 24
+            lineNumber: 66
+            isReadonly: true
+        }
+        Property {
+            name: "cursorRect"
+            type: "QRectF"
+            read: "cursorRect"
+            notify: "cursorRectChanged"
+            index: 25
+            lineNumber: 68
+            isReadonly: true
+        }
+        Property {
+            name: "hoverRect"
+            type: "QRectF"
+            read: "hoverRect"
+            notify: "hoverChanged"
+            index: 26
+            lineNumber: 69
+            isReadonly: true
+        }
+        Property {
+            name: "hoverInside"
+            type: "bool"
+            read: "hoverInside"
+            notify: "hoverChanged"
+            index: 27
+            lineNumber: 70
+            isReadonly: true
+        }
+        Property {
+            name: "hasSelection"
+            type: "bool"
+            read: "hasSelection"
+            notify: "cursorRectChanged"
+            index: 28
+            lineNumber: 71
+            isReadonly: true
+        }
+        Signal { name: "sessionChanged"; lineNumber: 136 }
+        Signal { name: "metricsChanged"; lineNumber: 137 }
+        Signal { name: "appearanceChanged"; lineNumber: 138 }
+        Signal { name: "scrollChanged"; lineNumber: 139 }
+        Signal { name: "insetsChanged"; lineNumber: 140 }
+        Signal { name: "contentSizeChanged"; lineNumber: 141 }
+        Signal { name: "cursorRectChanged"; lineNumber: 142 }
+        Signal { name: "hoverChanged"; lineNumber: 143 }
+        Signal { name: "edited"; lineNumber: 144 }
+        Signal { name: "cursorMoved"; lineNumber: 145 }
+        Signal {
+            name: "contextMenuRequested"
+            lineNumber: 146
+            Parameter { name: "x"; type: "double" }
+            Parameter { name: "y"; type: "double" }
+        }
+        Signal {
+            name: "scrollByRequested"
+            lineNumber: 147
+            Parameter { name: "dx"; type: "double" }
+            Parameter { name: "dy"; type: "double" }
+        }
+        Signal {
+            name: "actionRequested"
+            lineNumber: 148
+            Parameter { name: "action"; type: "QString" }
+        }
+        Method { name: "onContentChanged"; lineNumber: 167 }
+        Method { name: "onSelectionChanged"; lineNumber: 168 }
+        Method { name: "onMaxColumnsChanged"; lineNumber: 169 }
+        Method { name: "onBlink"; lineNumber: 170 }
+        Method { name: "onAutoScroll"; lineNumber: 171 }
+        Method {
+            name: "performAction"
+            lineNumber: 128
+            Parameter { name: "action"; type: "QString" }
+        }
+        Method { name: "clipboardHasText"; type: "bool"; isMethodConstant: true; lineNumber: 129 }
+        Method { name: "cursorViewportPos"; type: "QPointF"; isMethodConstant: true; lineNumber: 130 }
     }
     Component {
         file: "qabstractitemmodel.h"
@@ -1141,7 +1258,7 @@ Module {
     }
     Component {
         file: "tab_session.h"
-        lineNumber: 14
+        lineNumber: 12
         name: "TabSession"
         accessSemantics: "reference"
         prototype: "QObject"
@@ -1154,7 +1271,7 @@ Module {
             read: "filePath"
             notify: "fileInfoChanged"
             index: 0
-            lineNumber: 18
+            lineNumber: 16
             isReadonly: true
         }
         Property {
@@ -1163,7 +1280,7 @@ Module {
             read: "fileName"
             notify: "fileInfoChanged"
             index: 1
-            lineNumber: 19
+            lineNumber: 17
             isReadonly: true
         }
         Property {
@@ -1172,7 +1289,7 @@ Module {
             read: "modified"
             notify: "modifiedChanged"
             index: 2
-            lineNumber: 20
+            lineNumber: 18
             isReadonly: true
         }
         Property {
@@ -1182,7 +1299,7 @@ Module {
             write: "setLanguageId"
             notify: "languageChanged"
             index: 3
-            lineNumber: 21
+            lineNumber: 19
         }
         Property {
             name: "statusLanguage"
@@ -1190,7 +1307,7 @@ Module {
             read: "statusLanguage"
             notify: "languageStatusChanged"
             index: 4
-            lineNumber: 22
+            lineNumber: 21
             isReadonly: true
         }
         Property {
@@ -1206,9 +1323,36 @@ Module {
             name: "lineCount"
             type: "int"
             read: "lineCount"
-            notify: "cursorStatsChanged"
+            notify: "contentChanged"
             index: 6
-            lineNumber: 24
+            lineNumber: 25
+            isReadonly: true
+        }
+        Property {
+            name: "hasText"
+            type: "bool"
+            read: "hasText"
+            notify: "contentChanged"
+            index: 7
+            lineNumber: 26
+            isReadonly: true
+        }
+        Property {
+            name: "canUndo"
+            type: "bool"
+            read: "canUndo"
+            notify: "contentChanged"
+            index: 8
+            lineNumber: 27
+            isReadonly: true
+        }
+        Property {
+            name: "canRedo"
+            type: "bool"
+            read: "canRedo"
+            notify: "contentChanged"
+            index: 9
+            lineNumber: 28
             isReadonly: true
         }
         Property {
@@ -1216,8 +1360,8 @@ Module {
             type: "int"
             read: "cursorLine"
             notify: "cursorStatsChanged"
-            index: 7
-            lineNumber: 25
+            index: 10
+            lineNumber: 29
             isReadonly: true
         }
         Property {
@@ -1225,43 +1369,86 @@ Module {
             type: "int"
             read: "cursorColumn"
             notify: "cursorStatsChanged"
-            index: 8
-            lineNumber: 26
+            index: 11
+            lineNumber: 30
             isReadonly: true
         }
-        Signal { name: "fileInfoChanged"; lineNumber: 60 }
-        Signal { name: "modifiedChanged"; lineNumber: 61 }
-        Signal { name: "languageChanged"; lineNumber: 62 }
-        Signal { name: "languageStatusChanged"; lineNumber: 63 }
-        Signal { name: "cursorStatsChanged"; lineNumber: 64 }
-        Signal { name: "documentLoaded"; lineNumber: 65 }
+        Property {
+            name: "selectedChars"
+            type: "int"
+            read: "selectedChars"
+            notify: "selectionChanged"
+            index: 12
+            lineNumber: 31
+            isReadonly: true
+        }
+        Property {
+            name: "hasSelection"
+            type: "bool"
+            read: "hasSelection"
+            notify: "selectionChanged"
+            index: 13
+            lineNumber: 32
+            isReadonly: true
+        }
+        Property {
+            name: "hasSingleLineSelection"
+            type: "bool"
+            read: "hasSingleLineSelection"
+            notify: "selectionChanged"
+            index: 14
+            lineNumber: 33
+            isReadonly: true
+        }
+        Property {
+            name: "scrollX"
+            type: "double"
+            read: "scrollX"
+            write: "setScrollX"
+            notify: "scrollChanged"
+            index: 15
+            lineNumber: 35
+        }
+        Property {
+            name: "scrollY"
+            type: "double"
+            read: "scrollY"
+            write: "setScrollY"
+            notify: "scrollChanged"
+            index: 16
+            lineNumber: 36
+        }
+        Property {
+            name: "maxLineColumns"
+            type: "int"
+            read: "maxLineColumns"
+            notify: "maxLineColumnsChanged"
+            index: 17
+            lineNumber: 37
+            isReadonly: true
+        }
+        Signal { name: "fileInfoChanged"; lineNumber: 113 }
+        Signal { name: "modifiedChanged"; lineNumber: 114 }
+        Signal { name: "languageChanged"; lineNumber: 115 }
+        Signal { name: "languageStatusChanged"; lineNumber: 116 }
+        Signal { name: "contentChanged"; lineNumber: 117 }
+        Signal { name: "cursorStatsChanged"; lineNumber: 118 }
+        Signal { name: "selectionChanged"; lineNumber: 119 }
+        Signal { name: "scrollChanged"; lineNumber: 120 }
+        Signal { name: "maxLineColumnsChanged"; lineNumber: 121 }
+        Signal { name: "documentLoaded"; lineNumber: 122 }
         Signal {
             name: "errorOccurred"
-            lineNumber: 66
+            lineNumber: 123
             Parameter { name: "title"; type: "QString" }
             Parameter { name: "message"; type: "QString" }
         }
-        Method {
-            name: "onDocumentModifiedChanged"
-            lineNumber: 69
-            Parameter { name: "m"; type: "bool" }
-        }
-        Method { name: "onDocumentContentsChanged"; lineNumber: 70 }
-        Method { name: "runAutoDetect"; lineNumber: 71 }
-        Method {
-            name: "attachDocument"
-            lineNumber: 47
-            Parameter { name: "doc"; type: "QQuickTextDocument"; isPointer: true }
-        }
-        Method {
-            name: "updateCursorPosition"
-            lineNumber: 48
-            Parameter { name: "position"; type: "int" }
-        }
+        Method { name: "runAutoDetect"; lineNumber: 126 }
+        Method { name: "scanWidthChunk"; lineNumber: 127 }
         Method {
             name: "loadFile"
             type: "bool"
-            lineNumber: 49
+            lineNumber: 95
             Parameter { name: "path"; type: "QString" }
             Parameter { name: "allowMissing"; type: "bool" }
         }
@@ -1269,53 +1456,53 @@ Module {
             name: "loadFile"
             type: "bool"
             isCloned: true
-            lineNumber: 49
+            lineNumber: 95
             Parameter { name: "path"; type: "QString" }
         }
         Method {
             name: "writeToFile"
             type: "bool"
-            lineNumber: 50
+            lineNumber: 96
             Parameter { name: "path"; type: "QString" }
         }
-        Method { name: "resetEmpty"; lineNumber: 51 }
-        Method { name: "discardChanges"; lineNumber: 52 }
+        Method { name: "resetEmpty"; lineNumber: 97 }
+        Method { name: "discardChanges"; lineNumber: 98 }
+        Method { name: "undo"; lineNumber: 99 }
+        Method { name: "redo"; lineNumber: 100 }
+        Method { name: "selectAll"; lineNumber: 101 }
+        Method { name: "selectCurrentLine"; lineNumber: 102 }
+        Method { name: "selectedText"; type: "QString"; isMethodConstant: true; lineNumber: 103 }
         Method {
-            name: "findText"
-            type: "QVariantMap"
-            lineNumber: 53
+            name: "findNext"
+            type: "bool"
+            lineNumber: 104
             Parameter { name: "query"; type: "QString" }
-            Parameter { name: "fromPos"; type: "int" }
             Parameter { name: "backward"; type: "bool" }
         }
         Method {
             name: "matchStats"
             type: "QVariantMap"
-            lineNumber: 54
+            isMethodConstant: true
+            lineNumber: 105
             Parameter { name: "query"; type: "QString" }
-            Parameter { name: "selectionStart"; type: "int" }
         }
         Method {
             name: "replaceMatch"
-            type: "QVariantMap"
-            lineNumber: 55
+            type: "bool"
+            lineNumber: 106
             Parameter { name: "query"; type: "QString" }
             Parameter { name: "replacement"; type: "QString" }
-            Parameter { name: "selStart"; type: "int" }
-            Parameter { name: "selEnd"; type: "int" }
         }
         Method {
             name: "replaceAllMatches"
             type: "int"
-            lineNumber: 56
+            lineNumber: 108
             Parameter { name: "query"; type: "QString" }
             Parameter { name: "replacement"; type: "QString" }
         }
         Method {
-            name: "lineStartPosition"
-            type: "int"
-            isMethodConstant: true
-            lineNumber: 57
+            name: "gotoLine"
+            lineNumber: 110
             Parameter { name: "lineNumber"; type: "int" }
         }
     }

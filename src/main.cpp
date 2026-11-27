@@ -1,6 +1,5 @@
 #include "editor_backend.h"
-#include "gutter.h"
-#include "indent_guides.h"
+#include "editor_view.h"
 #include "tab_session.h"
 
 #include <QApplication>
@@ -74,8 +73,7 @@ int main(int argc, char *argv[]) {
   QQuickStyle::setStyle(QStringLiteral("Basic"));
 
   qmlRegisterType<EditorBackend>("Nulla", 1, 0, "EditorBackend");
-  qmlRegisterType<LineNumberGutter>("Nulla", 1, 0, "LineNumberGutter");
-  qmlRegisterType<IndentGuides>("Nulla", 1, 0, "IndentGuides");
+  qmlRegisterType<NullaEditorView>("Nulla", 1, 0, "NullaEditorView");
   qmlRegisterUncreatableType<TabSession>(
       "Nulla", 1, 0, "TabSession", QStringLiteral("Managed by EditorBackend"));
   qmlRegisterUncreatableType<TabModel>(
