@@ -24,7 +24,6 @@ constexpr qreal kPadLeft = 10.0;
 constexpr qreal kPadTop = 8.0;
 constexpr qreal kScrollPadRight = 20.0;
 constexpr qreal kScrollPadBottom = 16.0;
-constexpr qreal kGutterPadRight = 11.0;
 
 size_t utf8VisWidth(const char *s, size_t len, size_t startVisCol, bool &allAscii) {
   allAscii = true;
@@ -1389,8 +1388,8 @@ void NullaEditorView::paint(QPainter *painter) {
                           m_gutterActiveLineColor);
       }
       painter->setPen(isCur ? m_gutterActiveTextColor : m_gutterTextColor);
-      painter->drawText(QRectF(0.0, y, gw - 1.0 - kGutterPadRight, m_lineHeight),
-                        Qt::AlignRight | Qt::AlignVCenter,
+      painter->drawText(QRectF(0.0, y, gw - 1.0, m_lineHeight),
+                        Qt::AlignHCenter | Qt::AlignVCenter,
                         QString::number(ln.line_idx + 1));
     }
 

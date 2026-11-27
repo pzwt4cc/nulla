@@ -6,29 +6,16 @@ Item {
 
     property bool open: false
     property bool darkMode: true
-    property var theme: ({})
+    property var theme: ({
+    })
     property var backend: null
-    property var ui: ({})
+    property var ui: ({
+    })
     property int activeSettingsTab: 0
-
-    signal closed
-    signal updateRestartRequested
-
     readonly property var updater: backend ? backend.updater : null
     readonly property int updStatus: updater ? updater.status : 0
     readonly property bool dropdownOpen: langPopup.opened
-
-    function closeDropdown() {
-        langPopup.close();
-    }
-
-    function formattedLastCheck() {
-        if (!updater || updater.lastCheckEpoch <= 0) {
-            return "";
-        }
-        return Qt.formatDateTime(new Date(updater.lastCheckEpoch * 1000), Qt.DefaultLocaleShortDate);
-    }
-
+    readonly property int fontDelta: card.width >= 760 ? 2 : (card.width >= 650 ? 1 : 0)
     readonly property color bgCard: theme.bgCard || (darkMode ? "#17191e" : "#ffffff")
     readonly property color bgGroup: theme.bgGroup || (darkMode ? "#131418" : "#f7f8fa")
     readonly property color borderGroup: theme.borderGroup || (darkMode ? "#262831" : "#dfe2ea")
@@ -37,15 +24,29 @@ Item {
     readonly property color fgLabel: theme.fgLabel || (darkMode ? "#d8dce4" : "#1f2228")
     readonly property color fgSub: theme.fgSub || (darkMode ? "#787f8e" : "#6a7180")
 
+    signal closed()
+    signal updateRestartRequested()
+
+    function closeDropdown() {
+        langPopup.close();
+    }
+
+    function formattedLastCheck() {
+        if (!updater || updater.lastCheckEpoch <= 0)
+            return "";
+
+        return Qt.formatDateTime(new Date(updater.lastCheckEpoch * 1000), Qt.DefaultLocaleShortDate);
+    }
+
     function currentUiLanguageName() {
-        if (!backend || !backend.uiLanguagesModel) {
+        if (!backend || !backend.uiLanguagesModel)
             return "English";
-        }
+
         const m = backend.uiLanguagesModel;
         for (let i = 0; i < m.length; i++) {
-            if (m[i].id === backend.uiLanguage) {
+            if (m[i].id === backend.uiLanguage)
                 return m[i].name;
-            }
+
         }
         return backend.uiLanguage || "English";
     }
@@ -58,20 +59,17 @@ Item {
             langPopup.close();
         }
     }
-
     onActiveSettingsTabChanged: {
         cardFlick.contentY = 0;
-        if (activeSettingsTab !== 0 && langPopup.opened) {
+        if (activeSettingsTab !== 0 && langPopup.opened)
             langPopup.close();
-        }
-    }
 
+    }
     visible: open
     focus: open
     anchors.fill: parent
     z: 150
-
-    Keys.onPressed: function (event) {
+    Keys.onPressed: function(event) {
         event.accepted = true;
     }
 
@@ -83,14 +81,15 @@ Item {
     MouseArea {
         anchors.fill: parent
         onClicked: root.closed()
-        onWheel: function (wheel) {
+        onWheel: function(wheel) {
             wheel.accepted = true;
         }
     }
 
     Rectangle {
         id: card
-        width: Math.max(0, Math.min(parent.width - 40, Math.min(860, Math.max(560, Math.round(parent.width * 0.40)))))
+
+        width: Math.max(0, Math.min(parent.width - 40, Math.min(860, Math.max(560, Math.round(parent.width * 0.4)))))
         height: Math.max(0, Math.min(parent.height - 40, Math.min(780, Math.max(520, Math.round(parent.height * 0.68)))))
         anchors.centerIn: parent
         radius: 12
@@ -101,7 +100,7 @@ Item {
 
         MouseArea {
             anchors.fill: parent
-            onWheel: function (wheel) {
+            onWheel: function(wheel) {
                 wheel.accepted = true;
             }
         }
@@ -119,6 +118,7 @@ Item {
 
         Item {
             id: headerBar
+
             anchors.top: parent.top
             anchors.topMargin: 16
             anchors.left: parent.left
@@ -135,12 +135,13 @@ Item {
                 elide: Text.ElideRight
                 text: root.ui.settingsTitle || "Settings"
                 color: root.fgTitle
-                font.pixelSize: 15
+                font.pixelSize: 15 + root.fontDelta
                 font.weight: Font.DemiBold
             }
 
             Rectangle {
                 id: settingsTabsBox
+
                 anchors.right: closeSettingsBtn.left
                 anchors.rightMargin: 8
                 anchors.verticalCenter: parent.verticalCenter
@@ -153,6 +154,7 @@ Item {
 
                 Row {
                     id: settingsTabsRow
+
                     anchors.centerIn: parent
                     spacing: 2
 
@@ -160,6 +162,7 @@ Item {
                         text: root.ui.tabGeneral || "General"
                         ghost: root.activeSettingsTab !== 0
                         activeChip: root.activeSettingsTab === 0
+                        fontPixelSize: 12 + root.fontDelta
                         darkMode: root.darkMode
                         theme: root.theme
                         buttonHeight: 26
@@ -172,6 +175,7 @@ Item {
                         text: root.ui.tabTheme || "Theme"
                         ghost: root.activeSettingsTab !== 1
                         activeChip: root.activeSettingsTab === 1
+                        fontPixelSize: 12 + root.fontDelta
                         darkMode: root.darkMode
                         theme: root.theme
                         buttonHeight: 26
@@ -185,6 +189,7 @@ Item {
                         ghost: root.activeSettingsTab !== 2
                         activeChip: root.activeSettingsTab === 2
                         showDot: root.updStatus === 3 || root.updStatus === 5
+                        fontPixelSize: 12 + root.fontDelta
                         darkMode: root.darkMode
                         theme: root.theme
                         buttonHeight: 26
@@ -192,11 +197,14 @@ Item {
                         cornerRadius: 8
                         onClicked: root.activeSettingsTab = 2
                     }
+
                 }
+
             }
 
             M3Button {
                 id: closeSettingsBtn
+
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 iconKind: "close"
@@ -208,10 +216,12 @@ Item {
                 cornerRadius: 9
                 onClicked: root.closed()
             }
+
         }
 
         Rectangle {
             id: topDivider
+
             anchors.top: headerBar.bottom
             anchors.topMargin: 12
             anchors.left: parent.left
@@ -224,6 +234,7 @@ Item {
 
         Flickable {
             id: cardFlick
+
             anchors.top: topDivider.bottom
             anchors.topMargin: 12
             anchors.bottom: parent.bottom
@@ -236,19 +247,9 @@ Item {
             boundsBehavior: Flickable.StopAtBounds
             clip: true
 
-            ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AsNeeded
-                width: 6
-                rightPadding: 2
-                contentItem: Rectangle {
-                    implicitWidth: 3
-                    radius: 2
-                    color: theme.scrollIdle || (darkMode ? "#3a3f4c" : "#c1c6d0")
-                }
-            }
-
             Column {
                 id: mainCol
+
                 x: 18
                 y: 2
                 width: cardFlick.width - 36
@@ -262,7 +263,7 @@ Item {
                     Text {
                         text: root.ui.secAppearance || "APPEARANCE"
                         color: root.fgSub
-                        font.pixelSize: 10
+                        font.pixelSize: 10 + root.fontDelta
                         font.weight: Font.DemiBold
                         font.letterSpacing: 0.8
                     }
@@ -277,6 +278,7 @@ Item {
 
                         Column {
                             id: appearanceCol
+
                             width: parent.width
                             spacing: 0
 
@@ -290,7 +292,7 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: root.ui.lblViewMode || "View mode"
                                     color: root.fgLabel
-                                    font.pixelSize: 13
+                                    font.pixelSize: 13 + root.fontDelta
                                 }
 
                                 Rectangle {
@@ -306,6 +308,7 @@ Item {
 
                                     Row {
                                         id: layoutRow
+
                                         anchors.centerIn: parent
                                         spacing: 2
 
@@ -313,29 +316,40 @@ Item {
                                             text: root.ui.layoutMinimal || "Minimal"
                                             ghost: !(root.backend && root.backend.layoutMode === 0)
                                             activeChip: !!(root.backend && root.backend.layoutMode === 0)
+                                            fontPixelSize: 12 + root.fontDelta
                                             darkMode: root.darkMode
                                             theme: root.theme
                                             buttonHeight: 26
                                             horizontalPadding: 11
                                             cornerRadius: 9
-                                            onClicked: if (root.backend)
-                                                root.backend.layoutMode = 0
+                                            onClicked: {
+                                                if (root.backend) {
+                                                    root.backend.layoutMode = 0;
+                                                }
+                                            }
                                         }
 
                                         M3Button {
                                             text: root.ui.layoutExpanded || "Expanded"
                                             ghost: !(root.backend && root.backend.layoutMode === 1)
                                             activeChip: !!(root.backend && root.backend.layoutMode === 1)
+                                            fontPixelSize: 12 + root.fontDelta
                                             darkMode: root.darkMode
                                             theme: root.theme
                                             buttonHeight: 26
                                             horizontalPadding: 11
                                             cornerRadius: 9
-                                            onClicked: if (root.backend)
-                                                root.backend.layoutMode = 1
+                                            onClicked: {
+                                                if (root.backend) {
+                                                    root.backend.layoutMode = 1;
+                                                }
+                                            }
                                         }
+
                                     }
+
                                 }
+
                             }
 
                             Rectangle {
@@ -357,7 +371,7 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: root.ui.lblIconSize || "Icon size"
                                     color: root.fgLabel
-                                    font.pixelSize: 13
+                                    font.pixelSize: 13 + root.fontDelta
                                 }
 
                                 Rectangle {
@@ -373,6 +387,7 @@ Item {
 
                                     Row {
                                         id: iconSizeRow
+
                                         anchors.centerIn: parent
                                         spacing: 2
 
@@ -380,55 +395,74 @@ Item {
                                             text: root.ui.iconSmall || "S"
                                             ghost: !(root.backend && root.backend.expandedIconSize <= 16)
                                             activeChip: !!(root.backend && root.backend.expandedIconSize <= 16)
+                                            fontPixelSize: 12 + root.fontDelta
                                             darkMode: root.darkMode
                                             theme: root.theme
                                             buttonHeight: 26
                                             horizontalPadding: 10
                                             cornerRadius: 9
-                                            onClicked: if (root.backend)
-                                                root.backend.expandedIconSize = 15
+                                            onClicked: {
+                                                if (root.backend) {
+                                                    root.backend.expandedIconSize = 15;
+                                                }
+                                            }
                                         }
 
                                         M3Button {
                                             text: root.ui.iconMedium || "M"
                                             ghost: !(root.backend && root.backend.expandedIconSize > 16 && root.backend.expandedIconSize <= 19)
                                             activeChip: !!(root.backend && root.backend.expandedIconSize > 16 && root.backend.expandedIconSize <= 19)
+                                            fontPixelSize: 12 + root.fontDelta
                                             darkMode: root.darkMode
                                             theme: root.theme
                                             buttonHeight: 26
                                             horizontalPadding: 10
                                             cornerRadius: 9
-                                            onClicked: if (root.backend)
-                                                root.backend.expandedIconSize = 18
+                                            onClicked: {
+                                                if (root.backend) {
+                                                    root.backend.expandedIconSize = 18;
+                                                }
+                                            }
                                         }
 
                                         M3Button {
                                             text: root.ui.iconLarge || "L"
                                             ghost: !(root.backend && root.backend.expandedIconSize > 19 && root.backend.expandedIconSize <= 22)
                                             activeChip: !!(root.backend && root.backend.expandedIconSize > 19 && root.backend.expandedIconSize <= 22)
+                                            fontPixelSize: 12 + root.fontDelta
                                             darkMode: root.darkMode
                                             theme: root.theme
                                             buttonHeight: 26
                                             horizontalPadding: 10
                                             cornerRadius: 9
-                                            onClicked: if (root.backend)
-                                                root.backend.expandedIconSize = 21
+                                            onClicked: {
+                                                if (root.backend) {
+                                                    root.backend.expandedIconSize = 21;
+                                                }
+                                            }
                                         }
 
                                         M3Button {
                                             text: root.ui.iconXLarge || "XL"
                                             ghost: !(root.backend && root.backend.expandedIconSize > 22)
                                             activeChip: !!(root.backend && root.backend.expandedIconSize > 22)
+                                            fontPixelSize: 12 + root.fontDelta
                                             darkMode: root.darkMode
                                             theme: root.theme
                                             buttonHeight: 26
                                             horizontalPadding: 10
                                             cornerRadius: 9
-                                            onClicked: if (root.backend)
-                                                root.backend.expandedIconSize = 25
+                                            onClicked: {
+                                                if (root.backend) {
+                                                    root.backend.expandedIconSize = 25;
+                                                }
+                                            }
                                         }
+
                                     }
+
                                 }
+
                             }
 
                             Rectangle {
@@ -451,7 +485,7 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: root.ui.lblSidebarScale || "Sidebar scale"
                                     color: root.fgLabel
-                                    font.pixelSize: 13
+                                    font.pixelSize: 13 + root.fontDelta
                                 }
 
                                 Rectangle {
@@ -467,6 +501,7 @@ Item {
 
                                     Row {
                                         id: sidebarScaleRow
+
                                         anchors.centerIn: parent
                                         spacing: 0
 
@@ -479,8 +514,11 @@ Item {
                                             buttonHeight: 26
                                             buttonWidth: 28
                                             cornerRadius: 9
-                                            onClicked: if (root.backend)
-                                                root.backend.sidebarScaleOut()
+                                            onClicked: {
+                                                if (root.backend) {
+                                                    root.backend.sidebarScaleOut();
+                                                }
+                                            }
                                         }
 
                                         Rectangle {
@@ -493,14 +531,18 @@ Item {
                                         M3Button {
                                             text: (root.backend ? root.backend.sidebarScalePercent : 100) + "%"
                                             ghost: true
+                                            fontPixelSize: 12 + root.fontDelta
                                             darkMode: root.darkMode
                                             theme: root.theme
                                             buttonHeight: 26
                                             horizontalPadding: 12
                                             cornerRadius: 9
                                             tooltipText: root.ui.resetSidebarScaleTip || "Reset sidebar scale"
-                                            onClicked: if (root.backend)
-                                                root.backend.sidebarScaleReset()
+                                            onClicked: {
+                                                if (root.backend) {
+                                                    root.backend.sidebarScaleReset();
+                                                }
+                                            }
                                         }
 
                                         Rectangle {
@@ -519,11 +561,17 @@ Item {
                                             buttonHeight: 26
                                             buttonWidth: 28
                                             cornerRadius: 9
-                                            onClicked: if (root.backend)
-                                                root.backend.sidebarScaleIn()
+                                            onClicked: {
+                                                if (root.backend) {
+                                                    root.backend.sidebarScaleIn();
+                                                }
+                                            }
                                         }
+
                                     }
+
                                 }
+
                             }
 
                             Rectangle {
@@ -544,15 +592,16 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: root.ui.lblUiLanguage || "Language"
                                     color: root.fgLabel
-                                    font.pixelSize: 13
+                                    font.pixelSize: 13 + root.fontDelta
                                 }
 
                                 Rectangle {
                                     id: langDropdownBtn
+
                                     anchors.right: parent.right
                                     anchors.rightMargin: 10
                                     anchors.verticalCenter: parent.verticalCenter
-                                    width: 176
+                                    width: 176 + root.fontDelta * 12
                                     height: 30
                                     radius: 10
                                     color: langPopup.opened ? (theme.bgPressed || (darkMode ? "#262a35" : "#e2e6ef")) : (langBtnMa.pressed ? (theme.bgPressed || (darkMode ? "#242832" : "#dde1eb")) : (langBtnMa.containsMouse ? (theme.bgHover || (darkMode ? "#21252f" : "#e8ebf2")) : (theme.bgInput || (darkMode ? "#1a1c22" : "#eceef3"))))
@@ -567,21 +616,22 @@ Item {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: root.currentUiLanguageName()
                                         color: root.fgTitle
-                                        font.pixelSize: 12
+                                        font.pixelSize: 12 + root.fontDelta
                                         font.weight: Font.Medium
                                         elide: Text.ElideRight
                                     }
 
                                     Canvas {
                                         id: langChevron
+
+                                        property color strokeColor: root.fgSub
+                                        property bool up: langPopup.opened
+
                                         anchors.right: parent.right
                                         anchors.rightMargin: 10
                                         anchors.verticalCenter: parent.verticalCenter
                                         width: 10
                                         height: 6
-                                        property color strokeColor: root.fgSub
-                                        property bool up: langPopup.opened
-
                                         onStrokeColorChanged: requestPaint()
                                         onUpChanged: requestPaint()
                                         onPaint: {
@@ -607,32 +657,29 @@ Item {
 
                                     MouseArea {
                                         id: langBtnMa
+
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            if (langPopup.opened) {
+                                            if (langPopup.opened)
                                                 langPopup.close();
-                                            } else {
+                                            else
                                                 langPopup.open();
-                                            }
                                         }
                                     }
 
                                     Popup {
                                         id: langPopup
+
                                         x: parent.width - width
                                         y: parent.height + 5
-                                        width: 196
+                                        width: 196 + root.fontDelta * 12
                                         padding: 5
                                         margins: 8
                                         modal: true
                                         focus: true
                                         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-                                        Overlay.modal: Rectangle {
-                                            color: "transparent"
-                                        }
-
                                         onOpened: {
                                             if (root.backend && root.backend.uiLanguagesModel) {
                                                 const m = root.backend.uiLanguagesModel;
@@ -643,6 +690,10 @@ Item {
                                                     }
                                                 }
                                             }
+                                        }
+
+                                        Overlay.modal: Rectangle {
+                                            color: "transparent"
                                         }
 
                                         background: Rectangle {
@@ -662,10 +713,12 @@ Item {
                                                 height: 1
                                                 color: theme.sheenBright || (darkMode ? "#14ffffff" : "#80ffffff")
                                             }
+
                                         }
 
                                         contentItem: ListView {
                                             id: langDropList
+
                                             implicitWidth: langPopup.width - langPopup.padding * 2
                                             implicitHeight: Math.min(248, contentHeight, Math.max(88, root.height - 32))
                                             clip: true
@@ -676,18 +729,21 @@ Item {
                                             ScrollBar.vertical: ScrollBar {
                                                 policy: ScrollBar.AsNeeded
                                                 width: 5
+
                                                 contentItem: Rectangle {
                                                     implicitWidth: 3
                                                     radius: 2
                                                     color: theme.scrollHover || (darkMode ? "#454b5a" : "#b8beca")
                                                 }
+
                                             }
 
                                             delegate: Rectangle {
+                                                readonly property bool isCurrent: root.backend && root.backend.uiLanguage === modelData.id
+
                                                 width: langDropList.width - 4
                                                 height: 30
                                                 radius: 7
-                                                readonly property bool isCurrent: root.backend && root.backend.uiLanguage === modelData.id
                                                 color: isCurrent ? (theme.chipBg || (darkMode ? "#293245" : "#e3ebfa")) : (dropItemMa.pressed ? (theme.bgPressed || (darkMode ? "#282b34" : "#d8dce5")) : (dropItemMa.containsMouse ? (theme.bgHover || (darkMode ? "#252934" : "#eceff5")) : "transparent"))
                                                 border.width: 1
                                                 border.color: isCurrent ? (theme.chipBorder || (darkMode ? "#44577a" : "#b7c9ec")) : (dropItemMa.containsMouse ? (theme.borderControl || (darkMode ? "#343947" : "#cfd5e1")) : "transparent")
@@ -700,13 +756,14 @@ Item {
                                                     anchors.verticalCenter: parent.verticalCenter
                                                     text: modelData.name
                                                     color: parent.isCurrent ? (theme.chipFg || (darkMode ? "#f3f6fc" : "#153672")) : root.fgTitle
-                                                    font.pixelSize: 12
+                                                    font.pixelSize: 12 + root.fontDelta
                                                     font.weight: parent.isCurrent ? Font.DemiBold : Font.Normal
                                                     elide: Text.ElideRight
                                                 }
 
                                                 Rectangle {
                                                     id: activeDot
+
                                                     visible: parent.isCurrent
                                                     anchors.right: parent.right
                                                     anchors.rightMargin: 10
@@ -719,20 +776,26 @@ Item {
 
                                                 MouseArea {
                                                     id: dropItemMa
+
                                                     anchors.fill: parent
                                                     hoverEnabled: true
                                                     cursorShape: Qt.PointingHandCursor
                                                     onClicked: {
-                                                        if (root.backend) {
+                                                        if (root.backend)
                                                             root.backend.uiLanguage = modelData.id;
-                                                        }
+
                                                         langPopup.close();
                                                     }
                                                 }
+
                                             }
+
                                         }
+
                                     }
+
                                 }
+
                             }
 
                             Rectangle {
@@ -752,7 +815,7 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: root.ui.lblZoom || "Zoom"
                                     color: root.fgLabel
-                                    font.pixelSize: 13
+                                    font.pixelSize: 13 + root.fontDelta
                                 }
 
                                 Rectangle {
@@ -768,6 +831,7 @@ Item {
 
                                     Row {
                                         id: zoomRow
+
                                         anchors.centerIn: parent
                                         spacing: 0
 
@@ -780,8 +844,11 @@ Item {
                                             buttonHeight: 26
                                             buttonWidth: 28
                                             cornerRadius: 9
-                                            onClicked: if (root.backend)
-                                                root.backend.zoomOut()
+                                            onClicked: {
+                                                if (root.backend) {
+                                                    root.backend.zoomOut();
+                                                }
+                                            }
                                         }
 
                                         Rectangle {
@@ -794,14 +861,18 @@ Item {
                                         M3Button {
                                             text: (root.backend ? root.backend.zoomPercent : 100) + "%"
                                             ghost: true
+                                            fontPixelSize: 12 + root.fontDelta
                                             darkMode: root.darkMode
                                             theme: root.theme
                                             buttonHeight: 26
                                             horizontalPadding: 12
                                             cornerRadius: 9
                                             tooltipText: root.ui.resetZoomTip || "Reset (Ctrl+0)"
-                                            onClicked: if (root.backend)
-                                                root.backend.zoomReset()
+                                            onClicked: {
+                                                if (root.backend) {
+                                                    root.backend.zoomReset();
+                                                }
+                                            }
                                         }
 
                                         Rectangle {
@@ -820,19 +891,27 @@ Item {
                                             buttonHeight: 26
                                             buttonWidth: 28
                                             cornerRadius: 9
-                                            onClicked: if (root.backend)
-                                                root.backend.zoomIn()
+                                            onClicked: {
+                                                if (root.backend) {
+                                                    root.backend.zoomIn();
+                                                }
+                                            }
                                         }
+
                                     }
+
                                 }
+
                             }
+
                         }
+
                     }
 
                     Text {
                         text: root.ui.secEditor || "EDITOR"
                         color: root.fgSub
-                        font.pixelSize: 10
+                        font.pixelSize: 10 + root.fontDelta
                         font.weight: Font.DemiBold
                         font.letterSpacing: 0.8
                     }
@@ -847,6 +926,7 @@ Item {
 
                         Column {
                             id: editorCol
+
                             width: parent.width
                             spacing: 0
 
@@ -860,7 +940,7 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: root.ui.lblLineNumbers || "Line numbers"
                                     color: root.fgLabel
-                                    font.pixelSize: 13
+                                    font.pixelSize: 13 + root.fontDelta
                                 }
 
                                 M3Switch {
@@ -870,12 +950,13 @@ Item {
                                     darkMode: root.darkMode
                                     theme: root.theme
                                     checked: root.backend ? root.backend.showLineNumbers : true
-                                    onToggled: function (v) {
-                                        if (root.backend) {
+                                    onToggled: function(v) {
+                                        if (root.backend)
                                             root.backend.showLineNumbers = v;
-                                        }
+
                                     }
                                 }
+
                             }
 
                             Rectangle {
@@ -895,7 +976,7 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: root.ui.lblIndentGuides || "Indent guides"
                                     color: root.fgLabel
-                                    font.pixelSize: 13
+                                    font.pixelSize: 13 + root.fontDelta
                                 }
 
                                 M3Switch {
@@ -905,12 +986,13 @@ Item {
                                     darkMode: root.darkMode
                                     theme: root.theme
                                     checked: root.backend ? root.backend.showIndentGuides : true
-                                    onToggled: function (v) {
-                                        if (root.backend) {
+                                    onToggled: function(v) {
+                                        if (root.backend)
                                             root.backend.showIndentGuides = v;
-                                        }
+
                                     }
                                 }
+
                             }
 
                             Rectangle {
@@ -930,7 +1012,7 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: root.ui.lblSyntax || "Syntax highlighting"
                                     color: root.fgLabel
-                                    font.pixelSize: 13
+                                    font.pixelSize: 13 + root.fontDelta
                                 }
 
                                 M3Switch {
@@ -940,15 +1022,19 @@ Item {
                                     darkMode: root.darkMode
                                     theme: root.theme
                                     checked: root.backend ? root.backend.syntaxEnabled : true
-                                    onToggled: function (v) {
-                                        if (root.backend) {
+                                    onToggled: function(v) {
+                                        if (root.backend)
                                             root.backend.syntaxEnabled = v;
-                                        }
+
                                     }
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
 
                 Column {
@@ -959,7 +1045,7 @@ Item {
                     Text {
                         text: (root.ui.lblTheme || "THEME").toUpperCase()
                         color: root.fgSub
-                        font.pixelSize: 10
+                        font.pixelSize: 10 + root.fontDelta
                         font.weight: Font.DemiBold
                         font.letterSpacing: 0.8
                     }
@@ -975,58 +1061,54 @@ Item {
 
                         Column {
                             id: themeListCol
+
                             width: parent.width
                             spacing: 0
 
                             Repeater {
-                                model: [
-                                    {
-                                        mode: 2,
-                                        title: root.ui.themeDark || "Dark",
-                                        desc: root.ui.themeDarkDesc || "Deep slate monochrome",
-                                        cShell: "#0d0e11",
-                                        cEditor: "#16181e",
-                                        cFg: "#f0f2f6",
-                                        cBorder: "#313644",
-                                        splitSystem: false
-                                    },
-                                    {
-                                        mode: 1,
-                                        title: root.ui.themeLight || "Light",
-                                        desc: root.ui.themeLightDesc || "Clean bright surface",
-                                        cShell: "#ebedf2",
-                                        cEditor: "#ffffff",
-                                        cFg: "#14161a",
-                                        cBorder: "#c6ccd8",
-                                        splitSystem: false
-                                    },
-                                    {
-                                        mode: 3,
-                                        title: root.ui.themeGraphite || "Graphite",
-                                        desc: root.ui.themeGraphiteDesc || "Warm neutral zinc-graphite",
-                                        cShell: "#101012",
-                                        cEditor: "#18181b",
-                                        cFg: "#f2f2f5",
-                                        cBorder: "#34343c",
-                                        splitSystem: false
-                                    },
-                                    {
-                                        mode: 0,
-                                        title: root.ui.themeSystem || "System",
-                                        desc: root.ui.themeSystemDesc || "Follows OS & desktop palette",
-                                        cShell: "#0d0e11",
-                                        cEditor: "#ffffff",
-                                        cFg: "#7aa2f7",
-                                        cBorder: "#454b5a",
-                                        splitSystem: true
-                                    }
-                                ]
+                                model: [{
+                                    "mode": 2,
+                                    "title": root.ui.themeDark || "Dark",
+                                    "desc": root.ui.themeDarkDesc || "Deep slate monochrome",
+                                    "cShell": "#0d0e11",
+                                    "cEditor": "#16181e",
+                                    "cFg": "#f0f2f6",
+                                    "cBorder": "#313644",
+                                    "splitSystem": false
+                                }, {
+                                    "mode": 1,
+                                    "title": root.ui.themeLight || "Light",
+                                    "desc": root.ui.themeLightDesc || "Clean bright surface",
+                                    "cShell": "#ebedf2",
+                                    "cEditor": "#ffffff",
+                                    "cFg": "#14161a",
+                                    "cBorder": "#c6ccd8",
+                                    "splitSystem": false
+                                }, {
+                                    "mode": 3,
+                                    "title": root.ui.themeGraphite || "Graphite",
+                                    "desc": root.ui.themeGraphiteDesc || "Warm neutral zinc-graphite",
+                                    "cShell": "#101012",
+                                    "cEditor": "#18181b",
+                                    "cFg": "#f2f2f5",
+                                    "cBorder": "#34343c",
+                                    "splitSystem": false
+                                }, {
+                                    "mode": 0,
+                                    "title": root.ui.themeSystem || "System",
+                                    "desc": root.ui.themeSystemDesc || "Follows OS & desktop palette",
+                                    "cShell": "#0d0e11",
+                                    "cEditor": "#ffffff",
+                                    "cFg": "#7aa2f7",
+                                    "cBorder": "#454b5a",
+                                    "splitSystem": true
+                                }]
 
                                 delegate: Column {
+                                    readonly property bool isCurrent: root.backend && root.backend.themeMode === modelData.mode
+
                                     width: themeListCol.width
                                     spacing: 0
-
-                                    readonly property bool isCurrent: root.backend && root.backend.themeMode === modelData.mode
 
                                     Rectangle {
                                         width: parent.width
@@ -1035,6 +1117,7 @@ Item {
 
                                         Rectangle {
                                             id: swatch
+
                                             anchors.left: parent.left
                                             anchors.leftMargin: 12
                                             anchors.verticalCenter: parent.verticalCenter
@@ -1064,6 +1147,7 @@ Item {
                                                     radius: 1.5
                                                     color: modelData.cFg
                                                 }
+
                                             }
 
                                             Row {
@@ -1075,12 +1159,15 @@ Item {
                                                     height: parent.height
                                                     color: "#14161c"
                                                 }
+
                                                 Rectangle {
                                                     width: parent.width / 2
                                                     height: parent.height
                                                     color: "#f2f4f8"
                                                 }
+
                                             }
+
                                         }
 
                                         Column {
@@ -1094,7 +1181,7 @@ Item {
                                             Text {
                                                 text: modelData.title
                                                 color: isCurrent ? root.fgTitle : root.fgLabel
-                                                font.pixelSize: 13
+                                                font.pixelSize: 13 + root.fontDelta
                                                 font.weight: isCurrent ? Font.DemiBold : Font.Medium
                                             }
 
@@ -1102,13 +1189,15 @@ Item {
                                                 width: parent.width
                                                 text: modelData.desc
                                                 color: root.fgSub
-                                                font.pixelSize: 11
+                                                font.pixelSize: 11 + root.fontDelta
                                                 elide: Text.ElideRight
                                             }
+
                                         }
 
                                         Rectangle {
                                             id: radioRing
+
                                             anchors.right: parent.right
                                             anchors.rightMargin: 14
                                             anchors.verticalCenter: parent.verticalCenter
@@ -1127,19 +1216,22 @@ Item {
                                                 anchors.centerIn: parent
                                                 color: root.fgTitle
                                             }
+
                                         }
 
                                         MouseArea {
                                             id: themeMa
+
                                             anchors.fill: parent
                                             hoverEnabled: true
                                             cursorShape: Qt.PointingHandCursor
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.themeMode = modelData.mode;
-                                                }
+
                                             }
                                         }
+
                                     }
 
                                     Rectangle {
@@ -1149,316 +1241,390 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         color: root.borderDivider
                                     }
+
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
 
                 Column {
+                    id: updatesTabCol
+
                     visible: root.activeSettingsTab === 2
                     width: parent.width
-                    spacing: 12
+                    spacing: 0
 
-                    Text {
-                        text: root.ui.secUpdates || "UPDATES"
-                        color: root.fgSub
-                        font.pixelSize: 10
-                        font.weight: Font.DemiBold
-                        font.letterSpacing: 0.8
-                    }
+                    Column {
+                        id: updatesTopCol
 
-                    Rectangle {
                         width: parent.width
-                        height: updatesCol.implicitHeight
-                        radius: 10
-                        color: root.bgGroup
-                        border.width: 1
-                        border.color: root.borderGroup
-                        clip: true
+                        spacing: 12
 
-                        Column {
-                            id: updatesCol
+                        Text {
+                            text: root.ui.secUpdates || "UPDATES"
+                            color: root.fgSub
+                            font.pixelSize: 10 + root.fontDelta
+                            font.weight: Font.DemiBold
+                            font.letterSpacing: 0.8
+                        }
+
+                        Rectangle {
                             width: parent.width
-                            spacing: 0
+                            height: updatesCol.implicitHeight
+                            radius: 10
+                            color: root.bgGroup
+                            border.width: 1
+                            border.color: root.borderGroup
+                            clip: true
 
-                            Item {
+                            Column {
+                                id: updatesCol
+
                                 width: parent.width
-                                height: Math.max(58, updStatusCol.implicitHeight + 22)
+                                spacing: 0
 
-                                Column {
-                                    id: updStatusCol
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 14
-                                    anchors.right: updBtnRow.left
-                                    anchors.rightMargin: 10
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    spacing: 2
+                                Item {
+                                    width: parent.width
+                                    height: Math.max(58, updStatusCol.implicitHeight + 22)
 
-                                    Text {
-                                        width: parent.width
-                                        elide: Text.ElideRight
-                                        color: root.fgLabel
-                                        font.pixelSize: 13
-                                        font.weight: Font.Medium
-                                        text: {
-                                            if (!root.updater) {
-                                                return "";
+                                    Column {
+                                        id: updStatusCol
+
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 14
+                                        anchors.right: updBtnRow.left
+                                        anchors.rightMargin: 10
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        spacing: 2
+
+                                        Text {
+                                            width: parent.width
+                                            elide: Text.ElideRight
+                                            color: root.fgLabel
+                                            font.pixelSize: 13 + root.fontDelta
+                                            font.weight: Font.Medium
+                                            text: {
+                                                if (!root.updater)
+                                                    return "";
+
+                                                if (root.updStatus === 1)
+                                                    return root.ui.updStatusChecking || "Checking for updates...";
+
+                                                if (root.updStatus === 2)
+                                                    return root.ui.updStatusUpToDate || "You're up to date";
+
+                                                if (root.updStatus === 3)
+                                                    return (root.ui.updStatusAvailable || "Update available") + " · v" + root.updater.availableVersion;
+
+                                                if (root.updStatus === 4)
+                                                    return (root.ui.updStatusDownloading || "Downloading update...") + " " + root.updater.downloadProgress + "%";
+
+                                                if (root.updStatus === 5)
+                                                    return (root.ui.updStatusReady || "Ready to install") + " · v" + root.updater.availableVersion;
+
+                                                if (root.updStatus === 6)
+                                                    return root.ui.updStatusInstalling || "Installing update...";
+
+                                                if (root.updStatus === 7)
+                                                    return root.ui.updStatusError || "Update check failed";
+
+                                                return (root.ui.updStatusIdle || "Current version") + " v" + root.updater.currentVersion;
                                             }
-                                            if (root.updStatus === 1) {
-                                                return root.ui.updStatusChecking || "Checking for updates...";
-                                            }
-                                            if (root.updStatus === 2) {
-                                                return root.ui.updStatusUpToDate || "You're up to date";
-                                            }
-                                            if (root.updStatus === 3) {
-                                                return (root.ui.updStatusAvailable || "Update available") + " · v" + root.updater.availableVersion;
-                                            }
-                                            if (root.updStatus === 4) {
-                                                return (root.ui.updStatusDownloading || "Downloading update...") + " " + root.updater.downloadProgress + "%";
-                                            }
-                                            if (root.updStatus === 5) {
-                                                return (root.ui.updStatusReady || "Ready to install") + " · v" + root.updater.availableVersion;
-                                            }
-                                            if (root.updStatus === 6) {
-                                                return root.ui.updStatusInstalling || "Installing update...";
-                                            }
-                                            if (root.updStatus === 7) {
-                                                return root.ui.updStatusError || "Update check failed";
-                                            }
-                                            return (root.ui.updStatusIdle || "Current version") + " v" + root.updater.currentVersion;
                                         }
+
+                                        Text {
+                                            width: parent.width
+                                            elide: Text.ElideRight
+                                            color: root.fgSub
+                                            font.pixelSize: 11 + root.fontDelta
+                                            text: {
+                                                if (!root.updater)
+                                                    return "";
+
+                                                if (root.updStatus === 7 && root.updater.errorMessage !== "")
+                                                    return root.updater.errorMessage;
+
+                                                if ((root.updStatus === 3 || root.updStatus === 5) && (root.updater.systemInstalled || !root.updater.canSelfUpdate))
+                                                    return root.ui.updSystemHint || "System package detected — update via package manager or GitHub release.";
+
+                                                const checked = root.formattedLastCheck();
+                                                if (checked !== "")
+                                                    return (root.ui.updLastChecked || "Last checked:") + " " + checked;
+
+                                                return (root.ui.updCurrentPrefix || "Installed:") + " v" + root.updater.currentVersion;
+                                            }
+                                        }
+
                                     }
 
-                                    Text {
-                                        width: parent.width
-                                        elide: Text.ElideRight
-                                        color: root.fgSub
-                                        font.pixelSize: 11
-                                        text: {
-                                            if (!root.updater) {
-                                                return "";
+                                    Row {
+                                        id: updBtnRow
+
+                                        anchors.right: parent.right
+                                        anchors.rightMargin: 10
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        spacing: 6
+
+                                        M3Button {
+                                            visible: root.updStatus === 3 || root.updStatus === 5
+                                            iconKind: "refresh"
+                                            iconOnly: true
+                                            ghost: true
+                                            darkMode: root.darkMode
+                                            theme: root.theme
+                                            buttonHeight: 28
+                                            cornerRadius: 8
+                                            tooltipText: root.ui.updBtnCheck || "Check for updates"
+                                            onClicked: {
+                                                if (root.updater) {
+                                                    root.updater.checkForUpdates(true);
+                                                }
                                             }
-                                            if (root.updStatus === 7 && root.updater.errorMessage !== "") {
-                                                return root.updater.errorMessage;
-                                            }
-                                            if ((root.updStatus === 3 || root.updStatus === 5) && (root.updater.systemInstalled || !root.updater.canSelfUpdate)) {
-                                                return root.ui.updSystemHint || "System package detected — update via package manager or GitHub release.";
-                                            }
-                                            const checked = root.formattedLastCheck();
-                                            if (checked !== "") {
-                                                return (root.ui.updLastChecked || "Last checked:") + " " + checked;
-                                            }
-                                            return (root.ui.updCurrentPrefix || "Installed:") + " v" + root.updater.currentVersion;
                                         }
+
+                                        M3Button {
+                                            visible: root.updStatus !== 3 && root.updStatus !== 4 && root.updStatus !== 5 && root.updStatus !== 6
+                                            iconKind: "refresh"
+                                            text: root.updStatus === 1 ? (root.ui.updStatusChecking || "Checking...") : (root.ui.updBtnCheck || "Check for updates")
+                                            elevated: root.updStatus !== 1
+                                            ghost: root.updStatus === 1
+                                            fontPixelSize: 12 + root.fontDelta
+                                            darkMode: root.darkMode
+                                            theme: root.theme
+                                            buttonHeight: 28
+                                            horizontalPadding: 11
+                                            cornerRadius: 8
+                                            onClicked: {
+                                                if (root.updater && root.updStatus !== 1) {
+                                                    root.updater.checkForUpdates(true);
+                                                }
+                                            }
+                                        }
+
+                                        M3Button {
+                                            visible: root.updStatus === 3
+                                            text: (root.updater && root.updater.canSelfUpdate) ? (root.ui.updBtnUpdate || "Update") : (root.ui.updBtnRelease || "Release")
+                                            primaryFill: true
+                                            fontPixelSize: 12 + root.fontDelta
+                                            darkMode: root.darkMode
+                                            theme: root.theme
+                                            buttonHeight: 28
+                                            horizontalPadding: 12
+                                            cornerRadius: 8
+                                            onClicked: {
+                                                if (root.updater) {
+                                                    root.updater.startDownload();
+                                                }
+                                            }
+                                        }
+
+                                        M3Button {
+                                            visible: root.updStatus === 5
+                                            text: root.ui.updBtnRestart || "Restart & Update"
+                                            primaryFill: true
+                                            fontPixelSize: 12 + root.fontDelta
+                                            darkMode: root.darkMode
+                                            theme: root.theme
+                                            buttonHeight: 28
+                                            horizontalPadding: 12
+                                            cornerRadius: 8
+                                            onClicked: root.updateRestartRequested()
+                                        }
+
                                     }
+
                                 }
 
-                                Row {
-                                    id: updBtnRow
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: 10
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    spacing: 6
-
-                                    M3Button {
-                                        visible: root.updStatus === 3 || root.updStatus === 5
-                                        iconKind: "refresh"
-                                        iconOnly: true
-                                        ghost: true
-                                        darkMode: root.darkMode
-                                        theme: root.theme
-                                        buttonHeight: 28
-                                        cornerRadius: 8
-                                        tooltipText: root.ui.updBtnCheck || "Check for updates"
-                                        onClicked: if (root.updater) {
-                                            root.updater.checkForUpdates(true);
-                                        }
-                                    }
-
-                                    M3Button {
-                                        visible: root.updStatus !== 3 && root.updStatus !== 4 && root.updStatus !== 5 && root.updStatus !== 6
-                                        iconKind: "refresh"
-                                        text: root.updStatus === 1 ? (root.ui.updStatusChecking || "Checking...") : (root.ui.updBtnCheck || "Check for updates")
-                                        elevated: root.updStatus !== 1
-                                        ghost: root.updStatus === 1
-                                        darkMode: root.darkMode
-                                        theme: root.theme
-                                        buttonHeight: 28
-                                        horizontalPadding: 11
-                                        cornerRadius: 8
-                                        onClicked: if (root.updater && root.updStatus !== 1) {
-                                            root.updater.checkForUpdates(true);
-                                        }
-                                    }
-
-                                    M3Button {
-                                        visible: root.updStatus === 3
-                                        text: (root.updater && root.updater.canSelfUpdate) ? (root.ui.updBtnUpdate || "Update") : (root.ui.updBtnRelease || "Release")
-                                        primaryFill: true
-                                        darkMode: root.darkMode
-                                        theme: root.theme
-                                        buttonHeight: 28
-                                        horizontalPadding: 12
-                                        cornerRadius: 8
-                                        onClicked: if (root.updater) {
-                                            root.updater.startDownload();
-                                        }
-                                    }
-
-                                    M3Button {
-                                        visible: root.updStatus === 5
-                                        text: root.ui.updBtnRestart || "Restart & Update"
-                                        primaryFill: true
-                                        darkMode: root.darkMode
-                                        theme: root.theme
-                                        buttonHeight: 28
-                                        horizontalPadding: 12
-                                        cornerRadius: 8
-                                        onClicked: root.updateRestartRequested()
-                                    }
-                                }
-                            }
-
-                            Item {
-                                visible: root.updStatus === 4
-                                width: parent.width
-                                height: visible ? 24 : 0
-                                clip: true
-
-                                Rectangle {
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    anchors.leftMargin: 14
-                                    anchors.rightMargin: 14
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    height: 5
-                                    radius: 2.5
-                                    color: root.borderDivider
+                                Item {
+                                    visible: root.updStatus === 4
+                                    width: parent.width
+                                    height: visible ? 24 : 0
                                     clip: true
 
                                     Rectangle {
-                                        height: parent.height
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.leftMargin: 14
+                                        anchors.rightMargin: 14
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        height: 5
                                         radius: 2.5
-                                        color: root.fgTitle
-                                        width: Math.max(6, parent.width * (root.updater ? Math.max(0, Math.min(100, root.updater.downloadProgress)) / 100.0 : 0))
+                                        color: root.borderDivider
+                                        clip: true
+
+                                        Rectangle {
+                                            height: parent.height
+                                            radius: 2.5
+                                            color: root.fgTitle
+                                            width: Math.max(6, parent.width * (root.updater ? Math.max(0, Math.min(100, root.updater.downloadProgress)) / 100 : 0))
+                                        }
+
                                     }
-                                }
-                            }
 
-                            Rectangle {
-                                width: parent.width - 24
-                                height: 1
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                color: root.borderDivider
-                            }
-
-                            Item {
-                                width: parent.width
-                                height: 48
-
-                                Text {
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 14
-                                    anchors.right: autoUpdSwitch.left
-                                    anchors.rightMargin: 10
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    elide: Text.ElideRight
-                                    text: root.ui.lblAutoUpdate || "Check automatically"
-                                    color: root.fgLabel
-                                    font.pixelSize: 13
                                 }
 
-                                M3Switch {
-                                    id: autoUpdSwitch
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: 12
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    darkMode: root.darkMode
-                                    theme: root.theme
-                                    checked: root.updater ? root.updater.autoCheck : true
-                                    onToggled: function (v) {
-                                        if (root.updater) {
-                                            root.updater.autoCheck = v;
+                                Rectangle {
+                                    width: parent.width - 24
+                                    height: 1
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    color: root.borderDivider
+                                }
+
+                                Item {
+                                    width: parent.width
+                                    height: 48
+
+                                    Text {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 14
+                                        anchors.right: autoUpdSwitch.left
+                                        anchors.rightMargin: 10
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        elide: Text.ElideRight
+                                        text: root.ui.lblAutoUpdate || "Check automatically"
+                                        color: root.fgLabel
+                                        font.pixelSize: 13 + root.fontDelta
+                                    }
+
+                                    M3Switch {
+                                        id: autoUpdSwitch
+
+                                        anchors.right: parent.right
+                                        anchors.rightMargin: 12
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        darkMode: root.darkMode
+                                        theme: root.theme
+                                        checked: root.updater ? root.updater.autoCheck : true
+                                        onToggled: function(v) {
+                                            if (root.updater)
+                                                root.updater.autoCheck = v;
+
                                         }
                                     }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                    Item {
+                        width: parent.width
+                        height: Math.max(18, cardFlick.height - updatesTopCol.implicitHeight - updatesAboutCol.implicitHeight - 10)
+                    }
+
+                    Column {
+                        id: updatesAboutCol
+
+                        width: parent.width
+                        spacing: 12
+
+                        Text {
+                            text: root.ui.secAbout || "ABOUT"
+                            color: root.fgSub
+                            font.pixelSize: 10 + root.fontDelta
+                            font.weight: Font.DemiBold
+                            font.letterSpacing: 0.8
+                        }
+
+                        Rectangle {
+                            width: parent.width
+                            height: 60
+                            radius: 10
+                            color: root.bgGroup
+                            border.width: 1
+                            border.color: root.borderGroup
+                            clip: true
+
+                            NullaMark {
+                                id: aboutMark
+
+                                size: 22
+                                color: root.fgTitle
+                                anchors.left: parent.left
+                                anchors.leftMargin: 14
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Column {
+                                anchors.left: aboutMark.right
+                                anchors.leftMargin: 12
+                                anchors.right: repoBtn.left
+                                anchors.rightMargin: 10
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: 2
+
+                                Text {
+                                    width: parent.width
+                                    elide: Text.ElideRight
+                                    text: "Nulla" + (root.updater ? (" v" + root.updater.currentVersion) : "")
+                                    color: root.fgTitle
+                                    font.pixelSize: 13 + root.fontDelta
+                                    font.weight: Font.DemiBold
+                                }
+
+                                Text {
+                                    width: parent.width
+                                    elide: Text.ElideRight
+                                    text: (root.ui.updCreatedBy || "Created by") + " " + (root.updater ? root.updater.authorName : "pzwt4cc")
+                                    color: root.fgSub
+                                    font.pixelSize: 12 + root.fontDelta
+                                }
+
+                            }
+
+                            M3Button {
+                                id: repoBtn
+
+                                anchors.right: parent.right
+                                anchors.rightMargin: 10
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "GitHub"
+                                elevated: true
+                                fontPixelSize: 12 + root.fontDelta
+                                darkMode: root.darkMode
+                                theme: root.theme
+                                buttonHeight: 28
+                                horizontalPadding: 12
+                                cornerRadius: 8
+                                tooltipText: root.updater ? root.updater.repoUrl : "https://github.com/pzwt4cc/nulla"
+                                onClicked: {
+                                    if (root.updater) {
+                                        root.updater.openRepoPage();
+                                    }
                                 }
                             }
+
                         }
+
                     }
 
-                    Text {
-                        text: root.ui.secAbout || "ABOUT"
-                        color: root.fgSub
-                        font.pixelSize: 10
-                        font.weight: Font.DemiBold
-                        font.letterSpacing: 0.8
-                    }
-
-                    Rectangle {
-                        width: parent.width
-                        height: 60
-                        radius: 10
-                        color: root.bgGroup
-                        border.width: 1
-                        border.color: root.borderGroup
-                        clip: true
-
-                        NullaMark {
-                            id: aboutMark
-                            size: 22
-                            color: root.fgTitle
-                            anchors.left: parent.left
-                            anchors.leftMargin: 14
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        Column {
-                            anchors.left: aboutMark.right
-                            anchors.leftMargin: 12
-                            anchors.right: repoBtn.left
-                            anchors.rightMargin: 10
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 2
-
-                            Text {
-                                width: parent.width
-                                elide: Text.ElideRight
-                                text: "Nulla" + (root.updater ? (" v" + root.updater.currentVersion) : "")
-                                color: root.fgTitle
-                                font.pixelSize: 13
-                                font.weight: Font.DemiBold
-                            }
-
-                            Text {
-                                width: parent.width
-                                elide: Text.ElideRight
-                                text: (root.ui.updCreatedBy || "Created by") + " " + (root.updater ? root.updater.authorName : "pzwt4cc")
-                                color: root.fgSub
-                                font.pixelSize: 12
-                            }
-                        }
-
-                        M3Button {
-                            id: repoBtn
-                            anchors.right: parent.right
-                            anchors.rightMargin: 10
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: "GitHub"
-                            elevated: true
-                            darkMode: root.darkMode
-                            theme: root.theme
-                            buttonHeight: 28
-                            horizontalPadding: 12
-                            cornerRadius: 8
-                            tooltipText: root.updater ? root.updater.repoUrl : "https://github.com/pzwt4cc/nulla"
-                            onClicked: if (root.updater) {
-                                root.updater.openRepoPage();
-                            }
-                        }
-                    }
                 }
+
             }
+
+            ScrollBar.vertical: ScrollBar {
+                policy: ScrollBar.AsNeeded
+                width: 6
+                rightPadding: 2
+
+                contentItem: Rectangle {
+                    implicitWidth: 3
+                    radius: 2
+                    color: theme.scrollIdle || (darkMode ? "#3a3f4c" : "#c1c6d0")
+                }
+
+            }
+
         }
+
     }
+
 }
