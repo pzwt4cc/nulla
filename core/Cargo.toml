@@ -1,6 +1,6 @@
 [package]
 name = "nulla_core"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 description = "Memory-safe paged text engine, lexer, and viewport builder for Nulla"
 license = "WTFPL"

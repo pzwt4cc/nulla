@@ -27,7 +27,7 @@
 #include <cstdio>
 
 #ifndef NULLA_APP_VERSION
-#define NULLA_APP_VERSION "0.3.0"
+#define NULLA_APP_VERSION "0.4.0"
 #endif
 
 namespace {
