@@ -26,17 +26,6 @@ Item {
         color: root.checked ? root.trackFillOn : root.trackFillOff
         border.width: 1.25
         border.color: root.checked ? root.trackBorderOn : root.trackBorderOff
-        scale: ma.pressed ? 0.95 : 1.0
-
-        Behavior on color {
-            ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
-        }
-        Behavior on border.color {
-            ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
-        }
-        Behavior on scale {
-            NumberAnimation { duration: 75; easing.type: Easing.OutCubic }
-        }
 
         Rectangle {
             id: thumb
@@ -46,13 +35,6 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             x: root.checked ? (parent.width - width - 4) : 4
             color: root.checked ? root.thumbOn : root.thumbOff
-
-            Behavior on x {
-                NumberAnimation { duration: 100; easing.type: Easing.OutCubic }
-            }
-            Behavior on color {
-                ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
-            }
         }
     }
 

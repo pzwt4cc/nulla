@@ -28,13 +28,6 @@ Rectangle {
     clip: true
     color: "transparent"
 
-    Behavior on color {
-        ColorAnimation {
-            duration: 110
-            easing.type: Easing.OutCubic
-        }
-    }
-
     Flickable {
         id: tabFlick
         anchors.left: parent.left
@@ -110,27 +103,6 @@ Rectangle {
                         color: tabItem.isActive ? root.bgEditor : (tabMa.pressed ? root.borderSubtle : (tabItem.hovered ? root.bgHover : "transparent"))
                         border.width: 1
                         border.color: tabItem.isActive ? root.borderControl : (tabItem.hovered ? root.borderControl : "transparent")
-                        scale: tabMa.pressed ? 0.975 : 1.0
-                        transformOrigin: Item.Center
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 95
-                                easing.type: Easing.OutCubic
-                            }
-                        }
-                        Behavior on border.color {
-                            ColorAnimation {
-                                duration: 95
-                                easing.type: Easing.OutCubic
-                            }
-                        }
-                        Behavior on scale {
-                            NumberAnimation {
-                                duration: 75
-                                easing.type: Easing.OutCubic
-                            }
-                        }
 
                         Rectangle {
                             visible: tabItem.isActive
@@ -198,12 +170,6 @@ Rectangle {
                             font.pixelSize: 12
                             font.weight: tabItem.isActive ? Font.DemiBold : Font.Normal
                             anchors.verticalCenter: parent.verticalCenter
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: 95
-                                }
-                            }
                         }
                     }
 
@@ -224,12 +190,6 @@ Rectangle {
                         darkMode: root.darkMode
             theme: root.theme
                         onClicked: root.tabClosed(index)
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 85
-                            }
-                        }
                     }
                 }
             }

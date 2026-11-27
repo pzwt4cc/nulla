@@ -71,20 +71,6 @@ Rectangle {
     clip: true
     color: bgDrawer
 
-    Behavior on width {
-        enabled: !root.resizing
-        NumberAnimation {
-            duration: 130
-            easing.type: Easing.OutCubic
-        }
-    }
-    Behavior on color {
-        ColorAnimation {
-            duration: 110
-            easing.type: Easing.OutCubic
-        }
-    }
-
     Item {
         width: Math.max(140, root.preferredWidth)
         height: parent.height
@@ -117,7 +103,7 @@ Rectangle {
             anchors.right: parent.right
             anchors.leftMargin: 6
             anchors.rightMargin: 8
-            height: root.hasFolder ? Math.min(contentHeight + 4, Math.max(root.rowHeight * 2, Math.round(parent.height * 0.34))) : Math.max(0, parent.height - openFilesHeader.height - emptyFolderBar.height - 6)
+            height: root.hasFolder ? Math.min(contentHeight + 4, Math.min(root.rowHeight * 6, Math.max(0, parent.height - openFilesHeader.height - root.headerHeight - root.rowHeight * 3))) : Math.max(0, parent.height - openFilesHeader.height - emptyFolderBar.height - 6)
             clip: true
             spacing: 2
             boundsBehavior: Flickable.StopAtBounds

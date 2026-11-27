@@ -26,13 +26,6 @@ Rectangle {
     clip: true
     color: "transparent"
 
-    Behavior on color {
-        ColorAnimation {
-            duration: 110
-            easing.type: Easing.OutCubic
-        }
-    }
-
     Rectangle {
         width: parent.width
         height: 1
@@ -40,14 +33,20 @@ Rectangle {
         color: root.borderSubtle
     }
 
-    Row {
-        id: leftRow
+    Item {
         anchors.left: parent.left
         anchors.leftMargin: 10
-        anchors.verticalCenter: parent.verticalCenter
-        width: Math.min(implicitWidth, Math.max(0, root.width - rightRow.width - 30))
+        anchors.right: rightRow.left
+        anchors.rightMargin: 12
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
         clip: true
-        spacing: 6
+
+        Row {
+            id: leftRow
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 6
 
         M3Button {
             anchors.verticalCenter: parent.verticalCenter
@@ -106,6 +105,7 @@ Rectangle {
                 font.pixelSize: 11
                 font.weight: Font.Medium
             }
+        }
         }
     }
 

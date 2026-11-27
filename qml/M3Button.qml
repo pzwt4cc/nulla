@@ -173,27 +173,6 @@ Item {
             return (hovered || pressed) ? borderHover : borderNormal;
         }
 
-        scale: pressed ? 0.955 : 1.0
-        transformOrigin: Item.Center
-
-        Behavior on color {
-            ColorAnimation {
-                duration: 90
-                easing.type: Easing.OutCubic
-            }
-        }
-        Behavior on border.color {
-            ColorAnimation {
-                duration: 90
-                easing.type: Easing.OutCubic
-            }
-        }
-        Behavior on scale {
-            NumberAnimation {
-                duration: 75
-                easing.type: Easing.OutCubic
-            }
-        }
 
         Rectangle {
             visible: !root.pressed && (root.primaryFill || root.elevated || root.activeChip || root.accent || root.hovered)
@@ -246,13 +225,6 @@ Item {
                 font.pixelSize: root.fontPixelSize
                 font.weight: (root.primaryFill || root.accent || root.activeChip) ? Font.DemiBold : Font.Medium
                 anchors.verticalCenter: parent.verticalCenter
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 90
-                        easing.type: Easing.OutCubic
-                    }
-                }
             }
 
             Image {

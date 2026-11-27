@@ -28,13 +28,6 @@ Rectangle {
     clip: true
     color: "transparent"
 
-    Behavior on color {
-        ColorAnimation {
-            duration: 110
-            easing.type: Easing.OutCubic
-        }
-    }
-
     Rectangle {
         width: parent.width
         height: 1
@@ -54,19 +47,6 @@ Rectangle {
         color: root.bgSurfaceElev
         border.width: 1
         border.color: root.borderControl
-
-        Behavior on color {
-            ColorAnimation {
-                duration: 110
-                easing.type: Easing.OutCubic
-            }
-        }
-        Behavior on border.color {
-            ColorAnimation {
-                duration: 110
-                easing.type: Easing.OutCubic
-            }
-        }
 
         Rectangle {
             anchors.top: parent.top
@@ -183,19 +163,6 @@ Rectangle {
             color: root.bgSurfaceElev
             border.width: 1
             border.color: root.borderControl
-
-            Behavior on color {
-                ColorAnimation {
-                    duration: 110
-                    easing.type: Easing.OutCubic
-                }
-            }
-            Behavior on border.color {
-                ColorAnimation {
-                    duration: 110
-                    easing.type: Easing.OutCubic
-                }
-            }
 
             Rectangle {
                 anchors.top: parent.top

@@ -423,19 +423,6 @@ ApplicationWindow {
         border.color: win.borderSubtle
         clip: true
 
-        Behavior on color {
-            ColorAnimation {
-                duration: 110
-                easing.type: Easing.OutCubic
-            }
-        }
-        Behavior on border.color {
-            ColorAnimation {
-                duration: 110
-                easing.type: Easing.OutCubic
-            }
-        }
-
         Item {
             anchors.fill: parent
             anchors.margins: shell.edgeToEdge ? 0 : 1
@@ -845,25 +832,6 @@ ApplicationWindow {
                 color: "transparent"
             }
 
-            enter: Transition {
-                NumberAnimation {
-                    property: "opacity"
-                    from: 0.0
-                    to: 1.0
-                    duration: 85
-                    easing.type: Easing.OutCubic
-                }
-            }
-            exit: Transition {
-                NumberAnimation {
-                    property: "opacity"
-                    from: 1.0
-                    to: 0.0
-                    duration: 70
-                    easing.type: Easing.OutCubic
-                }
-            }
-
             background: Rectangle {
                 radius: 7
                 color: win.bgSurfaceElev
@@ -985,23 +953,6 @@ ApplicationWindow {
                             color: rowMa.pressed ? (win.theme.bgPressed || (win.dark ? "#282b34" : "#d8dce5")) : (rowMa.containsMouse ? win.bgHover : "transparent")
                             border.width: 1
                             border.color: rowMa.containsMouse ? win.borderControl : "transparent"
-                            scale: rowMa.pressed ? 0.985 : 1.0
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: 100
-                                }
-                            }
-                            Behavior on border.color {
-                                ColorAnimation {
-                                    duration: 100
-                                }
-                            }
-                            Behavior on scale {
-                                NumberAnimation {
-                                    duration: 60
-                                }
-                            }
 
                             Text {
                                 anchors.left: parent.left

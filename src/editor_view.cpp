@@ -97,6 +97,7 @@ NullaEditorView::NullaEditorView(QQuickItem *parent)
   setCursor(Qt::IBeamCursor);
   setClip(true);
   setOpaquePainting(false);
+  setSmooth(false);
 
   m_blinkTimer.setInterval(530);
   connect(&m_blinkTimer, &QTimer::timeout, this, &NullaEditorView::onBlink);

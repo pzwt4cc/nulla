@@ -43,13 +43,6 @@ Rectangle {
     color: bgHeader
     clip: true
 
-    Behavior on color {
-        ColorAnimation {
-            duration: 110
-            easing.type: Easing.OutCubic
-        }
-    }
-
     MouseArea {
         anchors.fill: parent
         onPressed: root.moveWindowRequested()

@@ -40,17 +40,9 @@ Item {
         }
     }
 
-    visible: opacity > 0.01
-    opacity: open ? 1.0 : 0.0
+    visible: open
     anchors.fill: parent
     z: 160
-
-    Behavior on opacity {
-        NumberAnimation {
-            duration: 95
-            easing.type: Easing.OutCubic
-        }
-    }
 
     Rectangle {
         anchors.fill: parent
@@ -71,15 +63,7 @@ Item {
         color: root.bgCard
         border.width: 1
         border.color: theme.borderControl || (darkMode ? "#2c303a" : "#cfd4df")
-        scale: root.open ? 1.0 : 0.985
         clip: true
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: 95
-                easing.type: Easing.OutCubic
-            }
-        }
 
         MouseArea {
             anchors.fill: parent

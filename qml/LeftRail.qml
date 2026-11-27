@@ -30,13 +30,6 @@ Rectangle {
     clip: true
     color: bgShell
 
-    Behavior on color {
-        ColorAnimation {
-            duration: 110
-            easing.type: Easing.OutCubic
-        }
-    }
-
     Rectangle {
         width: 1
         height: parent.height

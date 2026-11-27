@@ -52,17 +52,9 @@ Item {
         }
     }
 
-    visible: opacity > 0.01
-    opacity: open ? 1.0 : 0.0
+    visible: open
     anchors.fill: parent
     z: 150
-
-    Behavior on opacity {
-        NumberAnimation {
-            duration: 95
-            easing.type: Easing.OutCubic
-        }
-    }
 
     Rectangle {
         anchors.fill: parent
@@ -83,21 +75,7 @@ Item {
         color: root.bgCard
         border.width: 1
         border.color: theme.borderControl || (darkMode ? "#2c303a" : "#cfd4df")
-        scale: root.open ? 1.0 : 0.985
         clip: true
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: 95
-                easing.type: Easing.OutCubic
-            }
-        }
-        Behavior on height {
-            NumberAnimation {
-                duration: 120
-                easing.type: Easing.OutCubic
-            }
-        }
 
         MouseArea {
             anchors.fill: parent
@@ -510,23 +488,6 @@ Item {
                                     color: langPopup.opened ? (theme.bgPressed || (darkMode ? "#262a35" : "#e2e6ef")) : (langBtnMa.pressed ? (theme.bgPressed || (darkMode ? "#242832" : "#dde1eb")) : (langBtnMa.containsMouse ? (theme.bgHover || (darkMode ? "#21252f" : "#e8ebf2")) : (theme.bgInput || (darkMode ? "#1a1c22" : "#eceef3"))))
                                     border.width: 1
                                     border.color: (langPopup.opened || langBtnMa.containsMouse) ? (theme.borderHover || (darkMode ? "#4d5466" : "#9aa2b4")) : root.borderGroup
-                                    scale: langBtnMa.pressed ? 0.985 : 1.0
-
-                                    Behavior on color {
-                                        ColorAnimation {
-                                            duration: 90
-                                        }
-                                    }
-                                    Behavior on border.color {
-                                        ColorAnimation {
-                                            duration: 90
-                                        }
-                                    }
-                                    Behavior on scale {
-                                        NumberAnimation {
-                                            duration: 60
-                                        }
-                                    }
 
                                     Text {
                                         anchors.left: parent.left
@@ -602,32 +563,6 @@ Item {
                                             color: "transparent"
                                         }
 
-                                        enter: Transition {
-                                            NumberAnimation {
-                                                property: "opacity"
-                                                from: 0.0
-                                                to: 1.0
-                                                duration: 85
-                                                easing.type: Easing.OutCubic
-                                            }
-                                            NumberAnimation {
-                                                property: "scale"
-                                                from: 0.97
-                                                to: 1.0
-                                                duration: 85
-                                                easing.type: Easing.OutCubic
-                                            }
-                                        }
-                                        exit: Transition {
-                                            NumberAnimation {
-                                                property: "opacity"
-                                                from: 1.0
-                                                to: 0.0
-                                                duration: 65
-                                                easing.type: Easing.OutCubic
-                                            }
-                                        }
-
                                         onOpened: {
                                             if (root.backend && root.backend.uiLanguagesModel) {
                                                 const m = root.backend.uiLanguagesModel;
@@ -686,23 +621,6 @@ Item {
                                                 color: isCurrent ? (theme.chipBg || (darkMode ? "#293245" : "#e3ebfa")) : (dropItemMa.pressed ? (theme.bgPressed || (darkMode ? "#282b34" : "#d8dce5")) : (dropItemMa.containsMouse ? (theme.bgHover || (darkMode ? "#252934" : "#eceff5")) : "transparent"))
                                                 border.width: 1
                                                 border.color: isCurrent ? (theme.chipBorder || (darkMode ? "#44577a" : "#b7c9ec")) : (dropItemMa.containsMouse ? (theme.borderControl || (darkMode ? "#343947" : "#cfd5e1")) : "transparent")
-                                                scale: dropItemMa.pressed ? 0.985 : 1.0
-
-                                                Behavior on color {
-                                                    ColorAnimation {
-                                                        duration: 85
-                                                    }
-                                                }
-                                                Behavior on border.color {
-                                                    ColorAnimation {
-                                                        duration: 85
-                                                    }
-                                                }
-                                                Behavior on scale {
-                                                    NumberAnimation {
-                                                        duration: 55
-                                                    }
-                                                }
 
                                                 Text {
                                                     anchors.left: parent.left
@@ -1044,12 +962,6 @@ Item {
                                         width: parent.width
                                         height: 56
                                         color: isCurrent ? (theme.bgSurfaceElev || (darkMode ? "#1e212a" : "#ffffff")) : (themeMa.containsMouse ? (theme.bgHover || (darkMode ? "#1c1e24" : "#eceff5")) : "transparent")
-
-                                        Behavior on color {
-                                            ColorAnimation {
-                                                duration: 90
-                                            }
-                                        }
 
                                         Rectangle {
                                             id: swatch

@@ -82,12 +82,6 @@ Rectangle {
                     border.width: 1
                     border.color: findInput.activeFocus ? root.borderFocus : root.borderControl
 
-                    Behavior on border.color {
-                        ColorAnimation {
-                            duration: 100
-                        }
-                    }
-
                     TextInput {
                         id: findInput
                         anchors.fill: parent

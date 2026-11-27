@@ -16,13 +16,6 @@ Rectangle {
     color: bgEditor
     clip: true
 
-    Behavior on color {
-        ColorAnimation {
-            duration: 110
-            easing.type: Easing.OutCubic
-        }
-    }
-
     function formattedBreadcrumb() {
         if (!activeTab || !activeTab.filePath || activeTab.filePath === "") {
             return root.ui.untitled || "Untitled";

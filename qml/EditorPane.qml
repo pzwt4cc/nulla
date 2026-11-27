@@ -158,13 +158,6 @@ Item {
     Rectangle {
         anchors.fill: parent
         color: pane.bgEditor
-
-        Behavior on color {
-            ColorAnimation {
-                duration: 110
-                easing.type: Easing.OutCubic
-            }
-        }
     }
 
     Item {
@@ -187,15 +180,7 @@ Item {
                 width: bandsClip.width
                 height: Math.max(editorView.lineHeight, editorView.hoverRect.height)
                 color: pane.theme.hoverLineBand || (pane.darkMode ? "#0effffff" : "#07000000")
-                opacity: (editorView.hoverInside && !contextMenu.visible && !pane.hoverOnActiveLine) ? 1.0 : 0.0
-                visible: opacity > 0.01
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 75
-                        easing.type: Easing.OutCubic
-                    }
-                }
+                visible: editorView.hoverInside && !contextMenu.visible && !pane.hoverOnActiveLine
 
                 Rectangle {
                     width: 2
@@ -215,29 +200,12 @@ Item {
                 height: Math.max(editorView.lineHeight, editorView.cursorRect.height)
                 color: pane.hasSelection ? (pane.theme.bgLineHighlightSel || (pane.darkMode ? "#1f2738" : "#eaf0fb")) : pane.bgLineHighlight
 
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 90
-                    }
-                }
-
                 Rectangle {
                     width: 2
                     height: parent.height
                     anchors.left: parent.left
                     color: pane.hasSelection ? (pane.theme.accent || (pane.darkMode ? "#7aa2f7" : "#2563eb")) : pane.fgMain
                     opacity: pane.hasSelection ? 0.95 : (editorView.hoverInside ? 0.85 : 0.45)
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 90
-                        }
-                    }
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 90
-                        }
-                    }
                 }
 
                 Rectangle {
@@ -269,13 +237,6 @@ Item {
                 radius: 3
                 color: pane.hasSelection ? (pane.theme.accent || (pane.darkMode ? "#7aa2f7" : "#2563eb")) : pane.fgMain
                 opacity: pane.hasSelection ? 0.24 : (pane.typingBurst ? 0.22 : (editorView.hoverInside ? 0.1 : 0.0))
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 130
-                        easing.type: Easing.OutCubic
-                    }
-                }
             }
 
             Rectangle {
@@ -286,15 +247,8 @@ Item {
                 height: Math.max(editorView.lineHeight, editorView.hoverRect.height)
                 radius: 1
                 color: pane.fgMain
-                opacity: (editorView.hoverInside && !contextMenu.visible && !pane.hasSelection && (Math.abs(editorView.hoverRect.x - editorView.cursorRect.x) > 3 || !pane.hoverOnActiveLine)) ? 0.34 : 0.0
-                visible: opacity > 0.01
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 75
-                        easing.type: Easing.OutCubic
-                    }
-                }
+                opacity: 0.34
+                visible: editorView.hoverInside && !contextMenu.visible && !pane.hasSelection && (Math.abs(editorView.hoverRect.x - editorView.cursorRect.x) > 3 || !pane.hoverOnActiveLine)
             }
         }
 
@@ -507,11 +461,6 @@ Item {
                     implicitWidth: 5
                     radius: 3
                     color: vScroll.pressed ? (pane.theme.scrollPress || (pane.darkMode ? "#7d8594" : "#6c7382")) : (vScroll.hovered ? (pane.theme.scrollHover || (pane.darkMode ? "#5a606e" : "#8d94a3")) : (pane.theme.scrollIdle || (pane.darkMode ? "#373b46" : "#c1c6d0")))
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 100
-                        }
-                    }
                 }
             }
 
@@ -525,11 +474,6 @@ Item {
                     implicitHeight: 5
                     radius: 3
                     color: hScroll.pressed ? (pane.theme.scrollPress || (pane.darkMode ? "#7d8594" : "#6c7382")) : (hScroll.hovered ? (pane.theme.scrollHover || (pane.darkMode ? "#5a606e" : "#8d94a3")) : (pane.theme.scrollIdle || (pane.darkMode ? "#373b46" : "#c1c6d0")))
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 100
-                        }
-                    }
                 }
             }
         }

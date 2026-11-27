@@ -34,13 +34,6 @@ Rectangle {
     clip: true
     color: "transparent"
 
-    Behavior on color {
-        ColorAnimation {
-            duration: 110
-            easing.type: Easing.OutCubic
-        }
-    }
-
     MouseArea {
         anchors.fill: parent
         onPressed: root.moveWindowRequested()
@@ -60,19 +53,6 @@ Rectangle {
         color: root.bgSurfaceElev
         border.width: 1
         border.color: root.borderControl
-
-        Behavior on color {
-            ColorAnimation {
-                duration: 110
-                easing.type: Easing.OutCubic
-            }
-        }
-        Behavior on border.color {
-            ColorAnimation {
-                duration: 110
-                easing.type: Easing.OutCubic
-            }
-        }
 
         Rectangle {
             anchors.top: parent.top
@@ -239,19 +219,6 @@ Rectangle {
             border.width: 1
             border.color: root.borderControl
 
-            Behavior on color {
-                ColorAnimation {
-                    duration: 110
-                    easing.type: Easing.OutCubic
-                }
-            }
-            Behavior on border.color {
-                ColorAnimation {
-                    duration: 110
-                    easing.type: Easing.OutCubic
-                }
-            }
-
             Rectangle {
                 anchors.top: parent.top
                 anchors.topMargin: 1
@@ -336,19 +303,6 @@ Rectangle {
             color: root.bgSurfaceElev
             border.width: 1
             border.color: root.borderControl
-
-            Behavior on color {
-                ColorAnimation {
-                    duration: 110
-                    easing.type: Easing.OutCubic
-                }
-            }
-            Behavior on border.color {
-                ColorAnimation {
-                    duration: 110
-                    easing.type: Easing.OutCubic
-                }
-            }
 
             Rectangle {
                 anchors.top: parent.top
