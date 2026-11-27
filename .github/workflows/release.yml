@@ -49,7 +49,7 @@ jobs:
       - name: Build Windows MSI
         shell: pwsh
         run: |
-          $ver = "0.2.0"
+          $ver = "0.3.0"
           if ($env:GITHUB_REF_TYPE -eq "tag" -and $env:GITHUB_REF_NAME -match '^v(\d+\.\d+\.\d+)') {
             $ver = $Matches[1]
           }
@@ -95,7 +95,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ver="0.2.0"
+          ver="0.3.0"
           if [ "${GITHUB_REF_TYPE:-}" = "tag" ] && [[ "${GITHUB_REF_NAME:-}" =~ ^v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             ver="${BASH_REMATCH[1]}"
           fi
