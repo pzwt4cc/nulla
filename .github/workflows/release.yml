@@ -99,7 +99,7 @@ jobs:
           if [ "${GITHUB_REF_TYPE:-}" = "tag" ] && [[ "${GITHUB_REF_NAME:-}" =~ ^v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             ver="${BASH_REMATCH[1]}"
           fi
-          cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_SKIP_RPATH=ON
           cmake --build build-linux --parallel
           stage="dist/nulla-${ver}-linux-x86_64"
           rm -rf "$stage"

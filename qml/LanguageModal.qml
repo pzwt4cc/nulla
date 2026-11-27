@@ -41,8 +41,13 @@ Item {
     }
 
     visible: open
+    focus: open
     anchors.fill: parent
     z: 160
+
+    Keys.onPressed: function (event) {
+        event.accepted = true;
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -52,6 +57,9 @@ Item {
     MouseArea {
         anchors.fill: parent
         onClicked: root.closed()
+        onWheel: function (wheel) {
+            wheel.accepted = true;
+        }
     }
 
     Rectangle {
@@ -67,6 +75,9 @@ Item {
 
         MouseArea {
             anchors.fill: parent
+            onWheel: function (wheel) {
+                wheel.accepted = true;
+            }
         }
 
         Rectangle {

@@ -89,4 +89,36 @@ mod tests {
         let t3 = doc.buf.slice_to_string(0, doc.buf.byte_len());
         assert_eq!(t3, "int b = 2;\nint a = 1;\nint c = 3;");
     }
+
+    #[test]
+    fn indent_cache_and_bounds_safety() {
+        let mut doc = NullaDoc::new();
+        doc.set_text(b"if a:\n  x = 1\n  y = 2\n", "a.py");
+        let _ = doc.build_viewport(0, 10, 0, 80, true);
+        assert_eq!(doc.indent_state.indent_step(&doc.buf), 2);
+
+        doc.set_text(b"fn main() {\n    let x = 1;\n}\n", "b.rs");
+        assert_eq!(doc.indent_state.indent_step(&doc.buf), 4);
+
+        doc.move_cursor(MoveDir::PageDown, false, usize::MAX);
+        assert_eq!(doc.cursor, doc.buf.byte_len());
+
+        let mut offsets = vec![(0, 0); 2];
+        let mut guides = Vec::new();
+        doc.indent_state.compute_viewport_guides(
+            &doc.buf,
+            10_000,
+            usize::MAX,
+            0,
+            &mut offsets,
+            &mut guides,
+        );
+
+        doc.set_text(b"hello world", "t.txt");
+        doc.cursor = 5;
+        doc.anchor = 5;
+        doc.replace_utf16_range(-3, 4, "X", 100);
+        let s = doc.buf.slice_to_string(0, doc.buf.byte_len());
+        assert_eq!(s, "heXworld");
+    }
 }

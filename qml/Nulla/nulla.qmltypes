@@ -1427,28 +1427,28 @@ Module {
             lineNumber: 37
             isReadonly: true
         }
-        Signal { name: "fileInfoChanged"; lineNumber: 113 }
-        Signal { name: "modifiedChanged"; lineNumber: 114 }
-        Signal { name: "languageChanged"; lineNumber: 115 }
-        Signal { name: "languageStatusChanged"; lineNumber: 116 }
-        Signal { name: "contentChanged"; lineNumber: 117 }
-        Signal { name: "cursorStatsChanged"; lineNumber: 118 }
-        Signal { name: "selectionChanged"; lineNumber: 119 }
-        Signal { name: "scrollChanged"; lineNumber: 120 }
-        Signal { name: "maxLineColumnsChanged"; lineNumber: 121 }
-        Signal { name: "documentLoaded"; lineNumber: 122 }
+        Signal { name: "fileInfoChanged"; lineNumber: 114 }
+        Signal { name: "modifiedChanged"; lineNumber: 115 }
+        Signal { name: "languageChanged"; lineNumber: 116 }
+        Signal { name: "languageStatusChanged"; lineNumber: 117 }
+        Signal { name: "contentChanged"; lineNumber: 118 }
+        Signal { name: "cursorStatsChanged"; lineNumber: 119 }
+        Signal { name: "selectionChanged"; lineNumber: 120 }
+        Signal { name: "scrollChanged"; lineNumber: 121 }
+        Signal { name: "maxLineColumnsChanged"; lineNumber: 122 }
+        Signal { name: "documentLoaded"; lineNumber: 123 }
         Signal {
             name: "errorOccurred"
-            lineNumber: 123
+            lineNumber: 124
             Parameter { name: "title"; type: "QString" }
             Parameter { name: "message"; type: "QString" }
         }
-        Method { name: "runAutoDetect"; lineNumber: 126 }
-        Method { name: "scanWidthChunk"; lineNumber: 127 }
+        Method { name: "runAutoDetect"; lineNumber: 127 }
+        Method { name: "scanWidthChunk"; lineNumber: 128 }
         Method {
             name: "loadFile"
             type: "bool"
-            lineNumber: 95
+            lineNumber: 96
             Parameter { name: "path"; type: "QString" }
             Parameter { name: "allowMissing"; type: "bool" }
         }
@@ -1456,26 +1456,26 @@ Module {
             name: "loadFile"
             type: "bool"
             isCloned: true
-            lineNumber: 95
+            lineNumber: 96
             Parameter { name: "path"; type: "QString" }
         }
         Method {
             name: "writeToFile"
             type: "bool"
-            lineNumber: 96
+            lineNumber: 97
             Parameter { name: "path"; type: "QString" }
         }
-        Method { name: "resetEmpty"; lineNumber: 97 }
-        Method { name: "discardChanges"; lineNumber: 98 }
-        Method { name: "undo"; lineNumber: 99 }
-        Method { name: "redo"; lineNumber: 100 }
-        Method { name: "selectAll"; lineNumber: 101 }
-        Method { name: "selectCurrentLine"; lineNumber: 102 }
-        Method { name: "selectedText"; type: "QString"; isMethodConstant: true; lineNumber: 103 }
+        Method { name: "resetEmpty"; lineNumber: 98 }
+        Method { name: "discardChanges"; lineNumber: 99 }
+        Method { name: "undo"; lineNumber: 100 }
+        Method { name: "redo"; lineNumber: 101 }
+        Method { name: "selectAll"; lineNumber: 102 }
+        Method { name: "selectCurrentLine"; lineNumber: 103 }
+        Method { name: "selectedText"; type: "QString"; isMethodConstant: true; lineNumber: 104 }
         Method {
             name: "findNext"
             type: "bool"
-            lineNumber: 104
+            lineNumber: 105
             Parameter { name: "query"; type: "QString" }
             Parameter { name: "backward"; type: "bool" }
         }
@@ -1483,26 +1483,26 @@ Module {
             name: "matchStats"
             type: "QVariantMap"
             isMethodConstant: true
-            lineNumber: 105
+            lineNumber: 106
             Parameter { name: "query"; type: "QString" }
         }
         Method {
             name: "replaceMatch"
             type: "bool"
-            lineNumber: 106
+            lineNumber: 107
             Parameter { name: "query"; type: "QString" }
             Parameter { name: "replacement"; type: "QString" }
         }
         Method {
             name: "replaceAllMatches"
             type: "int"
-            lineNumber: 108
+            lineNumber: 109
             Parameter { name: "query"; type: "QString" }
             Parameter { name: "replacement"; type: "QString" }
         }
         Method {
             name: "gotoLine"
-            lineNumber: 110
+            lineNumber: 111
             Parameter { name: "lineNumber"; type: "int" }
         }
     }

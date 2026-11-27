@@ -625,13 +625,19 @@ fn push_tok(
     if end <= start {
         return;
     }
-    let rel_start = (base_offset + start) as u32;
-    let rel_len = (end - start) as u32;
+    let Ok(rel_start) = u32::try_from(base_offset.saturating_add(start)) else {
+        return;
+    };
+    let Ok(rel_len) = u32::try_from(end - start) else {
+        return;
+    };
     let k = kind as u8;
     if let Some(last) = out.last_mut() {
-        if last.kind == k && last.rel_start + last.rel_len == rel_start {
-            last.rel_len += rel_len;
-            return;
+        if last.kind == k && last.rel_start.checked_add(last.rel_len) == Some(rel_start) {
+            if let Some(sum) = last.rel_len.checked_add(rel_len) {
+                last.rel_len = sum;
+                return;
+            }
         }
     }
     out.push(VisToken {

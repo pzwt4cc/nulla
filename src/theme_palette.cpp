@@ -391,22 +391,27 @@ AdaptivePaletteSeed tryLoadQt6ctOrKdePalette(const QString &cfgRoot,
       usedFiles->append(kdeglobals);
     }
     QSettings ks(kdeglobals, QSettings::IniFormat);
-    const QColor win = parseKdeColorValue(
-        ks.value(QStringLiteral("Colors:Window/BackgroundNormal")).toString());
-    const QColor winFg = parseKdeColorValue(
-        ks.value(QStringLiteral("Colors:Window/ForegroundNormal")).toString());
-    const QColor view = parseKdeColorValue(
-        ks.value(QStringLiteral("Colors:View/BackgroundNormal")).toString());
-    const QColor viewFg = parseKdeColorValue(
-        ks.value(QStringLiteral("Colors:View/ForegroundNormal")).toString());
-    const QColor sel = parseKdeColorValue(
-        ks.value(QStringLiteral("Colors:Selection/BackgroundNormal"))
-            .toString());
-    const QColor selFg = parseKdeColorValue(
-        ks.value(QStringLiteral("Colors:Selection/ForegroundNormal"))
-            .toString());
-    const QColor btn = parseKdeColorValue(
-        ks.value(QStringLiteral("Colors:Button/BackgroundNormal")).toString());
+    auto readKdeColor = [&](const QString &key) -> QColor {
+      const QVariant val = ks.value(key);
+      if (val.typeId() == QMetaType::QStringList) {
+        return parseKdeColorValue(val.toStringList().join(QLatin1Char(',')));
+      }
+      return parseKdeColorValue(val.toString());
+    };
+    const QColor win =
+        readKdeColor(QStringLiteral("Colors:Window/BackgroundNormal"));
+    const QColor winFg =
+        readKdeColor(QStringLiteral("Colors:Window/ForegroundNormal"));
+    const QColor view =
+        readKdeColor(QStringLiteral("Colors:View/BackgroundNormal"));
+    const QColor viewFg =
+        readKdeColor(QStringLiteral("Colors:View/ForegroundNormal"));
+    const QColor sel =
+        readKdeColor(QStringLiteral("Colors:Selection/BackgroundNormal"));
+    const QColor selFg =
+        readKdeColor(QStringLiteral("Colors:Selection/ForegroundNormal"));
+    const QColor btn =
+        readKdeColor(QStringLiteral("Colors:Button/BackgroundNormal"));
     if (win.isValid() && (view.isValid() || winFg.isValid())) {
       AdaptivePaletteSeed seed;
       seed.valid = true;

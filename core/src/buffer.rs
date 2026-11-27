@@ -303,6 +303,9 @@ impl PagedBuffer {
     }
 
     pub fn save_to_path(&mut self, path: &Path) -> io::Result<()> {
+        if path.as_os_str().is_empty() {
+            return Err(io::Error::new(io::ErrorKind::InvalidInput, "Empty file path"));
+        }
         let parent = path.parent().unwrap_or_else(|| Path::new("."));
         let file_name = path
             .file_name()
@@ -322,15 +325,27 @@ impl PagedBuffer {
             Ok(())
         })();
 
-        if write_result.is_ok() {
-            if fs::rename(&tmp_path, path).is_ok() {
+        if let Err(err) = write_result {
+            let _ = fs::remove_file(&tmp_path);
+            if !path.exists() {
+                let f = File::create(path)?;
+                let mut w = BufWriter::with_capacity(65536, f);
+                self.write_stream(&mut w)?;
+                w.flush()?;
+                if let Ok(inner) = w.into_inner() {
+                    let _ = inner.sync_all();
+                }
                 self.saved_revision = self.revision;
                 return Ok(());
             }
-            let _ = fs::remove_file(&tmp_path);
-        } else {
-            let _ = fs::remove_file(&tmp_path);
+            return Err(err);
         }
+
+        if fs::rename(&tmp_path, path).is_ok() {
+            self.saved_revision = self.revision;
+            return Ok(());
+        }
+        let _ = fs::remove_file(&tmp_path);
 
         let f = File::create(path)?;
         let mut w = BufWriter::with_capacity(65536, f);

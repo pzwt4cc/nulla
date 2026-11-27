@@ -43,9 +43,6 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            root.checked = !root.checked
-            root.toggled(root.checked)
-        }
+        onClicked: root.toggled(!root.checked)
     }
 }

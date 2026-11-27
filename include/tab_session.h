@@ -80,6 +80,7 @@ public:
   void selectWordAt(size_t line, size_t visCol);
   void selectLineAt(size_t line);
   void insertText(const QString &text);
+  void replaceUtf16Range(int relStart, int repLen, const QString &text);
   void insertNewline();
   void backspace(bool word);
   void deleteForward(bool word);

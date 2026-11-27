@@ -35,6 +35,10 @@ impl IndentState {
         }
     }
 
+    pub fn invalidate(&mut self) {
+        self.cached_rev = u64::MAX;
+    }
+
     pub fn indent_step(&mut self, buf: &PagedBuffer) -> u32 {
         if self.cached_rev != buf.revision() {
             self.cached_rev = buf.revision();
@@ -58,12 +62,14 @@ impl IndentState {
             *slot = (0, 0);
         }
         let total_lines = buf.line_count();
-        if total_lines == 0 || vis_line_count == 0 {
+        if total_lines == 0 || vis_line_count == 0 || first_vis_line >= total_lines {
             return;
         }
 
         let step = self.indent_step(buf);
-        let last_vis_line = (first_vis_line + vis_line_count - 1).min(total_lines - 1);
+        let last_vis_line = first_vis_line
+            .saturating_add(vis_line_count - 1)
+            .min(total_lines - 1);
         let cur_clamped = cursor_line.min(total_lines - 1);
 
         let include_cursor = cur_clamped.abs_diff(first_vis_line) <= 240
@@ -83,7 +89,7 @@ impl IndentState {
             last_vis_line.saturating_add(160).min(total_lines - 1)
         };
 
-        let count = max_line - min_line + 1;
+        let count = max_line.saturating_sub(min_line).saturating_add(1);
         self.lines.resize(count, LineIndent::default());
         for (i, slot) in self.lines.iter_mut().enumerate() {
             analyze_line_indent(buf, min_line + i, step, slot);

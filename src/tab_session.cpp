@@ -196,6 +196,18 @@ void TabSession::insertText(const QString &text) {
   }
 }
 
+void TabSession::replaceUtf16Range(int relStart, int repLen,
+                                   const QString &text) {
+  const QByteArray b = text.toUtf8();
+  nulla_doc_replace_utf16(m_doc, static_cast<int32_t>(relStart),
+                          static_cast<int32_t>(repLen), u8(b), u8len(b),
+                          nowMs());
+  finishEdit();
+  if (b.size() > 256) {
+    restartWidthScan();
+  }
+}
+
 void TabSession::insertNewline() {
   nulla_doc_insert_newline(m_doc, nowMs());
   finishEdit();

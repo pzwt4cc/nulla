@@ -143,6 +143,9 @@ void nulla_doc_move_cursor(NullaDoc *doc, int32_t dir, bool extend,
 
 void nulla_doc_insert_text(NullaDoc *doc, const uint8_t *text_ptr,
                            size_t text_len, uint64_t ts_ms);
+void nulla_doc_replace_utf16(NullaDoc *doc, int32_t rel_start, int32_t rep_len,
+                             const uint8_t *text_ptr, size_t text_len,
+                             uint64_t ts_ms);
 void nulla_doc_insert_newline(NullaDoc *doc, uint64_t ts_ms);
 void nulla_doc_backspace(NullaDoc *doc, bool word, uint64_t ts_ms);
 void nulla_doc_delete_forward(NullaDoc *doc, bool word, uint64_t ts_ms);

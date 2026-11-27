@@ -53,12 +53,22 @@ impl NullaDoc {
         }
     }
 
+    pub fn clear(&mut self) {
+        self.buf.clear();
+        self.cursor = 0;
+        self.anchor = 0;
+        self.desired_vis_col = None;
+        self.syntax_state.invalidate();
+        self.indent_state.invalidate();
+    }
+
     pub fn load_file(&mut self, path: &str) -> io::Result<()> {
         self.buf.load_from_path(Path::new(path))?;
         self.cursor = 0;
         self.anchor = 0;
         self.desired_vis_col = None;
         self.syntax_state.invalidate();
+        self.indent_state.invalidate();
         let sample_end = self.buf.clamp_char_boundary(4096.min(self.buf.byte_len()));
         let sample = self.buf.slice_to_string(0, sample_end);
         self.lang = detect_language(path, &sample);
@@ -83,6 +93,7 @@ impl NullaDoc {
         self.anchor = 0;
         self.desired_vis_col = None;
         self.syntax_state.invalidate();
+        self.indent_state.invalidate();
         let sample_end = self.buf.clamp_char_boundary(4096.min(self.buf.byte_len()));
         let sample = self.buf.slice_to_string(0, sample_end);
         self.lang = detect_language(file_path_hint, &sample);
@@ -346,7 +357,7 @@ impl NullaDoc {
                         cur_line + 1
                     }
                     MoveDir::PageUp => cur_line.saturating_sub(step_pages),
-                    MoveDir::PageDown => (cur_line + step_pages).min(max_line),
+                    MoveDir::PageDown => cur_line.saturating_add(step_pages).min(max_line),
                     _ => cur_line,
                 };
                 if dir == MoveDir::Up && cur_line == 0 {
@@ -463,6 +474,69 @@ impl NullaDoc {
             new_cursor,
             timestamp_ms,
             merge_kind,
+        );
+        self.cursor = new_cursor;
+        self.anchor = new_cursor;
+        self.desired_vis_col = None;
+        self.syntax_state.invalidate();
+    }
+
+    pub fn replace_utf16_range(
+        &mut self,
+        rel_start: i32,
+        rep_len: i32,
+        raw_text: &str,
+        timestamp_ms: u64,
+    ) {
+        if rep_len <= 0 {
+            if !raw_text.is_empty() {
+                self.insert_text(raw_text, timestamp_ms);
+            }
+            return;
+        }
+        let mut del_start = self.cursor;
+        if rel_start < 0 {
+            let mut rem = rel_start.unsigned_abs() as usize;
+            while rem > 0 && del_start > 0 {
+                let prev = self.buf.prev_char_boundary(del_start);
+                let s = self.buf.slice_to_string(prev, del_start);
+                let u16_len = s.chars().map(|c| c.len_utf16()).sum::<usize>().max(1);
+                del_start = prev;
+                rem = rem.saturating_sub(u16_len);
+            }
+        } else if rel_start > 0 {
+            let mut rem = rel_start as usize;
+            let total = self.buf.byte_len();
+            while rem > 0 && del_start < total {
+                let next = self.buf.next_char_boundary(del_start);
+                let s = self.buf.slice_to_string(del_start, next);
+                let u16_len = s.chars().map(|c| c.len_utf16()).sum::<usize>().max(1);
+                del_start = next;
+                rem = rem.saturating_sub(u16_len);
+            }
+        }
+        let mut del_end = del_start;
+        let mut rem_del = rep_len as usize;
+        let total = self.buf.byte_len();
+        while rem_del > 0 && del_end < total {
+            let next = self.buf.next_char_boundary(del_end);
+            let s = self.buf.slice_to_string(del_end, next);
+            let u16_len = s.chars().map(|c| c.len_utf16()).sum::<usize>().max(1);
+            del_end = next;
+            rem_del = rem_del.saturating_sub(u16_len);
+        }
+        let clean = sanitize_insert(raw_text);
+        let new_cursor = del_start + clean.len();
+        self.buf.edit_with_undo(
+            del_start,
+            del_end,
+            &clean,
+            self.cursor,
+            self.anchor,
+            new_cursor,
+            new_cursor,
+            timestamp_ms,
+            0,
         );
         self.cursor = new_cursor;
         self.anchor = new_cursor;
@@ -1275,11 +1349,18 @@ impl NullaDoc {
                 &mut self.scratch_slice,
             );
 
-            let text_offset = self.scratch_utf8.len() as u32;
-            let text_len = self.scratch_slice.len() as u32;
+            let Ok(text_offset) = u32::try_from(self.scratch_utf8.len()) else {
+                break;
+            };
+            let Ok(text_len) = u32::try_from(self.scratch_slice.len()) else {
+                break;
+            };
+            if self.scratch_utf8.len().saturating_add(self.scratch_slice.len()) > u32::MAX as usize {
+                break;
+            }
             self.scratch_utf8.push_str(&self.scratch_slice);
 
-            let token_offset = self.scratch_tokens.len() as u32;
+            let token_offset = u32::try_from(self.scratch_tokens.len()).unwrap_or(u32::MAX);
             let slice_is_line_start = win.slice_start_byte_in_line == 0;
             tokenize_window(
                 self.syntax_enabled,
@@ -1289,7 +1370,9 @@ impl NullaDoc {
                 slice_is_line_start,
                 &mut self.scratch_tokens,
             );
-            let token_count = (self.scratch_tokens.len() as u32) - token_offset;
+            let token_count = u32::try_from(self.scratch_tokens.len())
+                .unwrap_or(u32::MAX)
+                .saturating_sub(token_offset);
 
             if self.syntax_enabled && self.lang.has_multiline_state() {
                 ml_state = self
@@ -1313,8 +1396,8 @@ impl NullaDoc {
                 let ov_e = sel_e.min(slice_abs_e);
                 if ov_e > ov_s {
                     line_has_sel = 1;
-                    sel_rel_start = (ov_s - slice_abs_s) as u32;
-                    sel_rel_end = (ov_e - slice_abs_s) as u32;
+                    sel_rel_start = u32::try_from(ov_s - slice_abs_s).unwrap_or(u32::MAX);
+                    sel_rel_end = u32::try_from(ov_e - slice_abs_s).unwrap_or(u32::MAX);
                 }
                 if sel_s <= line_end && sel_e > line_end {
                     line_has_sel = 1;

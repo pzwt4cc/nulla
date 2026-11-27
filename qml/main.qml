@@ -41,7 +41,7 @@ ApplicationWindow {
     readonly property color selBg: theme.selBg || (dark ? "#2e3d59" : "#cde0ff")
 
     readonly property var activePane: mainEditorPane
-    readonly property bool modalOpen: confirmModal.open || settingsModal.open || languageModal.open
+    readonly property bool modalOpen: confirmModal.open || settingsModal.open || languageModal.open || menuPopup.opened || (activePane ? activePane.contextMenuOpen : false)
 
     EditorBackend {
         id: editorBackend
@@ -345,6 +345,9 @@ ApplicationWindow {
             }
             if (menuPopup.opened) {
                 menuPopup.close();
+            }
+            if (activePane && activePane.contextMenuOpen) {
+                activePane.closeContextMenu();
             }
             settingsModal.open = !settingsModal.open;
             if (!settingsModal.open) {

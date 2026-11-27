@@ -45,7 +45,7 @@ $(BUILD_DIR)/moc_%.cpp: include/%.h | $(BUILD_DIR)
 $(BUILD_DIR)/moc_%.o: $(BUILD_DIR)/moc_%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/qrc_resources.cpp: resources.qrc $(shell find qml -maxdepth 1 -name '*.qml') assets/nulla.svg | $(BUILD_DIR)
+$(BUILD_DIR)/qrc_resources.cpp: resources.qrc $(shell find qml -maxdepth 1 -name '*.qml') $(wildcard i18n/*.json) assets/nulla.svg | $(BUILD_DIR)
 	$(RCC) $< -o $@
 
 $(QRC_OBJ): $(BUILD_DIR)/qrc_resources.cpp

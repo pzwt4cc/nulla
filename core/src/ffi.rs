@@ -6,7 +6,7 @@ use std::ptr;
 use std::slice;
 
 unsafe fn slice_to_lossy_str<'a>(ptr: *const u8, len: usize) -> std::borrow::Cow<'a, str> {
-    if ptr.is_null() || len == 0 {
+    if ptr.is_null() || len == 0 || len > isize::MAX as usize {
         return std::borrow::Cow::Borrowed("");
     }
     let raw = unsafe { slice::from_raw_parts(ptr, len) };
@@ -43,12 +43,7 @@ pub unsafe extern "C" fn nulla_doc_clear(doc: *mut NullaDoc) {
         return;
     }
     let _ = catch_unwind(AssertUnwindSafe(|| unsafe {
-        let d = &mut *doc;
-        d.buf.clear();
-        d.cursor = 0;
-        d.anchor = 0;
-        d.desired_vis_col = None;
-        d.syntax_state.invalidate();
+        (*doc).clear();
     }));
 }
 
@@ -96,7 +91,7 @@ pub unsafe extern "C" fn nulla_doc_set_text(
         return;
     }
     let _ = catch_unwind(AssertUnwindSafe(|| unsafe {
-        let raw = if text_ptr.is_null() || text_len == 0 {
+        let raw = if text_ptr.is_null() || text_len == 0 || text_len > isize::MAX as usize {
             &[][..]
         } else {
             slice::from_raw_parts(text_ptr, text_len)
@@ -112,8 +107,8 @@ pub unsafe extern "C" fn nulla_doc_get_text(
     out_ptr: *mut *const u8,
     out_len: *mut usize,
 ) {
+    unsafe { write_str_out("", out_ptr, out_len) };
     if doc.is_null() {
-        unsafe { write_str_out("", out_ptr, out_len) };
         return;
     }
     let _ = catch_unwind(AssertUnwindSafe(|| unsafe {
@@ -328,6 +323,17 @@ pub unsafe extern "C" fn nulla_doc_cursor_pos(
     out_col_1: *mut usize,
     out_vis_col_0: *mut usize,
 ) {
+    unsafe {
+        if !out_line_1.is_null() {
+            *out_line_1 = 0;
+        }
+        if !out_col_1.is_null() {
+            *out_col_1 = 0;
+        }
+        if !out_vis_col_0.is_null() {
+            *out_vis_col_0 = 0;
+        }
+    }
     if doc.is_null() {
         return;
     }
@@ -352,6 +358,14 @@ pub unsafe extern "C" fn nulla_doc_byte_to_line_vis_col(
     out_line_0: *mut usize,
     out_vis_col_0: *mut usize,
 ) {
+    unsafe {
+        if !out_line_0.is_null() {
+            *out_line_0 = 0;
+        }
+        if !out_vis_col_0.is_null() {
+            *out_vis_col_0 = 0;
+        }
+    }
     if doc.is_null() {
         return;
     }
@@ -410,8 +424,8 @@ pub unsafe extern "C" fn nulla_doc_selected_text(
     out_ptr: *mut *const u8,
     out_len: *mut usize,
 ) {
+    unsafe { write_str_out("", out_ptr, out_len) };
     if doc.is_null() {
-        unsafe { write_str_out("", out_ptr, out_len) };
         return;
     }
     let _ = catch_unwind(AssertUnwindSafe(|| unsafe {
@@ -530,6 +544,24 @@ pub unsafe extern "C" fn nulla_doc_insert_text(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn nulla_doc_replace_utf16(
+    doc: *mut NullaDoc,
+    rel_start: i32,
+    rep_len: i32,
+    text_ptr: *const u8,
+    text_len: usize,
+    ts_ms: u64,
+) {
+    if doc.is_null() {
+        return;
+    }
+    let _ = catch_unwind(AssertUnwindSafe(|| unsafe {
+        let s = slice_to_lossy_str(text_ptr, text_len);
+        (*doc).replace_utf16_range(rel_start, rep_len, &s, ts_ms);
+    }));
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn nulla_doc_insert_newline(doc: *mut NullaDoc, ts_ms: u64) {
     if doc.is_null() {
         return;
@@ -627,8 +659,8 @@ pub unsafe extern "C" fn nulla_doc_copy_or_line(
     out_ptr: *mut *const u8,
     out_len: *mut usize,
 ) {
+    unsafe { write_str_out("", out_ptr, out_len) };
     if doc.is_null() {
-        unsafe { write_str_out("", out_ptr, out_len) };
         return;
     }
     let _ = catch_unwind(AssertUnwindSafe(|| unsafe {
@@ -644,8 +676,8 @@ pub unsafe extern "C" fn nulla_doc_cut_or_line(
     out_ptr: *mut *const u8,
     out_len: *mut usize,
 ) {
+    unsafe { write_str_out("", out_ptr, out_len) };
     if doc.is_null() {
-        unsafe { write_str_out("", out_ptr, out_len) };
         return;
     }
     let _ = catch_unwind(AssertUnwindSafe(|| unsafe {
@@ -696,6 +728,14 @@ pub unsafe extern "C" fn nulla_doc_match_stats(
     out_cur: *mut usize,
     out_total: *mut usize,
 ) {
+    unsafe {
+        if !out_cur.is_null() {
+            *out_cur = 0;
+        }
+        if !out_total.is_null() {
+            *out_total = 0;
+        }
+    }
     if doc.is_null() {
         return;
     }

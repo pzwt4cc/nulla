@@ -82,7 +82,49 @@ size_t utf8PrefixVisCol(const uint8_t *lineData, size_t lineLen, size_t byteOff,
 }
 
 bool isRussianShortcutKey(int key) {
-  return (key >= 0x0410 && key <= 0x044F) || key == 0x0401 || key == 0x0451;
+  switch (key) {
+  case 0x0410:
+  case 0x0430:
+  case 0x0411:
+  case 0x0431:
+  case 0x0412:
+  case 0x0432:
+  case 0x0414:
+  case 0x0434:
+  case 0x0415:
+  case 0x0435:
+  case 0x0419:
+  case 0x0439:
+  case 0x041B:
+  case 0x043B:
+  case 0x041C:
+  case 0x043C:
+  case 0x041D:
+  case 0x043D:
+  case 0x041F:
+  case 0x043F:
+  case 0x0420:
+  case 0x0440:
+  case 0x0421:
+  case 0x0441:
+  case 0x0422:
+  case 0x0442:
+  case 0x0424:
+  case 0x0444:
+  case 0x0426:
+  case 0x0446:
+  case 0x0427:
+  case 0x0447:
+  case 0x0429:
+  case 0x0449:
+  case 0x042B:
+  case 0x044B:
+  case 0x042F:
+  case 0x044F:
+    return true;
+  default:
+    return false;
+  }
 }
 
 }
@@ -645,7 +687,8 @@ bool NullaEditorView::wantsShortcut(const QKeyEvent *e) const {
   const bool shift = m.testFlag(Qt::ShiftModifier);
   const int k = e->key();
 
-  if (k == Qt::Key_Tab || k == Qt::Key_Backtab || k == Qt::Key_Menu) {
+  if (!ctrl && !alt && !meta &&
+      (k == Qt::Key_Tab || k == Qt::Key_Backtab || k == Qt::Key_Menu)) {
     return true;
   }
   if (alt && !ctrl && !meta && (k == Qt::Key_Up || k == Qt::Key_Down)) {
@@ -899,7 +942,9 @@ bool NullaEditorView::handleKey(QKeyEvent *e) {
     }
   }
 
-  if (!ctrl && !meta && (!alt || !e->text().isEmpty())) {
+  const bool altGr = ctrl && alt && !meta;
+  if ((!ctrl && !meta && (!alt || !e->text().isEmpty())) ||
+      (altGr && !e->text().isEmpty())) {
     const QString txt = e->text();
     if (!txt.isEmpty()) {
       const QChar first = txt.at(0);
@@ -931,27 +976,18 @@ void NullaEditorView::inputMethodEvent(QInputMethodEvent *e) {
   }
   const int repStart = e->replacementStart();
   const int repLen = e->replacementLength();
-  if (repLen > 0) {
-    if (repStart < 0) {
-      for (int i = 0; i < -repStart; ++i) {
-        m_session->backspace(false);
-      }
-    }
+  const QString commit = e->commitString();
+  if (repLen > 0 || !commit.isEmpty()) {
+    m_session->replaceUtf16Range(repStart, repLen, commit);
+    emit edited();
+    emit cursorMoved();
   }
   m_preedit = e->preeditString();
   m_preeditCursor = m_preedit.size();
   for (const auto &attr : e->attributes()) {
     if (attr.type == QInputMethodEvent::Cursor) {
-      m_preeditCursor = attr.start;
+      m_preeditCursor = qBound(0, attr.start, m_preedit.size());
     }
-  }
-  const QString commit = e->commitString();
-  if (!commit.isEmpty()) {
-    m_preedit.clear();
-    m_preeditCursor = 0;
-    m_session->insertText(commit);
-    emit edited();
-    emit cursorMoved();
   }
   restartBlink();
   update();
@@ -974,6 +1010,11 @@ QVariant NullaEditorView::inputMethodQuery(Qt::InputMethodQuery query) const {
 
 void NullaEditorView::mousePressEvent(QMouseEvent *e) {
   forceActiveFocus();
+  if (!m_preedit.isEmpty()) {
+    m_preedit.clear();
+    m_preeditCursor = 0;
+    update();
+  }
   if (!m_session) {
     return;
   }
