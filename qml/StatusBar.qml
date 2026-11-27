@@ -23,7 +23,8 @@ Rectangle {
     signal zoomOutRequested
     signal zoomResetRequested
 
-    height: 36
+    implicitHeight: 36
+    height: implicitHeight
     clip: true
     color: "transparent"
 

@@ -46,7 +46,8 @@ Rectangle {
     }
 
     visible: open
-    height: visible ? (replaceMode && !gotoMode ? 72 : 38) : 0
+    implicitHeight: visible ? (replaceMode && !gotoMode ? 72 : 38) : 0
+    height: implicitHeight
     color: bgGutter
     clip: true
 

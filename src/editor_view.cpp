@@ -10,6 +10,7 @@
 #include <QHoverEvent>
 #include <QInputMethodEvent>
 #include <QKeyEvent>
+#include <QMetaObject>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QtMath>
@@ -1112,7 +1113,9 @@ void NullaEditorView::geometryChange(const QRectF &newGeometry,
                                      const QRectF &oldGeometry) {
   QQuickPaintedItem::geometryChange(newGeometry, oldGeometry);
   updateHover();
-  update();
+  if (newGeometry.size() != oldGeometry.size()) {
+    update();
+  }
 }
 
 void NullaEditorView::applyTokenStyle(QPainter *p, uint8_t kind,
@@ -1306,8 +1309,19 @@ void NullaEditorView::paint(QPainter *painter) {
   for (size_t i = 0; i < snap.line_count; ++i) {
     maxSeenCols = std::max(maxSeenCols, snap.lines[i].line_total_vis_cols);
   }
-  m_session->noteLineColumns(
-      static_cast<int>(std::min<size_t>(maxSeenCols, 50000000)));
+  const int seenCols =
+      static_cast<int>(std::min<size_t>(maxSeenCols, 50000000));
+  if (seenCols > m_session->maxLineColumns()) {
+    QPointer<TabSession> sessionPtr = m_session;
+    QMetaObject::invokeMethod(
+        m_session,
+        [sessionPtr, seenCols]() {
+          if (sessionPtr) {
+            sessionPtr->noteLineColumns(seenCols);
+          }
+        },
+        Qt::QueuedConnection);
+  }
 
   const bool focused = hasActiveFocus();
 

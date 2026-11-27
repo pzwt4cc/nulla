@@ -446,7 +446,8 @@ ApplicationWindow {
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: win.expandedMode ? expandedHeader.height : (topbar.height + (tabBar.visible ? tabBar.height : 0))
+                height: win.expandedMode ? expandedHeader.implicitHeight : (topbar.implicitHeight + (tabBar.visible ? tabBar.implicitHeight : 0))
+                clip: true
 
                 TopBar {
                     id: topbar
@@ -708,7 +709,6 @@ ApplicationWindow {
                     BreadcrumbBar {
                         id: breadcrumbBar
                         visible: win.expandedMode
-                        height: visible ? 25 : 0
                         anchors.top: findBar.bottom
                         anchors.left: parent.left
                         anchors.right: parent.right
@@ -775,12 +775,15 @@ ApplicationWindow {
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: win.expandedMode ? expandedStatusBar.height : statusBar.height
+                height: win.expandedMode ? expandedStatusBar.implicitHeight : statusBar.implicitHeight
+                clip: true
 
                 StatusBar {
                     id: statusBar
                     visible: !win.expandedMode
-                    anchors.fill: parent
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
                     darkMode: win.dark
                     theme: win.theme
                     activeTab: editorBackend.activeTab
@@ -805,7 +808,9 @@ ApplicationWindow {
                 ExpandedStatusBar {
                     id: expandedStatusBar
                     visible: win.expandedMode
-                    anchors.fill: parent
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
                     darkMode: win.dark
                     theme: win.theme
                     activeTab: editorBackend.activeTab
@@ -830,7 +835,7 @@ ApplicationWindow {
         Popup {
             id: menuPopup
             x: win.menuAnchorX > 0 ? Math.max(8, win.menuAnchorX - width) : (win.width - width - 10)
-            y: (win.expandedMode ? expandedHeader.height : topbar.height) - 2
+            y: (win.expandedMode ? expandedHeader.implicitHeight : topbar.implicitHeight) - 2
             width: 248
             padding: 6
             modal: true

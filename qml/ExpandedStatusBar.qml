@@ -21,9 +21,10 @@ Rectangle {
     signal zoomOutRequested
     signal zoomResetRequested
 
-    height: 26
+    implicitHeight: 26
+    height: implicitHeight
     clip: true
-    color: bgShell
+    color: "transparent"
 
     Behavior on color {
         ColorAnimation {
@@ -44,6 +45,8 @@ Rectangle {
         anchors.left: parent.left
         anchors.leftMargin: 10
         anchors.verticalCenter: parent.verticalCenter
+        width: Math.min(implicitWidth, Math.max(0, root.width - rightRow.width - 30))
+        clip: true
         spacing: 6
 
         M3Button {

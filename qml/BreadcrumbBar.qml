@@ -11,7 +11,8 @@ Rectangle {
     property color fgMuted: "#9d9da9"
     property color fgGutter: "#5c5c68"
 
-    height: 25
+    implicitHeight: visible ? 25 : 0
+    height: implicitHeight
     color: bgEditor
     clip: true
 

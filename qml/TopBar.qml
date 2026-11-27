@@ -29,7 +29,8 @@ Rectangle {
     signal settingsRequested
     signal menuToggleRequested(real anchorX)
 
-    height: 48
+    implicitHeight: 48
+    height: implicitHeight
     clip: true
     color: "transparent"
 

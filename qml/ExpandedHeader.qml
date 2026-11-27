@@ -38,7 +38,8 @@ Rectangle {
     readonly property int topBtnSize: Math.max(28, topIconSize + 11)
     readonly property int logoSize: Math.max(18, Math.min(26, iconSize + 1))
 
-    height: Math.max(40, iconSize + 20)
+    implicitHeight: Math.max(40, iconSize + 20)
+    height: implicitHeight
     color: bgHeader
     clip: true
 

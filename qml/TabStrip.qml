@@ -23,7 +23,8 @@ Rectangle {
     signal newTabRequested
 
     visible: tabCount > 1
-    height: visible ? 36 : 0
+    implicitHeight: visible ? 36 : 0
+    height: implicitHeight
     clip: true
     color: "transparent"
 

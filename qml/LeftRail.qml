@@ -25,7 +25,9 @@ Rectangle {
 
     readonly property int btnSize: Math.max(30, iconSize + 14)
 
-    width: Math.max(42, iconSize + 26)
+    implicitWidth: Math.max(42, iconSize + 26)
+    width: implicitWidth
+    clip: true
     color: bgShell
 
     Behavior on color {
