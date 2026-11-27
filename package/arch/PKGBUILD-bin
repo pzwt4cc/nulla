@@ -1,0 +1,22 @@
+pkgname=nulla-bin
+pkgver=0.2.0
+pkgrel=1
+pkgdesc="Minimalist script and config editor"
+arch=('x86_64')
+url="https://github.com/pzwt4cc/nulla"
+license=('WTFPL')
+depends=('qt6-base' 'qt6-declarative' 'qt6-svg')
+optdepends=('qt6-wayland: Wayland platform support')
+provides=('nulla')
+conflicts=('nulla')
+source=("https://github.com/pzwt4cc/nulla/releases/download/v${pkgver}/nulla-${pkgver}-linux-x86_64.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+  cd "$srcdir/nulla-${pkgver}-linux-x86_64"
+  install -Dm755 nulla "$pkgdir/usr/bin/nulla"
+  install -Dm644 assets/nulla.desktop "$pkgdir/usr/share/applications/nulla.desktop"
+  install -Dm644 assets/nulla.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/nulla.svg"
+  install -Dm644 assets/nulla.png "$pkgdir/usr/share/icons/hicolor/512x512/apps/nulla.png"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

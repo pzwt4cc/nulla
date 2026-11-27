@@ -73,7 +73,7 @@ target_link_libraries(nulla PRIVATE
 
 if(WIN32)
     set_target_properties(nulla PROPERTIES WIN32_EXECUTABLE TRUE)
-    target_link_libraries(nulla PRIVATE ws2_32 userenv ntdll bcrypt advapi32)
+    target_link_libraries(nulla PRIVATE synchronization ws2_32 userenv ntdll bcrypt advapi32)
     if(MSVC)
         target_compile_options(nulla PRIVATE /W4 /utf-8)
         target_link_options(nulla PRIVATE /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup)

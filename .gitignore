@@ -4,6 +4,8 @@ build/
 *.d
 core/target/
 skills/
+.cache/
+*.tar.gz
 *.pkg.tar.*
 package/arch/pkg/
 package/arch/src/

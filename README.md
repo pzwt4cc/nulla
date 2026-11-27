@@ -8,7 +8,7 @@
     Hybrid C++17 / Qt 6 Quick (QML) shell paired with a memory-safe Rust core engine (<code>nulla_core</code>) and a monochrome Material 3 outlined interface.
   </p>
   <p>
-    <a href="https://github.com/pzwt4cc/nulla/releases/latest">Windows Installer (.msi)</a>
+    <a href="https://github.com/pzwt4cc/nulla/releases/latest">Releases (Linux &amp; Windows .msi)</a>
     &nbsp;·&nbsp;
     <a href="#features">Features</a>
     &nbsp;·&nbsp;
@@ -40,7 +40,7 @@
 .
 ├── .github/
 │   └── workflows/
-│       └── windows-msi.yml
+│       └── release.yml
 ├── assets/
 │   ├── nulla.desktop
 │   ├── nulla.ico
@@ -68,7 +68,8 @@
 │   └── theme_palette.h
 ├── package/
 │   ├── arch/
-│   │   └── PKGBUILD
+│   │   ├── PKGBUILD
+│   │   └── PKGBUILD-bin
 │   └── windows/
 │       ├── License.rtf
 │       ├── Nulla.wxs
@@ -110,7 +111,7 @@
 
 ## Linux Build & Run
 
-Dependencies: `gcc`, `make`, `pkgconf`, `cargo`, `qt6-base`, `qt6-declarative`.
+Dependencies: `gcc`, `make`, `pkgconf`, `cargo`, `qt6-base`, `qt6-declarative`, `qt6-svg`.
 
 ```sh
 make
@@ -118,22 +119,31 @@ make
 sudo make install
 ```
 
-### Arch Linux Package
+### Arch Linux Packages
+
+From source (`nulla`):
 
 ```sh
 cd package/arch
 makepkg -si
 ```
 
-## Windows Build & MSI Auto-Builder
+Prebuilt binary (`nulla-bin`):
+
+```sh
+cd package/arch
+makepkg -p PKGBUILD-bin -si
+```
+
+## Automated Releases & Windows MSI
 
 ### Automated CI (GitHub Actions)
 
-Workflow [.github/workflows/windows-msi.yml](.github/workflows/windows-msi.yml) builds `Nulla-<version>-win64.msi` automatically on `windows-latest`:
+Workflow [.github/workflows/release.yml](.github/workflows/release.yml) builds both `Nulla-<version>-win64.msi` (`windows-latest`) and `nulla-<version>-linux-x86_64.tar.gz` (`ubuntu-24.04` + Qt 6.8) automatically:
 
-- on every push to `main` (download from **Actions → Windows MSI → Artifacts → `nulla-windows-msi`**);
-- on tags matching `v*` (also attaches the `.msi` directly to **GitHub Releases**);
-- manually via **Actions → Windows MSI → Run workflow** (or `gh workflow run windows-msi.yml`).
+- on every push to `main` (download from **Actions → Release Builds → Artifacts**);
+- on tags matching `v*` (attaches `.msi`, `.tar.gz`, and `.sha256` directly to **GitHub Releases**);
+- manually via **Actions → Release Builds → Run workflow** (or `gh workflow run release.yml`).
 
 ### Local Windows Build
 
