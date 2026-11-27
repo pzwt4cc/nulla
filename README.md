@@ -12,6 +12,8 @@
     &nbsp;·&nbsp;
     <a href="#features">Features</a>
     &nbsp;·&nbsp;
+    <a href="#screenshots">Screenshots</a>
+    &nbsp;·&nbsp;
     <a href="#linux-build--run">Linux Build</a>
     &nbsp;·&nbsp;
     <a href="#windows-build--msi-auto-builder">Windows Build</a>
@@ -34,81 +36,30 @@
 - 13 complete UI languages (`Settings → Language`) and live syntax highlighting + indent guides for 15 languages with searchable picker
 - Smooth zoom control (`Ctrl++`, `Ctrl+-`, `Ctrl+0`, `Ctrl+Wheel`) and smooth wheel scrolling
 
-## Project Structure
+## Screenshots
 
-```text
-.
-├── .github/
-│   └── workflows/
-│       └── release.yml
-├── assets/
-│   ├── nulla.desktop
-│   ├── nulla.ico
-│   ├── nulla.png
-│   └── nulla.svg
-├── core/
-│   ├── Cargo.lock
-│   ├── Cargo.toml
-│   └── src/
-│       ├── buffer.rs
-│       ├── edit.rs
-│       ├── ffi.rs
-│       ├── indent.rs
-│       ├── lib.rs
-│       ├── search.rs
-│       ├── syntax.rs
-│       └── types.rs
-├── i18n/
-│   └── de.json ... zh.json (13 UI languages)
-├── include/
-│   ├── editor_backend.h
-│   ├── editor_view.h
-│   ├── nulla_core.h
-│   ├── tab_session.h
-│   └── theme_palette.h
-├── package/
-│   ├── arch/
-│   │   ├── PKGBUILD
-│   │   └── PKGBUILD-bin
-│   └── windows/
-│       ├── License.rtf
-│       ├── Nulla.wxs
-│       ├── build-msi.ps1
-│       └── nulla.rc
-├── qml/
-│   ├── Nulla/
-│   │   ├── nulla.qmltypes
-│   │   └── qmldir
-│   ├── BreadcrumbBar.qml
-│   ├── ConfirmModal.qml
-│   ├── EditorContextMenu.qml
-│   ├── EditorPane.qml
-│   ├── ExpandedHeader.qml
-│   ├── ExpandedStatusBar.qml
-│   ├── FindBar.qml
-│   ├── LanguageModal.qml
-│   ├── LeftRail.qml
-│   ├── M3Button.qml
-│   ├── M3Switch.qml
-│   ├── NullaMark.qml
-│   ├── OpenFilesDrawer.qml
-│   ├── SettingsModal.qml
-│   ├── StatusBar.qml
-│   ├── TabStrip.qml
-│   ├── TopBar.qml
-│   └── main.qml
-├── src/
-│   ├── editor_backend.cpp
-│   ├── editor_view.cpp
-│   ├── main.cpp
-│   ├── tab_session.cpp
-│   └── theme_palette.cpp
-├── CMakeLists.txt
-├── LICENSE
-├── Makefile
-├── README.md
-└── resources.qrc
-```
+<table>
+  <tr>
+    <td align="center">
+      <strong>Expanded · Dark</strong><br /><br />
+      <img src="assets/screenshots/expanded-dark.png" alt="Nulla Expanded Dark" />
+    </td>
+    <td align="center">
+      <strong>Minimal · Light</strong><br /><br />
+      <img src="assets/screenshots/minimal-light.png" alt="Nulla Minimal Light" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Expanded · Graphite</strong><br /><br />
+      <img src="assets/screenshots/expanded-graphite.png" alt="Nulla Expanded Graphite" />
+    </td>
+    <td align="center">
+      <strong>Minimal · Dark</strong><br /><br />
+      <img src="assets/screenshots/minimal-dark.png" alt="Nulla Minimal Dark" />
+    </td>
+  </tr>
+</table>
 
 ## Linux Build & Run
 
