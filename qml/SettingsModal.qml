@@ -1093,14 +1093,12 @@ Item {
                         width: parent.width
                         columns: 2
                         columnSpacing: 12
-                        rowSpacing: 10
+                        rowSpacing: 12
 
                         Repeater {
                             model: [{
                                 "mode": 2,
                                 "title": root.ui.themeDark || "Dark",
-                                "desc": root.ui.themeDarkDesc || "Deep slate monochrome",
-                                "badge": "",
                                 "cShell": "#0d0e11",
                                 "cGutter": "#121318",
                                 "cEditor": "#16181e",
@@ -1108,14 +1106,10 @@ Item {
                                 "cFg": "#f0f2f6",
                                 "cMuted": "#697082",
                                 "cAccent": "#7aa2f7",
-                                "cBorder": "#2a2f3c",
-                                "cBadgeBg": "transparent",
-                                "cBadgeBorder": "transparent"
+                                "cBorder": "#2a2f3c"
                             }, {
                                 "mode": 1,
                                 "title": root.ui.themeLight || "Light",
-                                "desc": root.ui.themeLightDesc || "Clean bright surface",
-                                "badge": "",
                                 "cShell": "#ebedf2",
                                 "cGutter": "#f5f6f9",
                                 "cEditor": "#ffffff",
@@ -1123,14 +1117,10 @@ Item {
                                 "cFg": "#14161a",
                                 "cMuted": "#9aa2b2",
                                 "cAccent": "#2563eb",
-                                "cBorder": "#cfd5e2",
-                                "cBadgeBg": "transparent",
-                                "cBadgeBorder": "transparent"
+                                "cBorder": "#cfd5e2"
                             }, {
                                 "mode": 3,
                                 "title": root.ui.themeGraphite || "Graphite",
-                                "desc": root.ui.themeGraphiteDesc || "Warm neutral zinc-graphite",
-                                "badge": "",
                                 "cShell": "#101012",
                                 "cGutter": "#151518",
                                 "cEditor": "#18181b",
@@ -1138,14 +1128,10 @@ Item {
                                 "cFg": "#f2f2f5",
                                 "cMuted": "#6b6b76",
                                 "cAccent": "#d4d4dc",
-                                "cBorder": "#2f2f37",
-                                "cBadgeBg": "transparent",
-                                "cBadgeBorder": "transparent"
+                                "cBorder": "#2f2f37"
                             }, {
                                 "mode": 4,
                                 "title": root.ui.themeCarbonNo8 || "Carbon №8",
-                                "desc": root.ui.themeCarbonNo8Desc || "Cool charcoal & electric cyan-teal",
-                                "badge": "№8",
                                 "cShell": "#0d1012",
                                 "cGutter": "#111518",
                                 "cEditor": "#14191c",
@@ -1153,16 +1139,14 @@ Item {
                                 "cFg": "#edf4f2",
                                 "cMuted": "#5a6b73",
                                 "cAccent": "#00e5a3",
-                                "cBorder": "#243538",
-                                "cBadgeBg": "#0f2b26",
-                                "cBadgeBorder": "#00b88a"
+                                "cBorder": "#243538"
                             }]
 
                             delegate: Rectangle {
                                 readonly property bool isCurrent: root.backend && root.backend.themeMode === modelData.mode
 
                                 width: Math.floor((themeGrid.width - themeGrid.columnSpacing) / 2)
-                                height: 128 + root.fontDelta * 6
+                                height: 118 + root.fontDelta * 5
                                 radius: 12
                                 color: isCurrent ? (theme.chipBg || (darkMode ? "#1e2430" : "#eef2fb")) : (themeCardMa.containsMouse ? (theme.bgHover || (darkMode ? "#1c1e24" : "#eceff5")) : root.bgGroup)
                                 border.width: isCurrent ? 1.5 : 1
@@ -1178,7 +1162,7 @@ Item {
                                     anchors.leftMargin: 9
                                     anchors.right: parent.right
                                     anchors.rightMargin: 9
-                                    height: 70 + root.fontDelta * 3
+                                    height: 74 + root.fontDelta * 3
                                     radius: 8
                                     color: modelData.cShell
                                     border.width: 1
@@ -1411,60 +1395,19 @@ Item {
                                     anchors.left: parent.left
                                     anchors.right: parent.right
                                     anchors.bottom: parent.bottom
-                                    anchors.leftMargin: 11
+                                    anchors.leftMargin: 12
                                     anchors.rightMargin: 10
 
-                                    Column {
+                                    Text {
                                         anchors.left: parent.left
                                         anchors.right: cardCheck.left
                                         anchors.rightMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
-                                        spacing: 2
-
-                                        Row {
-                                            width: parent.width
-                                            spacing: 6
-
-                                            Text {
-                                                text: modelData.title
-                                                color: isCurrent ? root.fgTitle : root.fgLabel
-                                                font.pixelSize: 13 + root.fontDelta
-                                                font.weight: isCurrent ? Font.DemiBold : Font.Medium
-                                                anchors.verticalCenter: parent.verticalCenter
-                                            }
-
-                                            Rectangle {
-                                                visible: modelData.badge !== ""
-                                                width: badgeTxt.implicitWidth + 10
-                                                height: badgeTxt.implicitHeight + 2
-                                                radius: 4
-                                                color: modelData.cBadgeBg
-                                                border.width: 1
-                                                border.color: modelData.cBadgeBorder
-                                                anchors.verticalCenter: parent.verticalCenter
-
-                                                Text {
-                                                    id: badgeTxt
-
-                                                    anchors.centerIn: parent
-                                                    text: modelData.badge
-                                                    color: modelData.cAccent
-                                                    font.pixelSize: 9 + root.fontDelta
-                                                    font.weight: Font.Bold
-                                                }
-
-                                            }
-
-                                        }
-
-                                        Text {
-                                            width: parent.width
-                                            text: modelData.desc
-                                            color: root.fgSub
-                                            font.pixelSize: 11 + root.fontDelta
-                                            elide: Text.ElideRight
-                                        }
-
+                                        text: modelData.title
+                                        color: isCurrent ? root.fgTitle : root.fgLabel
+                                        font.pixelSize: 13 + root.fontDelta
+                                        font.weight: isCurrent ? Font.DemiBold : Font.Medium
+                                        elide: Text.ElideRight
                                     }
 
                                     Rectangle {
