@@ -162,6 +162,30 @@ Item {
                 border.width: 1
                 border.color: root.borderGroup
 
+                TextMetrics {
+                    id: tabTm0
+
+                    font.pixelSize: 13 + root.fontDelta
+                    font.weight: Font.DemiBold
+                    text: root.ui.tabGeneral || "General"
+                }
+
+                TextMetrics {
+                    id: tabTm1
+
+                    font.pixelSize: 13 + root.fontDelta
+                    font.weight: Font.DemiBold
+                    text: root.ui.tabTheme || "Theme"
+                }
+
+                TextMetrics {
+                    id: tabTm2
+
+                    font.pixelSize: 13 + root.fontDelta
+                    font.weight: Font.DemiBold
+                    text: root.ui.tabUpdates || "Updates"
+                }
+
                 Row {
                     id: settingsTabsRow
 
@@ -169,33 +193,35 @@ Item {
                     spacing: 3
 
                     M3Button {
-                        text: root.ui.tabGeneral || "General"
+                        text: tabTm0.text
                         ghost: root.activeSettingsTab !== 0
                         activeChip: root.activeSettingsTab === 0
                         fontPixelSize: 13 + root.fontDelta
                         darkMode: root.darkMode
                         theme: root.theme
                         buttonHeight: 30
+                        buttonWidth: Math.ceil(Math.max(tabTm0.advanceWidth, tabTm0.width)) + 30
                         horizontalPadding: 14
                         cornerRadius: 8
                         onClicked: root.activeSettingsTab = 0
                     }
 
                     M3Button {
-                        text: root.ui.tabTheme || "Theme"
+                        text: tabTm1.text
                         ghost: root.activeSettingsTab !== 1
                         activeChip: root.activeSettingsTab === 1
                         fontPixelSize: 13 + root.fontDelta
                         darkMode: root.darkMode
                         theme: root.theme
                         buttonHeight: 30
+                        buttonWidth: Math.ceil(Math.max(tabTm1.advanceWidth, tabTm1.width)) + 30
                         horizontalPadding: 14
                         cornerRadius: 8
                         onClicked: root.activeSettingsTab = 1
                     }
 
                     M3Button {
-                        text: root.ui.tabUpdates || "Updates"
+                        text: tabTm2.text
                         ghost: root.activeSettingsTab !== 2
                         activeChip: root.activeSettingsTab === 2
                         showDot: root.updStatus === 3 || root.updStatus === 5
@@ -203,6 +229,7 @@ Item {
                         darkMode: root.darkMode
                         theme: root.theme
                         buttonHeight: 30
+                        buttonWidth: Math.ceil(Math.max(tabTm2.advanceWidth, tabTm2.width)) + 30 + (showDot ? 12 : 0)
                         horizontalPadding: 14
                         cornerRadius: 8
                         onClicked: root.activeSettingsTab = 2
