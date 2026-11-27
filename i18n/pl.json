@@ -142,6 +142,5 @@
   "updSystemHint": "Pakiet systemowy — zaktualizuj przez menedżer pakietów lub GitHub.",
   "updLastChecked": "Ostatnie sprawdzenie:",
   "updCurrentPrefix": "Zainstalowana:",
-  "updCreatedBy": "Autor:",
-  "updRepository": "Repozytorium"
+  "updCreatedBy": "Autor:"
 }

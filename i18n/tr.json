@@ -142,6 +142,5 @@
   "updSystemHint": "Sistem paketi — paket yöneticisi veya GitHub üzerinden güncelleyin.",
   "updLastChecked": "Son denetim:",
   "updCurrentPrefix": "Yüklü:",
-  "updCreatedBy": "Geliştirici:",
-  "updRepository": "Depo"
+  "updCreatedBy": "Geliştirici:"
 }

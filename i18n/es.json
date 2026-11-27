@@ -142,6 +142,5 @@
   "updSystemHint": "Paquete del sistema: actualiza con tu gestor de paquetes o en GitHub.",
   "updLastChecked": "Última comprobación:",
   "updCurrentPrefix": "Instalada:",
-  "updCreatedBy": "Creado por",
-  "updRepository": "Repositorio"
+  "updCreatedBy": "Creado por"
 }

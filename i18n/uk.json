@@ -142,6 +142,5 @@
   "updSystemHint": "Системний пакет — оновіть через пакетний менеджер або реліз GitHub.",
   "updLastChecked": "Остання перевірка:",
   "updCurrentPrefix": "Встановлено:",
-  "updCreatedBy": "Створив",
-  "updRepository": "Репозиторій"
+  "updCreatedBy": "Створив"
 }

@@ -52,6 +52,7 @@ Item {
 
     onOpenChanged: {
         if (open) {
+            cardFlick.contentY = 0;
             forceActiveFocus();
         } else if (langPopup.opened) {
             langPopup.close();
@@ -59,6 +60,7 @@ Item {
     }
 
     onActiveSettingsTabChanged: {
+        cardFlick.contentY = 0;
         if (activeSettingsTab !== 0 && langPopup.opened) {
             langPopup.close();
         }
@@ -88,8 +90,8 @@ Item {
 
     Rectangle {
         id: card
-        width: Math.max(0, Math.min(parent.width - 40, 540))
-        height: Math.max(0, Math.min(parent.height - 40, mainCol.implicitHeight + 36))
+        width: Math.max(0, Math.min(parent.width - 40, 560))
+        height: Math.max(0, Math.min(parent.height - 40, 520))
         anchors.centerIn: parent
         radius: 12
         color: root.bgCard
@@ -115,114 +117,142 @@ Item {
             color: theme.sheenBright || (darkMode ? "#14ffffff" : "#90ffffff")
         }
 
+        Item {
+            id: headerBar
+            anchors.top: parent.top
+            anchors.topMargin: 16
+            anchors.left: parent.left
+            anchors.leftMargin: 18
+            anchors.right: parent.right
+            anchors.rightMargin: 18
+            height: 30
+
+            Text {
+                anchors.left: parent.left
+                anchors.right: settingsTabsBox.left
+                anchors.rightMargin: 10
+                anchors.verticalCenter: parent.verticalCenter
+                elide: Text.ElideRight
+                text: root.ui.settingsTitle || "Settings"
+                color: root.fgTitle
+                font.pixelSize: 15
+                font.weight: Font.DemiBold
+            }
+
+            Rectangle {
+                id: settingsTabsBox
+                anchors.right: closeSettingsBtn.left
+                anchors.rightMargin: 8
+                anchors.verticalCenter: parent.verticalCenter
+                height: 30
+                width: settingsTabsRow.implicitWidth + 4
+                radius: 9
+                color: theme.bgInput || (darkMode ? "#1a1c22" : "#eceef3")
+                border.width: 1
+                border.color: root.borderGroup
+
+                Row {
+                    id: settingsTabsRow
+                    anchors.centerIn: parent
+                    spacing: 2
+
+                    M3Button {
+                        text: root.ui.tabGeneral || "General"
+                        ghost: root.activeSettingsTab !== 0
+                        activeChip: root.activeSettingsTab === 0
+                        darkMode: root.darkMode
+                        theme: root.theme
+                        buttonHeight: 26
+                        horizontalPadding: 10
+                        cornerRadius: 8
+                        onClicked: root.activeSettingsTab = 0
+                    }
+
+                    M3Button {
+                        text: root.ui.tabTheme || "Theme"
+                        ghost: root.activeSettingsTab !== 1
+                        activeChip: root.activeSettingsTab === 1
+                        darkMode: root.darkMode
+                        theme: root.theme
+                        buttonHeight: 26
+                        horizontalPadding: 10
+                        cornerRadius: 8
+                        onClicked: root.activeSettingsTab = 1
+                    }
+
+                    M3Button {
+                        text: root.ui.tabUpdates || "Updates"
+                        ghost: root.activeSettingsTab !== 2
+                        activeChip: root.activeSettingsTab === 2
+                        showDot: root.updStatus === 3 || root.updStatus === 5
+                        darkMode: root.darkMode
+                        theme: root.theme
+                        buttonHeight: 26
+                        horizontalPadding: 10
+                        cornerRadius: 8
+                        onClicked: root.activeSettingsTab = 2
+                    }
+                }
+            }
+
+            M3Button {
+                id: closeSettingsBtn
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                iconKind: "close"
+                iconOnly: true
+                ghost: true
+                darkMode: root.darkMode
+                theme: root.theme
+                buttonHeight: 28
+                cornerRadius: 9
+                onClicked: root.closed()
+            }
+        }
+
+        Rectangle {
+            id: topDivider
+            anchors.top: headerBar.bottom
+            anchors.topMargin: 12
+            anchors.left: parent.left
+            anchors.leftMargin: 18
+            anchors.right: parent.right
+            anchors.rightMargin: 18
+            height: 1
+            color: root.borderDivider
+        }
+
         Flickable {
             id: cardFlick
-            anchors.fill: parent
+            anchors.top: topDivider.bottom
+            anchors.topMargin: 12
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 14
+            anchors.left: parent.left
+            anchors.right: parent.right
             contentWidth: width
-            contentHeight: mainCol.implicitHeight + 36
+            contentHeight: mainCol.implicitHeight + 6
             interactive: contentHeight > height
             boundsBehavior: Flickable.StopAtBounds
             clip: true
 
+            ScrollBar.vertical: ScrollBar {
+                policy: ScrollBar.AsNeeded
+                width: 6
+                rightPadding: 2
+                contentItem: Rectangle {
+                    implicitWidth: 3
+                    radius: 2
+                    color: theme.scrollIdle || (darkMode ? "#3a3f4c" : "#c1c6d0")
+                }
+            }
+
             Column {
                 id: mainCol
                 x: 18
-                y: 18
+                y: 2
                 width: cardFlick.width - 36
                 spacing: 14
-
-                Item {
-                    width: parent.width
-                    height: 30
-
-                    Text {
-                        anchors.left: parent.left
-                        anchors.right: settingsTabsBox.left
-                        anchors.rightMargin: 10
-                        anchors.verticalCenter: parent.verticalCenter
-                        elide: Text.ElideRight
-                        text: root.ui.settingsTitle || "Settings"
-                        color: root.fgTitle
-                        font.pixelSize: 15
-                        font.weight: Font.DemiBold
-                    }
-
-                    Rectangle {
-                        id: settingsTabsBox
-                        anchors.right: closeSettingsBtn.left
-                        anchors.rightMargin: 8
-                        anchors.verticalCenter: parent.verticalCenter
-                        height: 30
-                        width: settingsTabsRow.implicitWidth + 4
-                        radius: 9
-                        color: theme.bgInput || (darkMode ? "#1a1c22" : "#eceef3")
-                        border.width: 1
-                        border.color: root.borderGroup
-
-                        Row {
-                            id: settingsTabsRow
-                            anchors.centerIn: parent
-                            spacing: 2
-
-                            M3Button {
-                                text: root.ui.tabGeneral || "General"
-                                ghost: root.activeSettingsTab !== 0
-                                activeChip: root.activeSettingsTab === 0
-                                darkMode: root.darkMode
-                                theme: root.theme
-                                buttonHeight: 26
-                                horizontalPadding: 10
-                                cornerRadius: 8
-                                onClicked: root.activeSettingsTab = 0
-                            }
-
-                            M3Button {
-                                text: root.ui.tabTheme || "Theme"
-                                ghost: root.activeSettingsTab !== 1
-                                activeChip: root.activeSettingsTab === 1
-                                darkMode: root.darkMode
-                                theme: root.theme
-                                buttonHeight: 26
-                                horizontalPadding: 10
-                                cornerRadius: 8
-                                onClicked: root.activeSettingsTab = 1
-                            }
-
-                            M3Button {
-                                text: root.ui.tabUpdates || "Updates"
-                                ghost: root.activeSettingsTab !== 2
-                                activeChip: root.activeSettingsTab === 2
-                                showDot: root.updStatus === 3 || root.updStatus === 5
-                                darkMode: root.darkMode
-                                theme: root.theme
-                                buttonHeight: 26
-                                horizontalPadding: 10
-                                cornerRadius: 8
-                                onClicked: root.activeSettingsTab = 2
-                            }
-                        }
-                    }
-
-                    M3Button {
-                        id: closeSettingsBtn
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        iconKind: "close"
-                        iconOnly: true
-                        ghost: true
-                        darkMode: root.darkMode
-                        theme: root.theme
-                        buttonHeight: 28
-                        cornerRadius: 9
-                        onClicked: root.closed()
-                    }
-                }
-
-                Rectangle {
-                    width: parent.width
-                    height: 1
-                    color: root.borderDivider
-                }
 
                 Column {
                     visible: root.activeSettingsTab === 0
@@ -1367,121 +1397,63 @@ Item {
 
                     Rectangle {
                         width: parent.width
-                        height: aboutCol.implicitHeight
+                        height: 60
                         radius: 10
                         color: root.bgGroup
                         border.width: 1
                         border.color: root.borderGroup
                         clip: true
 
+                        NullaMark {
+                            id: aboutMark
+                            size: 22
+                            color: root.fgTitle
+                            anchors.left: parent.left
+                            anchors.leftMargin: 14
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
                         Column {
-                            id: aboutCol
-                            width: parent.width
-                            spacing: 0
+                            anchors.left: aboutMark.right
+                            anchors.leftMargin: 12
+                            anchors.right: repoBtn.left
+                            anchors.rightMargin: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 2
 
-                            Item {
+                            Text {
                                 width: parent.width
-                                height: 56
-
-                                NullaMark {
-                                    id: aboutMark
-                                    size: 22
-                                    color: root.fgTitle
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 14
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-
-                                Column {
-                                    anchors.left: aboutMark.right
-                                    anchors.leftMargin: 12
-                                    anchors.right: repoBtn.left
-                                    anchors.rightMargin: 10
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    spacing: 2
-
-                                    Text {
-                                        width: parent.width
-                                        elide: Text.ElideRight
-                                        text: "Nulla" + (root.updater ? (" v" + root.updater.currentVersion) : "")
-                                        color: root.fgTitle
-                                        font.pixelSize: 13
-                                        font.weight: Font.DemiBold
-                                    }
-
-                                    Text {
-                                        width: parent.width
-                                        elide: Text.ElideRight
-                                        text: (root.ui.updCreatedBy || "Created by") + " " + (root.updater ? root.updater.authorName : "pzwt4cc")
-                                        color: root.fgSub
-                                        font.pixelSize: 12
-                                    }
-                                }
-
-                                M3Button {
-                                    id: repoBtn
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: 10
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: "GitHub"
-                                    elevated: true
-                                    darkMode: root.darkMode
-                                    theme: root.theme
-                                    buttonHeight: 28
-                                    horizontalPadding: 12
-                                    cornerRadius: 8
-                                    tooltipText: root.updater ? root.updater.repoUrl : "https://github.com/pzwt4cc/nulla"
-                                    onClicked: if (root.updater) {
-                                        root.updater.openRepoPage();
-                                    }
-                                }
+                                elide: Text.ElideRight
+                                text: "Nulla" + (root.updater ? (" v" + root.updater.currentVersion) : "")
+                                color: root.fgTitle
+                                font.pixelSize: 13
+                                font.weight: Font.DemiBold
                             }
 
-                            Rectangle {
-                                width: parent.width - 24
-                                height: 1
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                color: root.borderDivider
-                            }
-
-                            Rectangle {
+                            Text {
                                 width: parent.width
-                                height: 42
-                                color: repoLinkMa.containsMouse ? (theme.bgHover || (darkMode ? "#1c1e24" : "#eceff5")) : "transparent"
+                                elide: Text.ElideRight
+                                text: (root.ui.updCreatedBy || "Created by") + " " + (root.updater ? root.updater.authorName : "pzwt4cc")
+                                color: root.fgSub
+                                font.pixelSize: 12
+                            }
+                        }
 
-                                Text {
-                                    id: repoLabel
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 14
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: root.ui.updRepository || "Repository"
-                                    color: root.fgLabel
-                                    font.pixelSize: 13
-                                }
-
-                                Text {
-                                    anchors.left: repoLabel.right
-                                    anchors.leftMargin: 12
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: 14
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    horizontalAlignment: Text.AlignRight
-                                    elide: Text.ElideRight
-                                    text: root.updater ? root.updater.repoUrl : "https://github.com/pzwt4cc/nulla"
-                                    color: repoLinkMa.containsMouse ? root.fgTitle : root.fgSub
-                                    font.pixelSize: 12
-                                    font.underline: repoLinkMa.containsMouse
-                                }
-
-                                MouseArea {
-                                    id: repoLinkMa
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: if (root.updater) {
-                                        root.updater.openRepoPage();
-                                    }
-                                }
+                        M3Button {
+                            id: repoBtn
+                            anchors.right: parent.right
+                            anchors.rightMargin: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "GitHub"
+                            elevated: true
+                            darkMode: root.darkMode
+                            theme: root.theme
+                            buttonHeight: 28
+                            horizontalPadding: 12
+                            cornerRadius: 8
+                            tooltipText: root.updater ? root.updater.repoUrl : "https://github.com/pzwt4cc/nulla"
+                            onClicked: if (root.updater) {
+                                root.updater.openRepoPage();
                             }
                         }
                     }

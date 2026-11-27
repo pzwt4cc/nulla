@@ -142,6 +142,5 @@
   "updSystemHint": "システムパッケージ — パッケージマネージャまたは GitHub から更新してください。",
   "updLastChecked": "最終確認:",
   "updCurrentPrefix": "現在:",
-  "updCreatedBy": "作者:",
-  "updRepository": "リポジトリ"
+  "updCreatedBy": "作者:"
 }

@@ -21,7 +21,7 @@ Rectangle {
     signal zoomOutRequested
     signal zoomResetRequested
 
-    implicitHeight: 26
+    implicitHeight: 32
     height: implicitHeight
     clip: true
     color: "transparent"
@@ -46,40 +46,19 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 6
 
-        M3Button {
-            anchors.verticalCenter: parent.verticalCenter
-            text: (root.ui.statusLn || "Ln") + " " + (root.activeTab ? root.activeTab.cursorLine : 1) + ", " + (root.ui.statusCol || "Col") + " " + (root.activeTab ? root.activeTab.cursorColumn : 1) + (root.selectedChars > 0 ? (" · " + root.selectedChars + " " + (root.ui.statusSel || "sel")) : "")
-            ghost: true
-            darkMode: root.darkMode
-            theme: root.theme
-            buttonHeight: 20
-            horizontalPadding: 6
-            fontPixelSize: 11
-            cornerRadius: 4
-            tooltipText: root.ui.statusGotoTip || "Go to Line (Ctrl+G)"
-            onClicked: root.gotoLineClicked()
-        }
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: "·"
-            color: root.fgGutter
-            font.pixelSize: 11
-        }
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            readonly property int lines: root.activeTab ? root.activeTab.lineCount : 1
-            text: lines + " " + (lines === 1 ? (root.ui.statusLineOne || "line") : (root.ui.statusLineMany || "lines"))
-            color: root.fgMuted
-            font.pixelSize: 11
-        }
-
-        Row {
-            visible: root.activeTab ? root.activeTab.modified : false
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 5
-            leftPadding: 4
+            M3Button {
+                anchors.verticalCenter: parent.verticalCenter
+                text: (root.ui.statusLn || "Ln") + " " + (root.activeTab ? root.activeTab.cursorLine : 1) + ", " + (root.ui.statusCol || "Col") + " " + (root.activeTab ? root.activeTab.cursorColumn : 1) + (root.selectedChars > 0 ? (" · " + root.selectedChars + " " + (root.ui.statusSel || "sel")) : "")
+                ghost: true
+                darkMode: root.darkMode
+                theme: root.theme
+                buttonHeight: 24
+                horizontalPadding: 7
+                fontPixelSize: 11
+                cornerRadius: 4
+                tooltipText: root.ui.statusGotoTip || "Go to Line (Ctrl+G)"
+                onClicked: root.gotoLineClicked()
+            }
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
@@ -88,22 +67,43 @@ Rectangle {
                 font.pixelSize: 11
             }
 
-            Rectangle {
-                width: 5
-                height: 5
-                radius: 3
-                anchors.verticalCenter: parent.verticalCenter
-                color: root.fgMain
-            }
-
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: root.ui.statusUnsaved || "Unsaved"
-                color: root.fgMain
+                readonly property int lines: root.activeTab ? root.activeTab.lineCount : 1
+                text: lines + " " + (lines === 1 ? (root.ui.statusLineOne || "line") : (root.ui.statusLineMany || "lines"))
+                color: root.fgMuted
                 font.pixelSize: 11
-                font.weight: Font.Medium
             }
-        }
+
+            Row {
+                visible: root.activeTab ? root.activeTab.modified : false
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 5
+                leftPadding: 4
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "·"
+                    color: root.fgGutter
+                    font.pixelSize: 11
+                }
+
+                Rectangle {
+                    width: 5
+                    height: 5
+                    radius: 3
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: root.fgMain
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.ui.statusUnsaved || "Unsaved"
+                    color: root.fgMain
+                    font.pixelSize: 11
+                    font.weight: Font.Medium
+                }
+            }
         }
     }
 
@@ -123,7 +123,7 @@ Rectangle {
             ghost: true
             darkMode: root.darkMode
             theme: root.theme
-            buttonHeight: 20
+            buttonHeight: 24
             horizontalPadding: 7
             fontPixelSize: 11
             cornerRadius: 4
@@ -145,8 +145,8 @@ Rectangle {
             ghost: true
             darkMode: root.darkMode
             theme: root.theme
-            buttonHeight: 20
-            buttonWidth: 20
+            buttonHeight: 24
+            buttonWidth: 22
             iconSize: 11
             cornerRadius: 4
             tooltipText: root.ui.statusZoomOutTip || "Zoom Out (Ctrl+-)"
@@ -159,8 +159,8 @@ Rectangle {
             ghost: true
             darkMode: root.darkMode
             theme: root.theme
-            buttonHeight: 20
-            horizontalPadding: 6
+            buttonHeight: 24
+            horizontalPadding: 7
             fontPixelSize: 11
             cornerRadius: 4
             tooltipText: root.ui.statusZoomResetTip || "Reset Zoom (Ctrl+0)"
@@ -174,8 +174,8 @@ Rectangle {
             ghost: true
             darkMode: root.darkMode
             theme: root.theme
-            buttonHeight: 20
-            buttonWidth: 20
+            buttonHeight: 24
+            buttonWidth: 22
             iconSize: 11
             cornerRadius: 4
             tooltipText: root.ui.statusZoomInTip || "Zoom In (Ctrl++)"

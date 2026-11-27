@@ -23,7 +23,7 @@ Rectangle {
     signal zoomOutRequested
     signal zoomResetRequested
 
-    implicitHeight: 36
+    implicitHeight: 42
     height: implicitHeight
     clip: true
     color: "transparent"
@@ -40,7 +40,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.leftMargin: 10
         anchors.verticalCenter: parent.verticalCenter
-        height: 26
+        height: 28
         width: Math.min(leftInfoRow.implicitWidth + 4, Math.max(0, root.width - rightStatusRow.width - 30))
         clip: true
         radius: 6
@@ -72,7 +72,7 @@ Rectangle {
                 ghost: true
                 darkMode: root.darkMode
                 theme: root.theme
-                buttonHeight: 22
+                buttonHeight: 24
                 horizontalPadding: 9
                 fontPixelSize: 12
                 cornerRadius: 4
@@ -82,7 +82,7 @@ Rectangle {
 
             Rectangle {
                 width: 1
-                height: 12
+                height: 13
                 anchors.verticalCenter: parent.verticalCenter
                 color: root.borderSubtle
             }
@@ -100,7 +100,7 @@ Rectangle {
             Rectangle {
                 visible: root.activeTab ? root.activeTab.modified : false
                 width: 1
-                height: 12
+                height: 13
                 anchors.verticalCenter: parent.verticalCenter
                 color: root.borderSubtle
             }
@@ -146,8 +146,8 @@ Rectangle {
             iconSize: 12
             elevated: true
             darkMode: root.darkMode
-                theme: root.theme
-            buttonHeight: 26
+            theme: root.theme
+            buttonHeight: 28
             horizontalPadding: 11
             fontPixelSize: 12
             cornerRadius: 6
@@ -157,7 +157,7 @@ Rectangle {
 
         Rectangle {
             anchors.verticalCenter: parent.verticalCenter
-            height: 26
+            height: 28
             width: zoomPillRow.implicitWidth + 4
             radius: 6
             color: root.bgSurfaceElev
@@ -185,9 +185,9 @@ Rectangle {
                     iconOnly: true
                     ghost: true
                     darkMode: root.darkMode
-                theme: root.theme
-                    buttonHeight: 22
-                    buttonWidth: 24
+                    theme: root.theme
+                    buttonHeight: 24
+                    buttonWidth: 26
                     iconSize: 12
                     cornerRadius: 4
                     tooltipText: root.ui.statusZoomOutTip || "Zoom Out (Ctrl+-)"
@@ -196,7 +196,7 @@ Rectangle {
 
                 Rectangle {
                     width: 1
-                    height: 12
+                    height: 13
                     anchors.verticalCenter: parent.verticalCenter
                     color: root.borderSubtle
                 }
@@ -205,8 +205,8 @@ Rectangle {
                     text: root.zoomPercent + "%"
                     ghost: true
                     darkMode: root.darkMode
-                theme: root.theme
-                    buttonHeight: 22
+                    theme: root.theme
+                    buttonHeight: 24
                     horizontalPadding: 9
                     fontPixelSize: 12
                     cornerRadius: 4
@@ -216,7 +216,7 @@ Rectangle {
 
                 Rectangle {
                     width: 1
-                    height: 12
+                    height: 13
                     anchors.verticalCenter: parent.verticalCenter
                     color: root.borderSubtle
                 }
@@ -226,9 +226,9 @@ Rectangle {
                     iconOnly: true
                     ghost: true
                     darkMode: root.darkMode
-                theme: root.theme
-                    buttonHeight: 22
-                    buttonWidth: 24
+                    theme: root.theme
+                    buttonHeight: 24
+                    buttonWidth: 26
                     iconSize: 12
                     cornerRadius: 4
                     tooltipText: root.ui.statusZoomInTip || "Zoom In (Ctrl++)"

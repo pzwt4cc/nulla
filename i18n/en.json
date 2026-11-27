@@ -142,6 +142,5 @@
   "updSystemHint": "System package detected — update via package manager or GitHub release.",
   "updLastChecked": "Last checked:",
   "updCurrentPrefix": "Installed:",
-  "updCreatedBy": "Created by",
-  "updRepository": "Repository"
+  "updCreatedBy": "Created by"
 }
