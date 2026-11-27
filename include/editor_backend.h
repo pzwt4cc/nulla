@@ -2,6 +2,7 @@
 #define NULLA_EDITOR_BACKEND_H
 
 #include "tab_session.h"
+#include "update_manager.h"
 
 #include <QAbstractListModel>
 #include <QHash>
@@ -85,6 +86,7 @@ class EditorBackend : public QObject {
   Q_PROPERTY(QVariantMap ui READ ui NOTIFY uiLanguageChanged)
   Q_PROPERTY(bool showWindowControls READ showWindowControls CONSTANT)
   Q_PROPERTY(QString monoFontFamily READ monoFontFamily CONSTANT)
+  Q_PROPERTY(UpdateManager *updater READ updater CONSTANT)
 
 public:
   enum ThemeMode {
@@ -129,6 +131,7 @@ public:
   QVariantMap ui() const { return m_uiStrings; }
   bool showWindowControls() const { return m_showWindowControls; }
   QString monoFontFamily() const { return m_monoFontFamily; }
+  UpdateManager *updater() const { return m_updater; }
 
   void setActiveTabIndex(int index);
   void setShowLineNumbers(bool show);
@@ -228,6 +231,7 @@ private:
   QFileSystemWatcher *m_themeWatcher = nullptr;
   QTimer *m_themeReloadTimer = nullptr;
   QStringList m_watchedThemeFiles;
+  UpdateManager *m_updater = nullptr;
 };
 
 #endif

@@ -1,6 +1,7 @@
 #include "editor_backend.h"
 #include "editor_view.h"
 #include "tab_session.h"
+#include "update_manager.h"
 
 #include <QApplication>
 #include <QIcon>
@@ -11,6 +12,10 @@
 #include <QStandardPaths>
 #include <QtEnvironmentVariables>
 #include <QtGlobal>
+
+#ifndef NULLA_APP_VERSION
+#define NULLA_APP_VERSION "0.3.0"
+#endif
 
 #if defined(Q_OS_LINUX)
 static bool isWaylandSession() {
@@ -48,6 +53,7 @@ int main(int argc, char *argv[]) {
 #endif
   QApplication app(argc, argv);
   app.setApplicationName(QStringLiteral("Nulla"));
+  app.setApplicationVersion(QStringLiteral(NULLA_APP_VERSION));
   app.setOrganizationName(QStringLiteral("Nulla"));
 #if defined(Q_OS_LINUX)
   if (!QStandardPaths::locate(QStandardPaths::ApplicationsLocation,
@@ -66,6 +72,9 @@ int main(int argc, char *argv[]) {
       "Nulla", 1, 0, "TabSession", QStringLiteral("Managed by EditorBackend"));
   qmlRegisterUncreatableType<TabModel>(
       "Nulla", 1, 0, "TabModel", QStringLiteral("Managed by EditorBackend"));
+  qmlRegisterUncreatableType<UpdateManager>(
+      "Nulla", 1, 0, "UpdateManager",
+      QStringLiteral("Managed by EditorBackend"));
 
   QStringList initialFiles;
   const QStringList args = app.arguments();

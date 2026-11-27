@@ -12,11 +12,21 @@ Item {
     property int activeSettingsTab: 0
 
     signal closed
+    signal updateRestartRequested
 
+    readonly property var updater: backend ? backend.updater : null
+    readonly property int updStatus: updater ? updater.status : 0
     readonly property bool dropdownOpen: langPopup.opened
 
     function closeDropdown() {
         langPopup.close();
+    }
+
+    function formattedLastCheck() {
+        if (!updater || updater.lastCheckEpoch <= 0) {
+            return "";
+        }
+        return Qt.formatDateTime(new Date(updater.lastCheckEpoch * 1000), Qt.DefaultLocaleShortDate);
     }
 
     readonly property color bgCard: theme.bgCard || (darkMode ? "#17191e" : "#ffffff")
@@ -78,7 +88,7 @@ Item {
 
     Rectangle {
         id: card
-        width: Math.max(0, Math.min(parent.width - 40, 468))
+        width: Math.max(0, Math.min(parent.width - 40, 540))
         height: Math.max(0, Math.min(parent.height - 40, mainCol.implicitHeight + 36))
         anchors.centerIn: parent
         radius: 12
@@ -127,7 +137,10 @@ Item {
 
                     Text {
                         anchors.left: parent.left
+                        anchors.right: settingsTabsBox.left
+                        anchors.rightMargin: 10
                         anchors.verticalCenter: parent.verticalCenter
+                        elide: Text.ElideRight
                         text: root.ui.settingsTitle || "Settings"
                         color: root.fgTitle
                         font.pixelSize: 15
@@ -135,6 +148,7 @@ Item {
                     }
 
                     Rectangle {
+                        id: settingsTabsBox
                         anchors.right: closeSettingsBtn.left
                         anchors.rightMargin: 8
                         anchors.verticalCenter: parent.verticalCenter
@@ -157,7 +171,7 @@ Item {
                                 darkMode: root.darkMode
                                 theme: root.theme
                                 buttonHeight: 26
-                                horizontalPadding: 12
+                                horizontalPadding: 10
                                 cornerRadius: 8
                                 onClicked: root.activeSettingsTab = 0
                             }
@@ -169,9 +183,22 @@ Item {
                                 darkMode: root.darkMode
                                 theme: root.theme
                                 buttonHeight: 26
-                                horizontalPadding: 12
+                                horizontalPadding: 10
                                 cornerRadius: 8
                                 onClicked: root.activeSettingsTab = 1
+                            }
+
+                            M3Button {
+                                text: root.ui.tabUpdates || "Updates"
+                                ghost: root.activeSettingsTab !== 2
+                                activeChip: root.activeSettingsTab === 2
+                                showDot: root.updStatus === 3 || root.updStatus === 5
+                                darkMode: root.darkMode
+                                theme: root.theme
+                                buttonHeight: 26
+                                horizontalPadding: 10
+                                cornerRadius: 8
+                                onClicked: root.activeSettingsTab = 2
                             }
                         }
                     }
@@ -1091,6 +1118,368 @@ Item {
                                         height: 1
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         color: root.borderDivider
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Column {
+                    visible: root.activeSettingsTab === 2
+                    width: parent.width
+                    spacing: 12
+
+                    Text {
+                        text: root.ui.secUpdates || "UPDATES"
+                        color: root.fgSub
+                        font.pixelSize: 10
+                        font.weight: Font.DemiBold
+                        font.letterSpacing: 0.8
+                    }
+
+                    Rectangle {
+                        width: parent.width
+                        height: updatesCol.implicitHeight
+                        radius: 10
+                        color: root.bgGroup
+                        border.width: 1
+                        border.color: root.borderGroup
+                        clip: true
+
+                        Column {
+                            id: updatesCol
+                            width: parent.width
+                            spacing: 0
+
+                            Item {
+                                width: parent.width
+                                height: Math.max(58, updStatusCol.implicitHeight + 22)
+
+                                Column {
+                                    id: updStatusCol
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 14
+                                    anchors.right: updBtnRow.left
+                                    anchors.rightMargin: 10
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: 2
+
+                                    Text {
+                                        width: parent.width
+                                        elide: Text.ElideRight
+                                        color: root.fgLabel
+                                        font.pixelSize: 13
+                                        font.weight: Font.Medium
+                                        text: {
+                                            if (!root.updater) {
+                                                return "";
+                                            }
+                                            if (root.updStatus === 1) {
+                                                return root.ui.updStatusChecking || "Checking for updates...";
+                                            }
+                                            if (root.updStatus === 2) {
+                                                return root.ui.updStatusUpToDate || "You're up to date";
+                                            }
+                                            if (root.updStatus === 3) {
+                                                return (root.ui.updStatusAvailable || "Update available") + " · v" + root.updater.availableVersion;
+                                            }
+                                            if (root.updStatus === 4) {
+                                                return (root.ui.updStatusDownloading || "Downloading update...") + " " + root.updater.downloadProgress + "%";
+                                            }
+                                            if (root.updStatus === 5) {
+                                                return (root.ui.updStatusReady || "Ready to install") + " · v" + root.updater.availableVersion;
+                                            }
+                                            if (root.updStatus === 6) {
+                                                return root.ui.updStatusInstalling || "Installing update...";
+                                            }
+                                            if (root.updStatus === 7) {
+                                                return root.ui.updStatusError || "Update check failed";
+                                            }
+                                            return (root.ui.updStatusIdle || "Current version") + " v" + root.updater.currentVersion;
+                                        }
+                                    }
+
+                                    Text {
+                                        width: parent.width
+                                        elide: Text.ElideRight
+                                        color: root.fgSub
+                                        font.pixelSize: 11
+                                        text: {
+                                            if (!root.updater) {
+                                                return "";
+                                            }
+                                            if (root.updStatus === 7 && root.updater.errorMessage !== "") {
+                                                return root.updater.errorMessage;
+                                            }
+                                            if ((root.updStatus === 3 || root.updStatus === 5) && (root.updater.systemInstalled || !root.updater.canSelfUpdate)) {
+                                                return root.ui.updSystemHint || "System package detected — update via package manager or GitHub release.";
+                                            }
+                                            const checked = root.formattedLastCheck();
+                                            if (checked !== "") {
+                                                return (root.ui.updLastChecked || "Last checked:") + " " + checked;
+                                            }
+                                            return (root.ui.updCurrentPrefix || "Installed:") + " v" + root.updater.currentVersion;
+                                        }
+                                    }
+                                }
+
+                                Row {
+                                    id: updBtnRow
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 10
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: 6
+
+                                    M3Button {
+                                        visible: root.updStatus === 3 || root.updStatus === 5
+                                        iconKind: "refresh"
+                                        iconOnly: true
+                                        ghost: true
+                                        darkMode: root.darkMode
+                                        theme: root.theme
+                                        buttonHeight: 28
+                                        cornerRadius: 8
+                                        tooltipText: root.ui.updBtnCheck || "Check for updates"
+                                        onClicked: if (root.updater) {
+                                            root.updater.checkForUpdates(true);
+                                        }
+                                    }
+
+                                    M3Button {
+                                        visible: root.updStatus !== 3 && root.updStatus !== 4 && root.updStatus !== 5 && root.updStatus !== 6
+                                        iconKind: "refresh"
+                                        text: root.updStatus === 1 ? (root.ui.updStatusChecking || "Checking...") : (root.ui.updBtnCheck || "Check for updates")
+                                        elevated: root.updStatus !== 1
+                                        ghost: root.updStatus === 1
+                                        darkMode: root.darkMode
+                                        theme: root.theme
+                                        buttonHeight: 28
+                                        horizontalPadding: 11
+                                        cornerRadius: 8
+                                        onClicked: if (root.updater && root.updStatus !== 1) {
+                                            root.updater.checkForUpdates(true);
+                                        }
+                                    }
+
+                                    M3Button {
+                                        visible: root.updStatus === 3
+                                        text: (root.updater && root.updater.canSelfUpdate) ? (root.ui.updBtnUpdate || "Update") : (root.ui.updBtnRelease || "Release")
+                                        primaryFill: true
+                                        darkMode: root.darkMode
+                                        theme: root.theme
+                                        buttonHeight: 28
+                                        horizontalPadding: 12
+                                        cornerRadius: 8
+                                        onClicked: if (root.updater) {
+                                            root.updater.startDownload();
+                                        }
+                                    }
+
+                                    M3Button {
+                                        visible: root.updStatus === 5
+                                        text: root.ui.updBtnRestart || "Restart & Update"
+                                        primaryFill: true
+                                        darkMode: root.darkMode
+                                        theme: root.theme
+                                        buttonHeight: 28
+                                        horizontalPadding: 12
+                                        cornerRadius: 8
+                                        onClicked: root.updateRestartRequested()
+                                    }
+                                }
+                            }
+
+                            Item {
+                                visible: root.updStatus === 4
+                                width: parent.width
+                                height: visible ? 24 : 0
+                                clip: true
+
+                                Rectangle {
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.leftMargin: 14
+                                    anchors.rightMargin: 14
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    height: 5
+                                    radius: 2.5
+                                    color: root.borderDivider
+                                    clip: true
+
+                                    Rectangle {
+                                        height: parent.height
+                                        radius: 2.5
+                                        color: root.fgTitle
+                                        width: Math.max(6, parent.width * (root.updater ? Math.max(0, Math.min(100, root.updater.downloadProgress)) / 100.0 : 0))
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                width: parent.width - 24
+                                height: 1
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                color: root.borderDivider
+                            }
+
+                            Item {
+                                width: parent.width
+                                height: 48
+
+                                Text {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 14
+                                    anchors.right: autoUpdSwitch.left
+                                    anchors.rightMargin: 10
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    elide: Text.ElideRight
+                                    text: root.ui.lblAutoUpdate || "Check automatically"
+                                    color: root.fgLabel
+                                    font.pixelSize: 13
+                                }
+
+                                M3Switch {
+                                    id: autoUpdSwitch
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 12
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    darkMode: root.darkMode
+                                    theme: root.theme
+                                    checked: root.updater ? root.updater.autoCheck : true
+                                    onToggled: function (v) {
+                                        if (root.updater) {
+                                            root.updater.autoCheck = v;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: root.ui.secAbout || "ABOUT"
+                        color: root.fgSub
+                        font.pixelSize: 10
+                        font.weight: Font.DemiBold
+                        font.letterSpacing: 0.8
+                    }
+
+                    Rectangle {
+                        width: parent.width
+                        height: aboutCol.implicitHeight
+                        radius: 10
+                        color: root.bgGroup
+                        border.width: 1
+                        border.color: root.borderGroup
+                        clip: true
+
+                        Column {
+                            id: aboutCol
+                            width: parent.width
+                            spacing: 0
+
+                            Item {
+                                width: parent.width
+                                height: 56
+
+                                NullaMark {
+                                    id: aboutMark
+                                    size: 22
+                                    color: root.fgTitle
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 14
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                Column {
+                                    anchors.left: aboutMark.right
+                                    anchors.leftMargin: 12
+                                    anchors.right: repoBtn.left
+                                    anchors.rightMargin: 10
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: 2
+
+                                    Text {
+                                        width: parent.width
+                                        elide: Text.ElideRight
+                                        text: "Nulla" + (root.updater ? (" v" + root.updater.currentVersion) : "")
+                                        color: root.fgTitle
+                                        font.pixelSize: 13
+                                        font.weight: Font.DemiBold
+                                    }
+
+                                    Text {
+                                        width: parent.width
+                                        elide: Text.ElideRight
+                                        text: (root.ui.updCreatedBy || "Created by") + " " + (root.updater ? root.updater.authorName : "pzwt4cc")
+                                        color: root.fgSub
+                                        font.pixelSize: 12
+                                    }
+                                }
+
+                                M3Button {
+                                    id: repoBtn
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 10
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: "GitHub"
+                                    elevated: true
+                                    darkMode: root.darkMode
+                                    theme: root.theme
+                                    buttonHeight: 28
+                                    horizontalPadding: 12
+                                    cornerRadius: 8
+                                    tooltipText: root.updater ? root.updater.repoUrl : "https://github.com/pzwt4cc/nulla"
+                                    onClicked: if (root.updater) {
+                                        root.updater.openRepoPage();
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                width: parent.width - 24
+                                height: 1
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                color: root.borderDivider
+                            }
+
+                            Rectangle {
+                                width: parent.width
+                                height: 42
+                                color: repoLinkMa.containsMouse ? (theme.bgHover || (darkMode ? "#1c1e24" : "#eceff5")) : "transparent"
+
+                                Text {
+                                    id: repoLabel
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 14
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: root.ui.updRepository || "Repository"
+                                    color: root.fgLabel
+                                    font.pixelSize: 13
+                                }
+
+                                Text {
+                                    anchors.left: repoLabel.right
+                                    anchors.leftMargin: 12
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 14
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    horizontalAlignment: Text.AlignRight
+                                    elide: Text.ElideRight
+                                    text: root.updater ? root.updater.repoUrl : "https://github.com/pzwt4cc/nulla"
+                                    color: repoLinkMa.containsMouse ? root.fgTitle : root.fgSub
+                                    font.pixelSize: 12
+                                    font.underline: repoLinkMa.containsMouse
+                                }
+
+                                MouseArea {
+                                    id: repoLinkMa
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: if (root.updater) {
+                                        root.updater.openRepoPage();
                                     }
                                 }
                             }

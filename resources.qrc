@@ -18,6 +18,7 @@
         <file>qml/SettingsModal.qml</file>
         <file>qml/LanguageModal.qml</file>
         <file>qml/ConfirmModal.qml</file>
+        <file>qml/UpdateToast.qml</file>
         <file>assets/nulla.svg</file>
         <file>i18n/de.json</file>
         <file>i18n/en.json</file>

@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Quick QuickControls2)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Quick QuickControls2 Network)
 find_program(CARGO_EXECUTABLE cargo REQUIRED)
 
 if(MSVC)
@@ -34,6 +34,7 @@ set(NULLA_SOURCES
     src/tab_session.cpp
     src/editor_view.cpp
     src/theme_palette.cpp
+    src/update_manager.cpp
 )
 
 set(NULLA_HEADERS
@@ -41,6 +42,7 @@ set(NULLA_HEADERS
     include/tab_session.h
     include/editor_view.h
     include/theme_palette.h
+    include/update_manager.h
     include/nulla_core.h
 )
 
@@ -61,11 +63,13 @@ add_executable(nulla
 add_dependencies(nulla nulla_core_rust)
 
 target_include_directories(nulla PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_definitions(nulla PRIVATE NULLA_APP_VERSION="${PROJECT_VERSION}")
 
 target_link_libraries(nulla PRIVATE
     Qt6::Widgets
     Qt6::QuickControls2
     Qt6::Quick
+    Qt6::Network
     Qt6::Gui
     Qt6::Core
     "${NULLA_CORE_LIB}"

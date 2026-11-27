@@ -1,6 +1,7 @@
 #include "editor_backend.h"
 #include "nulla_core.h"
 #include "theme_palette.h"
+#include "update_manager.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -112,7 +113,7 @@ EditorBackend::EditorBackend(QObject *parent)
       m_showWindowControls(nulla::theme::detectWindowControls()),
       m_monoFontFamily(pickMonoFontFamily()),
       m_themeWatcher(new QFileSystemWatcher(this)),
-      m_themeReloadTimer(new QTimer(this)) {
+      m_themeReloadTimer(new QTimer(this)), m_updater(new UpdateManager(this)) {
   m_themeReloadTimer->setSingleShot(true);
   m_themeReloadTimer->setInterval(80);
   connect(m_themeReloadTimer, &QTimer::timeout, this,

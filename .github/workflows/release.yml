@@ -54,12 +54,17 @@ jobs:
             $ver = $Matches[1]
           }
           ./package/windows/build-msi.ps1 -Version $ver
+          $msiName = "Nulla-$ver-win64.msi"
+          $hash = (Get-FileHash -Path "dist/$msiName" -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $msiName" | Out-File -FilePath "dist/$msiName.sha256" -Encoding ascii -NoNewline
 
       - name: Upload MSI artifact
         uses: actions/upload-artifact@v4
         with:
           name: nulla-windows-msi
-          path: dist/*.msi
+          path: |
+            dist/*.msi
+            dist/*.msi.sha256
           if-no-files-found: error
 
   build-linux:

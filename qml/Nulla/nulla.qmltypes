@@ -4,7 +4,7 @@ import QtQuick.tooling 1.2
 Module {
     Component {
         file: "editor_backend.h"
-        lineNumber: 46
+        lineNumber: 47
         name: "EditorBackend"
         accessSemantics: "reference"
         prototype: "QObject"
@@ -12,7 +12,7 @@ Module {
         exportMetaObjectRevisions: [256]
         Enum {
             name: "ThemeMode"
-            lineNumber: 90
+            lineNumber: 92
             values: [
                 "ThemeSystem",
                 "ThemeLight",
@@ -22,7 +22,7 @@ Module {
         }
         Enum {
             name: "LayoutMode"
-            lineNumber: 98
+            lineNumber: 100
             values: ["LayoutMinimal", "LayoutExpanded"]
         }
         Property {
@@ -31,7 +31,7 @@ Module {
             isPointer: true
             read: "tabModel"
             index: 0
-            lineNumber: 49
+            lineNumber: 50
             isReadonly: true
             isPropertyConstant: true
         }
@@ -42,7 +42,7 @@ Module {
             write: "setActiveTabIndex"
             notify: "activeTabChanged"
             index: 1
-            lineNumber: 50
+            lineNumber: 51
         }
         Property {
             name: "activeTab"
@@ -51,7 +51,7 @@ Module {
             read: "activeTab"
             notify: "activeTabChanged"
             index: 2
-            lineNumber: 52
+            lineNumber: 53
             isReadonly: true
         }
         Property {
@@ -60,7 +60,7 @@ Module {
             read: "tabCount"
             notify: "tabCountChanged"
             index: 3
-            lineNumber: 53
+            lineNumber: 54
             isReadonly: true
         }
         Property {
@@ -70,7 +70,7 @@ Module {
             write: "setShowLineNumbers"
             notify: "settingsChanged"
             index: 4
-            lineNumber: 54
+            lineNumber: 55
         }
         Property {
             name: "showIndentGuides"
@@ -79,7 +79,7 @@ Module {
             write: "setShowIndentGuides"
             notify: "settingsChanged"
             index: 5
-            lineNumber: 56
+            lineNumber: 57
         }
         Property {
             name: "themeMode"
@@ -88,7 +88,7 @@ Module {
             write: "setThemeMode"
             notify: "themeChanged"
             index: 6
-            lineNumber: 58
+            lineNumber: 59
         }
         Property {
             name: "layoutMode"
@@ -97,7 +97,7 @@ Module {
             write: "setLayoutMode"
             notify: "settingsChanged"
             index: 7
-            lineNumber: 60
+            lineNumber: 61
         }
         Property {
             name: "sidebarOpen"
@@ -106,7 +106,7 @@ Module {
             write: "setSidebarOpen"
             notify: "settingsChanged"
             index: 8
-            lineNumber: 62
+            lineNumber: 63
         }
         Property {
             name: "sidebarWidth"
@@ -115,7 +115,7 @@ Module {
             write: "setSidebarWidth"
             notify: "settingsChanged"
             index: 9
-            lineNumber: 64
+            lineNumber: 65
         }
         Property {
             name: "sidebarScalePercent"
@@ -124,7 +124,7 @@ Module {
             write: "setSidebarScalePercent"
             notify: "settingsChanged"
             index: 10
-            lineNumber: 66
+            lineNumber: 67
         }
         Property {
             name: "expandedIconSize"
@@ -133,7 +133,7 @@ Module {
             write: "setExpandedIconSize"
             notify: "settingsChanged"
             index: 11
-            lineNumber: 68
+            lineNumber: 69
         }
         Property {
             name: "workspaceRoot"
@@ -141,7 +141,7 @@ Module {
             read: "workspaceRoot"
             notify: "folderChanged"
             index: 12
-            lineNumber: 70
+            lineNumber: 71
             isReadonly: true
         }
         Property {
@@ -150,7 +150,7 @@ Module {
             read: "workspaceName"
             notify: "folderChanged"
             index: 13
-            lineNumber: 71
+            lineNumber: 72
             isReadonly: true
         }
         Property {
@@ -159,7 +159,7 @@ Module {
             read: "folderEntries"
             notify: "folderChanged"
             index: 14
-            lineNumber: 72
+            lineNumber: 73
             isReadonly: true
         }
         Property {
@@ -168,7 +168,7 @@ Module {
             read: "effectiveDark"
             notify: "themeChanged"
             index: 15
-            lineNumber: 73
+            lineNumber: 74
             isReadonly: true
         }
         Property {
@@ -177,7 +177,7 @@ Module {
             read: "theme"
             notify: "themeChanged"
             index: 16
-            lineNumber: 74
+            lineNumber: 75
             isReadonly: true
         }
         Property {
@@ -187,7 +187,7 @@ Module {
             write: "setSyntaxEnabled"
             notify: "settingsChanged"
             index: 17
-            lineNumber: 75
+            lineNumber: 76
         }
         Property {
             name: "languageId"
@@ -196,7 +196,7 @@ Module {
             write: "setLanguageId"
             notify: "languageChanged"
             index: 18
-            lineNumber: 77
+            lineNumber: 78
         }
         Property {
             name: "zoomPercent"
@@ -205,14 +205,14 @@ Module {
             write: "setZoomPercent"
             notify: "settingsChanged"
             index: 19
-            lineNumber: 79
+            lineNumber: 80
         }
         Property {
             name: "languagesModel"
             type: "QVariantList"
             read: "languagesModel"
             index: 20
-            lineNumber: 81
+            lineNumber: 82
             isReadonly: true
             isPropertyConstant: true
         }
@@ -223,14 +223,14 @@ Module {
             write: "setUiLanguage"
             notify: "uiLanguageChanged"
             index: 21
-            lineNumber: 82
+            lineNumber: 83
         }
         Property {
             name: "uiLanguagesModel"
             type: "QVariantList"
             read: "uiLanguagesModel"
             index: 22
-            lineNumber: 84
+            lineNumber: 85
             isReadonly: true
             isPropertyConstant: true
         }
@@ -240,7 +240,7 @@ Module {
             read: "ui"
             notify: "uiLanguageChanged"
             index: 23
-            lineNumber: 85
+            lineNumber: 86
             isReadonly: true
         }
         Property {
@@ -248,7 +248,7 @@ Module {
             type: "bool"
             read: "showWindowControls"
             index: 24
-            lineNumber: 86
+            lineNumber: 87
             isReadonly: true
             isPropertyConstant: true
         }
@@ -257,75 +257,85 @@ Module {
             type: "QString"
             read: "monoFontFamily"
             index: 25
-            lineNumber: 87
+            lineNumber: 88
             isReadonly: true
             isPropertyConstant: true
         }
-        Signal { name: "activeTabChanged"; lineNumber: 177 }
-        Signal { name: "tabCountChanged"; lineNumber: 178 }
-        Signal { name: "settingsChanged"; lineNumber: 179 }
-        Signal { name: "folderChanged"; lineNumber: 180 }
-        Signal { name: "themeChanged"; lineNumber: 181 }
-        Signal { name: "languageChanged"; lineNumber: 182 }
-        Signal { name: "uiLanguageChanged"; lineNumber: 183 }
+        Property {
+            name: "updater"
+            type: "UpdateManager"
+            isPointer: true
+            read: "updater"
+            index: 26
+            lineNumber: 89
+            isReadonly: true
+            isPropertyConstant: true
+        }
+        Signal { name: "activeTabChanged"; lineNumber: 180 }
+        Signal { name: "tabCountChanged"; lineNumber: 181 }
+        Signal { name: "settingsChanged"; lineNumber: 182 }
+        Signal { name: "folderChanged"; lineNumber: 183 }
+        Signal { name: "themeChanged"; lineNumber: 184 }
+        Signal { name: "languageChanged"; lineNumber: 185 }
+        Signal { name: "uiLanguageChanged"; lineNumber: 186 }
         Signal {
             name: "errorOccurred"
-            lineNumber: 184
+            lineNumber: 187
             Parameter { name: "title"; type: "QString" }
             Parameter { name: "message"; type: "QString" }
         }
-        Method { name: "onSystemColorSchemeChanged"; lineNumber: 187 }
-        Method { name: "onThemeFilesChanged"; lineNumber: 188 }
-        Method { name: "zoomIn"; lineNumber: 147 }
-        Method { name: "zoomOut"; lineNumber: 148 }
-        Method { name: "zoomReset"; lineNumber: 149 }
-        Method { name: "sidebarScaleIn"; lineNumber: 150 }
-        Method { name: "sidebarScaleOut"; lineNumber: 151 }
-        Method { name: "sidebarScaleReset"; lineNumber: 152 }
+        Method { name: "onSystemColorSchemeChanged"; lineNumber: 190 }
+        Method { name: "onThemeFilesChanged"; lineNumber: 191 }
+        Method { name: "zoomIn"; lineNumber: 150 }
+        Method { name: "zoomOut"; lineNumber: 151 }
+        Method { name: "zoomReset"; lineNumber: 152 }
+        Method { name: "sidebarScaleIn"; lineNumber: 153 }
+        Method { name: "sidebarScaleOut"; lineNumber: 154 }
+        Method { name: "sidebarScaleReset"; lineNumber: 155 }
         Method {
             name: "newTab"
             type: "int"
-            lineNumber: 154
+            lineNumber: 157
             Parameter { name: "initialFilePath"; type: "QString" }
         }
-        Method { name: "newTab"; type: "int"; isCloned: true; lineNumber: 154 }
+        Method { name: "newTab"; type: "int"; isCloned: true; lineNumber: 157 }
         Method {
             name: "activateTab"
-            lineNumber: 155
+            lineNumber: 158
             Parameter { name: "index"; type: "int" }
         }
-        Method { name: "nextTab"; lineNumber: 156 }
-        Method { name: "prevTab"; lineNumber: 157 }
+        Method { name: "nextTab"; lineNumber: 159 }
+        Method { name: "prevTab"; lineNumber: 160 }
         Method {
             name: "closeTabImmediate"
-            lineNumber: 158
+            lineNumber: 161
             Parameter { name: "index"; type: "int" }
         }
         Method {
             name: "isTabModified"
             type: "bool"
             isMethodConstant: true
-            lineNumber: 159
+            lineNumber: 162
             Parameter { name: "index"; type: "int" }
         }
         Method {
             name: "isActivePristineUntitled"
             type: "bool"
             isMethodConstant: true
-            lineNumber: 160
+            lineNumber: 163
         }
         Method {
             name: "tabFileName"
             type: "QString"
             isMethodConstant: true
-            lineNumber: 161
+            lineNumber: 164
             Parameter { name: "index"; type: "int" }
         }
-        Method { name: "firstModifiedTabIndex"; type: "int"; isMethodConstant: true; lineNumber: 162 }
+        Method { name: "firstModifiedTabIndex"; type: "int"; isMethodConstant: true; lineNumber: 165 }
         Method {
             name: "loadFile"
             type: "bool"
-            lineNumber: 164
+            lineNumber: 167
             Parameter { name: "path"; type: "QString" }
             Parameter { name: "allowMissing"; type: "bool" }
         }
@@ -333,47 +343,47 @@ Module {
             name: "loadFile"
             type: "bool"
             isCloned: true
-            lineNumber: 164
-            Parameter { name: "path"; type: "QString" }
-        }
-        Method { name: "openFileDialog"; type: "bool"; lineNumber: 165 }
-        Method { name: "openFolderDialog"; type: "bool"; lineNumber: 166 }
-        Method {
-            name: "openFolder"
-            type: "bool"
             lineNumber: 167
             Parameter { name: "path"; type: "QString" }
         }
-        Method { name: "closeFolder"; lineNumber: 168 }
+        Method { name: "openFileDialog"; type: "bool"; lineNumber: 168 }
+        Method { name: "openFolderDialog"; type: "bool"; lineNumber: 169 }
+        Method {
+            name: "openFolder"
+            type: "bool"
+            lineNumber: 170
+            Parameter { name: "path"; type: "QString" }
+        }
+        Method { name: "closeFolder"; lineNumber: 171 }
         Method {
             name: "toggleFolderExpanded"
-            lineNumber: 169
+            lineNumber: 172
             Parameter { name: "dirPath"; type: "QString" }
         }
-        Method { name: "refreshFolder"; lineNumber: 170 }
+        Method { name: "refreshFolder"; lineNumber: 173 }
         Method {
             name: "saveFile"
             type: "bool"
-            lineNumber: 171
+            lineNumber: 174
             Parameter { name: "index"; type: "int" }
         }
-        Method { name: "saveFile"; type: "bool"; isCloned: true; lineNumber: 171 }
+        Method { name: "saveFile"; type: "bool"; isCloned: true; lineNumber: 174 }
         Method {
             name: "saveFileAsDialog"
             type: "bool"
-            lineNumber: 172
+            lineNumber: 175
             Parameter { name: "index"; type: "int" }
         }
-        Method { name: "saveFileAsDialog"; type: "bool"; isCloned: true; lineNumber: 172 }
+        Method { name: "saveFileAsDialog"; type: "bool"; isCloned: true; lineNumber: 175 }
         Method {
             name: "discardTabChanges"
-            lineNumber: 173
+            lineNumber: 176
             Parameter { name: "index"; type: "int" }
         }
-        Method { name: "discardTabChanges"; isCloned: true; lineNumber: 173 }
+        Method { name: "discardTabChanges"; isCloned: true; lineNumber: 176 }
         Method {
             name: "setInitialFiles"
-            lineNumber: 174
+            lineNumber: 177
             Parameter { name: "paths"; type: "QStringList" }
         }
     }
@@ -1248,7 +1258,7 @@ Module {
     }
     Component {
         file: "editor_backend.h"
-        lineNumber: 20
+        lineNumber: 21
         name: "TabModel"
         accessSemantics: "reference"
         prototype: "QAbstractListModel"
@@ -1505,6 +1515,173 @@ Module {
             lineNumber: 111
             Parameter { name: "lineNumber"; type: "int" }
         }
+    }
+    Component {
+        file: "update_manager.h"
+        lineNumber: 15
+        name: "UpdateManager"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Nulla/UpdateManager 1.0"]
+        isCreatable: false
+        exportMetaObjectRevisions: [256]
+        Enum {
+            name: "Status"
+            lineNumber: 37
+            values: [
+                "Idle",
+                "Checking",
+                "UpToDate",
+                "Available",
+                "Downloading",
+                "ReadyToInstall",
+                "Installing",
+                "Error"
+            ]
+        }
+        Property {
+            name: "status"
+            type: "int"
+            read: "status"
+            notify: "stateChanged"
+            index: 0
+            lineNumber: 20
+            isReadonly: true
+        }
+        Property {
+            name: "currentVersion"
+            type: "QString"
+            read: "currentVersion"
+            index: 1
+            lineNumber: 21
+            isReadonly: true
+            isPropertyConstant: true
+        }
+        Property {
+            name: "availableVersion"
+            type: "QString"
+            read: "availableVersion"
+            notify: "stateChanged"
+            index: 2
+            lineNumber: 22
+            isReadonly: true
+        }
+        Property {
+            name: "releaseUrl"
+            type: "QString"
+            read: "releaseUrl"
+            notify: "stateChanged"
+            index: 3
+            lineNumber: 23
+            isReadonly: true
+        }
+        Property {
+            name: "errorMessage"
+            type: "QString"
+            read: "errorMessage"
+            notify: "stateChanged"
+            index: 4
+            lineNumber: 24
+            isReadonly: true
+        }
+        Property {
+            name: "downloadProgress"
+            type: "int"
+            read: "downloadProgress"
+            notify: "downloadProgressChanged"
+            index: 5
+            lineNumber: 25
+            isReadonly: true
+        }
+        Property {
+            name: "canSelfUpdate"
+            type: "bool"
+            read: "canSelfUpdate"
+            index: 6
+            lineNumber: 27
+            isReadonly: true
+            isPropertyConstant: true
+        }
+        Property {
+            name: "systemInstalled"
+            type: "bool"
+            read: "systemInstalled"
+            index: 7
+            lineNumber: 28
+            isReadonly: true
+            isPropertyConstant: true
+        }
+        Property {
+            name: "bannerVisible"
+            type: "bool"
+            read: "bannerVisible"
+            notify: "stateChanged"
+            index: 8
+            lineNumber: 29
+            isReadonly: true
+        }
+        Property {
+            name: "autoCheck"
+            type: "bool"
+            read: "autoCheck"
+            write: "setAutoCheck"
+            notify: "autoCheckChanged"
+            index: 9
+            lineNumber: 30
+        }
+        Property {
+            name: "lastCheckEpoch"
+            type: "qlonglong"
+            read: "lastCheckEpoch"
+            notify: "stateChanged"
+            index: 10
+            lineNumber: 32
+            isReadonly: true
+        }
+        Property {
+            name: "repoUrl"
+            type: "QString"
+            read: "repoUrl"
+            index: 11
+            lineNumber: 33
+            isReadonly: true
+            isPropertyConstant: true
+        }
+        Property {
+            name: "authorName"
+            type: "QString"
+            read: "authorName"
+            index: 12
+            lineNumber: 34
+            isReadonly: true
+            isPropertyConstant: true
+        }
+        Signal { name: "stateChanged"; lineNumber: 82 }
+        Signal { name: "downloadProgressChanged"; lineNumber: 83 }
+        Signal { name: "autoCheckChanged"; lineNumber: 84 }
+        Method { name: "onStartupCheckTimer"; lineNumber: 87 }
+        Method { name: "onCheckFinished"; lineNumber: 88 }
+        Method { name: "onDownloadReadyRead"; lineNumber: 89 }
+        Method {
+            name: "onDownloadProgress"
+            lineNumber: 90
+            Parameter { name: "received"; type: "qlonglong" }
+            Parameter { name: "total"; type: "qlonglong" }
+        }
+        Method { name: "onDownloadFinished"; lineNumber: 91 }
+        Method { name: "onSha256Finished"; lineNumber: 92 }
+        Method {
+            name: "checkForUpdates"
+            lineNumber: 68
+            Parameter { name: "manual"; type: "bool" }
+        }
+        Method { name: "checkForUpdates"; isCloned: true; lineNumber: 68 }
+        Method { name: "startDownload"; lineNumber: 69 }
+        Method { name: "installAndRestart"; type: "bool"; lineNumber: 70 }
+        Method { name: "dismissBanner"; lineNumber: 71 }
+        Method { name: "skipVersion"; lineNumber: 72 }
+        Method { name: "openReleasePage"; lineNumber: 73 }
+        Method { name: "openRepoPage"; lineNumber: 74 }
     }
     Component { isTypeOpaque: true; name: "QModelIndex"; accessSemantics: "value" }
     Component { isTypeOpaque: true; name: "QModelIndexList"; accessSemantics: "value" }

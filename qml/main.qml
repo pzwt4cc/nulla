@@ -177,6 +177,25 @@ ApplicationWindow {
         win.close();
     }
 
+    function requestUpdateRestart() {
+        const dirtyIdx = editorBackend.firstModifiedTabIndex();
+        if (dirtyIdx >= 0) {
+            editorBackend.activateTab(dirtyIdx);
+            win.pendingAction = "applyUpdate";
+            win.pendingTabIndex = dirtyIdx;
+            confirmModal.errorOnly = false;
+            confirmModal.title = win.ui.confirmUnsavedTitle || "Unsaved changes";
+            confirmModal.message = (win.ui.confirmClosePrefix || 'Save changes to "') + localizedTabName(dirtyIdx) + (win.ui.confirmExitSuffix || '" before exiting?');
+            confirmModal.open = true;
+            return;
+        }
+        if (editorBackend.updater && editorBackend.updater.installAndRestart()) {
+            win.forceClose = true;
+            win.close();
+            Qt.quit();
+        }
+    }
+
     function continuePendingAction() {
         const act = win.pendingAction;
         const idx = win.pendingTabIndex;
@@ -187,6 +206,8 @@ ApplicationWindow {
             focusActiveEditor();
         } else if (act === "quitApp") {
             requestQuit();
+        } else if (act === "applyUpdate") {
+            requestUpdateRestart();
         }
     }
 
@@ -822,6 +843,21 @@ ApplicationWindow {
                     onZoomResetRequested: editorBackend.zoomReset()
                 }
             }
+
+            UpdateToast {
+                id: updateToast
+                anchors.right: parent.right
+                anchors.bottom: footerHost.top
+                anchors.rightMargin: 14
+                anchors.bottomMargin: 14
+                z: 80
+                darkMode: win.dark
+                theme: win.theme
+                ui: win.ui
+                updater: editorBackend.updater
+                suppressed: settingsModal.open || confirmModal.open || languageModal.open
+                onRestartRequested: win.requestUpdateRestart()
+            }
         }
 
         Popup {
@@ -880,173 +916,173 @@ ApplicationWindow {
                     width: menuFlick.width
                     spacing: 2
 
-                Repeater {
-                    model: [
-                        {
-                            label: win.ui.menuNewTab || "New Tab",
-                            shortcut: "Ctrl+T",
-                            act: "new",
-                            sep: false
-                        },
-                        {
-                            label: win.ui.menuOpen || "Open...",
-                            shortcut: "Ctrl+O",
-                            act: "open",
-                            sep: false
-                        },
-                        {
-                            label: win.ui.menuOpenFolder || "Open Folder...",
-                            shortcut: "Ctrl+Shift+O",
-                            act: "openfolder",
-                            sep: false
-                        },
-                        {
-                            label: win.ui.menuSave || "Save",
-                            shortcut: "Ctrl+S",
-                            act: "save",
-                            sep: false
-                        },
-                        {
-                            label: win.ui.menuSaveAs || "Save As...",
-                            shortcut: "Ctrl+Shift+S",
-                            act: "saveas",
-                            sep: false
-                        },
-                        {
-                            label: win.ui.menuCloseTab || "Close Tab",
-                            shortcut: "Ctrl+W",
-                            act: "closetab",
-                            sep: true
-                        },
-                        {
-                            label: win.ui.menuFind || "Find...",
-                            shortcut: "Ctrl+F",
-                            act: "find",
-                            sep: false
-                        },
-                        {
-                            label: win.ui.menuReplace || "Replace...",
-                            shortcut: "Ctrl+H",
-                            act: "replace",
-                            sep: false
-                        },
-                        {
-                            label: win.ui.menuGoto || "Go to Line...",
-                            shortcut: "Ctrl+G",
-                            act: "goto",
-                            sep: true
-                        },
-                        {
-                            label: win.ui.menuZoomIn || "Zoom In",
-                            shortcut: "Ctrl++",
-                            act: "zoomin",
-                            sep: false
-                        },
-                        {
-                            label: win.ui.menuZoomOut || "Zoom Out",
-                            shortcut: "Ctrl+-",
-                            act: "zoomout",
-                            sep: false
-                        },
-                        {
-                            label: win.ui.menuZoomReset || "Reset Zoom",
-                            shortcut: "Ctrl+0",
-                            act: "zoomreset",
-                            sep: true
-                        },
-                        {
-                            label: win.ui.menuSettings || "Settings",
-                            shortcut: "Ctrl+,",
-                            act: "settings",
-                            sep: false
-                        },
-                        {
-                            label: win.ui.menuQuit || "Quit",
-                            shortcut: "Ctrl+Q",
-                            act: "quit",
-                            sep: false
-                        }
-                    ]
-
-                    delegate: Column {
-                        width: menuCol.width
-                        spacing: 2
-
-                        Rectangle {
-                            width: parent.width
-                            height: 29
-                            radius: 5
-                            color: rowMa.pressed ? (win.theme.bgPressed || (win.dark ? "#282b34" : "#d8dce5")) : (rowMa.containsMouse ? win.bgHover : "transparent")
-                            border.width: 1
-                            border.color: rowMa.containsMouse ? win.borderControl : "transparent"
-
-                            Text {
-                                anchors.left: parent.left
-                                anchors.leftMargin: 10
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: modelData.label
-                                color: win.fgMain
-                                font.pixelSize: 12
+                    Repeater {
+                        model: [
+                            {
+                                label: win.ui.menuNewTab || "New Tab",
+                                shortcut: "Ctrl+T",
+                                act: "new",
+                                sep: false
+                            },
+                            {
+                                label: win.ui.menuOpen || "Open...",
+                                shortcut: "Ctrl+O",
+                                act: "open",
+                                sep: false
+                            },
+                            {
+                                label: win.ui.menuOpenFolder || "Open Folder...",
+                                shortcut: "Ctrl+Shift+O",
+                                act: "openfolder",
+                                sep: false
+                            },
+                            {
+                                label: win.ui.menuSave || "Save",
+                                shortcut: "Ctrl+S",
+                                act: "save",
+                                sep: false
+                            },
+                            {
+                                label: win.ui.menuSaveAs || "Save As...",
+                                shortcut: "Ctrl+Shift+S",
+                                act: "saveas",
+                                sep: false
+                            },
+                            {
+                                label: win.ui.menuCloseTab || "Close Tab",
+                                shortcut: "Ctrl+W",
+                                act: "closetab",
+                                sep: true
+                            },
+                            {
+                                label: win.ui.menuFind || "Find...",
+                                shortcut: "Ctrl+F",
+                                act: "find",
+                                sep: false
+                            },
+                            {
+                                label: win.ui.menuReplace || "Replace...",
+                                shortcut: "Ctrl+H",
+                                act: "replace",
+                                sep: false
+                            },
+                            {
+                                label: win.ui.menuGoto || "Go to Line...",
+                                shortcut: "Ctrl+G",
+                                act: "goto",
+                                sep: true
+                            },
+                            {
+                                label: win.ui.menuZoomIn || "Zoom In",
+                                shortcut: "Ctrl++",
+                                act: "zoomin",
+                                sep: false
+                            },
+                            {
+                                label: win.ui.menuZoomOut || "Zoom Out",
+                                shortcut: "Ctrl+-",
+                                act: "zoomout",
+                                sep: false
+                            },
+                            {
+                                label: win.ui.menuZoomReset || "Reset Zoom",
+                                shortcut: "Ctrl+0",
+                                act: "zoomreset",
+                                sep: true
+                            },
+                            {
+                                label: win.ui.menuSettings || "Settings",
+                                shortcut: "Ctrl+,",
+                                act: "settings",
+                                sep: false
+                            },
+                            {
+                                label: win.ui.menuQuit || "Quit",
+                                shortcut: "Ctrl+Q",
+                                act: "quit",
+                                sep: false
                             }
+                        ]
 
-                            Text {
-                                anchors.right: parent.right
-                                anchors.rightMargin: 10
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: modelData.shortcut
-                                color: win.fgGutter
-                                font.pixelSize: 11
-                            }
+                        delegate: Column {
+                            width: menuCol.width
+                            spacing: 2
 
-                            MouseArea {
-                                id: rowMa
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    menuPopup.close();
-                                    const a = modelData.act;
-                                    if (a === "new")
-                                        editorBackend.newTab();
-                                    else if (a === "open")
-                                        editorBackend.openFileDialog();
-                                    else if (a === "openfolder")
-                                        editorBackend.openFolderDialog();
-                                    else if (a === "save")
-                                        editorBackend.saveFile();
-                                    else if (a === "saveas")
-                                        editorBackend.saveFileAsDialog();
-                                    else if (a === "closetab")
-                                        requestCloseTab(editorBackend.activeTabIndex);
-                                    else if (a === "find")
-                                        openFindBar(false, false);
-                                    else if (a === "replace")
-                                        openFindBar(true, false);
-                                    else if (a === "goto")
-                                        openFindBar(false, true);
-                                    else if (a === "zoomin")
-                                        editorBackend.zoomIn();
-                                    else if (a === "zoomout")
-                                        editorBackend.zoomOut();
-                                    else if (a === "zoomreset")
-                                        editorBackend.zoomReset();
-                                    else if (a === "settings")
-                                        settingsModal.open = true;
-                                    else if (a === "quit")
-                                        requestQuit();
+                            Rectangle {
+                                width: parent.width
+                                height: 29
+                                radius: 5
+                                color: rowMa.pressed ? (win.theme.bgPressed || (win.dark ? "#282b34" : "#d8dce5")) : (rowMa.containsMouse ? win.bgHover : "transparent")
+                                border.width: 1
+                                border.color: rowMa.containsMouse ? win.borderControl : "transparent"
+
+                                Text {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 10
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: modelData.label
+                                    color: win.fgMain
+                                    font.pixelSize: 12
+                                }
+
+                                Text {
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 10
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: modelData.shortcut
+                                    color: win.fgGutter
+                                    font.pixelSize: 11
+                                }
+
+                                MouseArea {
+                                    id: rowMa
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        menuPopup.close();
+                                        const a = modelData.act;
+                                        if (a === "new")
+                                            editorBackend.newTab();
+                                        else if (a === "open")
+                                            editorBackend.openFileDialog();
+                                        else if (a === "openfolder")
+                                            editorBackend.openFolderDialog();
+                                        else if (a === "save")
+                                            editorBackend.saveFile();
+                                        else if (a === "saveas")
+                                            editorBackend.saveFileAsDialog();
+                                        else if (a === "closetab")
+                                            requestCloseTab(editorBackend.activeTabIndex);
+                                        else if (a === "find")
+                                            openFindBar(false, false);
+                                        else if (a === "replace")
+                                            openFindBar(true, false);
+                                        else if (a === "goto")
+                                            openFindBar(false, true);
+                                        else if (a === "zoomin")
+                                            editorBackend.zoomIn();
+                                        else if (a === "zoomout")
+                                            editorBackend.zoomOut();
+                                        else if (a === "zoomreset")
+                                            editorBackend.zoomReset();
+                                        else if (a === "settings")
+                                            settingsModal.open = true;
+                                        else if (a === "quit")
+                                            requestQuit();
+                                    }
                                 }
                             }
-                        }
 
-                        Rectangle {
-                            visible: modelData.sep
-                            width: parent.width - 12
-                            height: 1
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            color: win.borderSubtle
+                            Rectangle {
+                                visible: modelData.sep
+                                width: parent.width - 12
+                                height: 1
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                color: win.borderSubtle
+                            }
                         }
                     }
-                }
                 }
             }
         }
@@ -1061,6 +1097,7 @@ ApplicationWindow {
                 open = false;
                 focusActiveEditor();
             }
+            onUpdateRestartRequested: win.requestUpdateRestart()
         }
 
         LanguageModal {
