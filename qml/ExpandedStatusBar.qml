@@ -34,12 +34,10 @@ Rectangle {
     }
 
     Item {
-        anchors.left: parent.left
-        anchors.leftMargin: 10
-        anchors.right: rightRow.left
-        anchors.rightMargin: 12
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
+        x: 10
+        y: 0
+        width: Math.max(0, rightRow.x - 22)
+        height: parent.height
         clip: true
 
         Row {

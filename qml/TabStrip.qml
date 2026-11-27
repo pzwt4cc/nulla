@@ -30,12 +30,10 @@ Rectangle {
 
     Flickable {
         id: tabFlick
-        anchors.left: parent.left
-        anchors.leftMargin: 10
-        anchors.right: addTabBtn.left
-        anchors.rightMargin: 8
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
+        x: 10
+        y: 0
+        width: Math.max(0, addTabBtn.x - 18)
+        height: parent.height
         contentWidth: tabRow.implicitWidth
         contentHeight: height
         clip: true

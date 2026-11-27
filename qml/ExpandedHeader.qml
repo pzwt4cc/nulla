@@ -40,7 +40,7 @@ Rectangle {
 
     implicitHeight: Math.max(40, iconSize + 20)
     height: implicitHeight
-    color: bgHeader
+    color: "transparent"
     clip: true
 
     MouseArea {
@@ -75,12 +75,10 @@ Rectangle {
 
     Item {
         id: tabArea
-        anchors.left: brandSlot.right
-        anchors.leftMargin: 4
-        anchors.right: rightControls.left
-        anchors.rightMargin: 8
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
+        x: brandSlot.x + brandSlot.width + 4
+        y: 0
+        width: Math.max(0, rightControls.x - x - 8)
+        height: parent.height
         clip: true
 
         Flickable {

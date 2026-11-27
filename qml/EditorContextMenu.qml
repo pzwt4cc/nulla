@@ -26,8 +26,10 @@ Popup {
     signal actionTriggered(string act)
 
     function openAt(px, py, maxW, maxH) {
-        const menuW = width;
-        const menuH = contentCol.implicitHeight + padding * 2;
+        const menuW = Math.min(234, Math.max(120, maxW - 12));
+        const menuH = Math.min(contentCol.implicitHeight + padding * 2, Math.max(80, maxH - 12));
+        width = menuW;
+        height = menuH;
         x = Math.max(6, Math.min(px, maxW - menuW - 6));
         y = Math.max(6, Math.min(py, maxH - menuH - 6));
         open();
@@ -61,9 +63,18 @@ Popup {
         }
     }
 
-    contentItem: Column {
-        id: contentCol
-        spacing: 2
+    contentItem: Flickable {
+        id: ctxFlick
+        clip: true
+        contentWidth: width
+        contentHeight: contentCol.implicitHeight
+        interactive: contentHeight > height
+        boundsBehavior: Flickable.StopAtBounds
+
+        Column {
+            id: contentCol
+            width: ctxFlick.width
+            spacing: 2
 
         Repeater {
             model: [
@@ -80,7 +91,7 @@ Popup {
             ]
 
             delegate: Column {
-                width: root.width - root.padding * 2
+                width: contentCol.width
                 spacing: 2
 
                 Rectangle {
@@ -131,6 +142,7 @@ Popup {
                     color: root.borderSubtle
                 }
             }
+        }
         }
     }
 }

@@ -3,7 +3,6 @@
 #include "tab_session.h"
 
 #include <QApplication>
-#include <QDir>
 #include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -12,51 +11,40 @@
 #include <QStandardPaths>
 #include <QtEnvironmentVariables>
 #include <QtGlobal>
-#if defined(Q_OS_LINUX)
-#include <dlfcn.h>
 
-static bool canUseWaylandVulkan() {
-  if (!qEnvironmentVariableIsEmpty("NULLA_NO_VULKAN")) {
-    return false;
-  }
-  const QString rhiEnv = qEnvironmentVariable("QSG_RHI_BACKEND").toLower();
-  if (!rhiEnv.isEmpty() && rhiEnv != QLatin1String("opengl")) {
-    return false;
-  }
+#if defined(Q_OS_LINUX)
+static bool isWaylandSession() {
   if (qEnvironmentVariableIsEmpty("WAYLAND_DISPLAY")) {
     return false;
   }
   const QString qpa = qEnvironmentVariable("QT_QPA_PLATFORM").toLower();
-  if (!qpa.isEmpty() && !qpa.contains(QLatin1String("wayland"))) {
-    return false;
+  return qpa.isEmpty() || qpa.contains(QLatin1String("wayland"));
+}
+
+static void configureWaylandRenderer() {
+  if (!isWaylandSession()) {
+    return;
   }
-  const bool hasIcd = !QDir(QStringLiteral("/usr/share/vulkan/icd.d"))
-                           .entryList({QStringLiteral("*.json")}, QDir::Files)
-                           .isEmpty() ||
-                      !QDir(QStringLiteral("/etc/vulkan/icd.d"))
-                           .entryList({QStringLiteral("*.json")}, QDir::Files)
-                           .isEmpty();
-  if (!hasIcd) {
-    return false;
+  if (qEnvironmentVariableIsEmpty("QSG_RENDER_LOOP")) {
+    qputenv("QSG_RENDER_LOOP", "basic");
   }
-  void *vk = dlopen("libvulkan.so.1", RTLD_LAZY | RTLD_LOCAL);
-  if (!vk) {
-    return false;
+  const QString rhiEnv = qEnvironmentVariable("QSG_RHI_BACKEND").toLower();
+  if (rhiEnv == QLatin1String("vulkan")) {
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::Vulkan);
+  } else if (rhiEnv == QLatin1String("opengl") &&
+             !qEnvironmentVariableIsEmpty("NULLA_USE_GPU")) {
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+  } else if (rhiEnv.isEmpty() || rhiEnv == QLatin1String("opengl") ||
+             rhiEnv == QLatin1String("software")) {
+    qputenv("QSG_RHI_BACKEND", "software");
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::Software);
   }
-  dlclose(vk);
-  return true;
 }
 #endif
 
 int main(int argc, char *argv[]) {
 #if defined(Q_OS_LINUX)
-  if (qEnvironmentVariableIsEmpty("QSG_RENDER_LOOP")) {
-    qputenv("QSG_RENDER_LOOP", "basic");
-  }
-  if (canUseWaylandVulkan()) {
-    qputenv("QSG_RHI_BACKEND", "vulkan");
-    QQuickWindow::setGraphicsApi(QSGRendererInterface::Vulkan);
-  }
+  configureWaylandRenderer();
 #endif
   QApplication app(argc, argv);
   app.setApplicationName(QStringLiteral("Nulla"));

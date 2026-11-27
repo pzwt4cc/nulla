@@ -6,6 +6,7 @@ Rectangle {
 
     property bool open: true
     property int preferredWidth: 180
+    property int maxWidth: 480
     property int scalePercent: 100
     property bool resizing: false
     property bool darkMode: true
@@ -66,13 +67,13 @@ Rectangle {
         return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
     }
 
-    width: open ? preferredWidth : 0
+    width: open ? Math.max(0, Math.min(preferredWidth, maxWidth)) : 0
     visible: width > 1
     clip: true
     color: bgDrawer
 
     Item {
-        width: Math.max(140, root.preferredWidth)
+        width: parent.width
         height: parent.height
 
         Item {
@@ -180,7 +181,7 @@ Rectangle {
                     }
 
                     Text {
-                        width: Math.max(16, parent.width - root.itemIconSize - (fileRow.isDirty ? 19 : 7))
+                        width: Math.max(0, parent.width - root.itemIconSize - (fileRow.isDirty ? 19 : 7))
                         elide: Text.ElideMiddle
                         text: (session && session.filePath !== "") ? session.fileName : (root.ui.untitled || "Untitled")
                         color: fileRow.isActive || fileRow.hovered ? root.fgMain : root.fgMuted
@@ -229,7 +230,7 @@ Rectangle {
             height: visible ? Math.round(40 * root.uiScale) : 0
 
             Rectangle {
-                width: parent.width - 16
+                width: Math.max(0, parent.width - 16)
                 height: 1
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -238,7 +239,7 @@ Rectangle {
 
             M3Button {
                 anchors.centerIn: parent
-                width: parent.width - 16
+                width: Math.max(0, parent.width - 16)
                 text: root.ui.openFolderBtn || "Open Folder"
                 iconKind: "folder"
                 ghost: true
@@ -262,7 +263,7 @@ Rectangle {
             anchors.bottom: parent.bottom
 
             Rectangle {
-                width: parent.width - 16
+                width: Math.max(0, parent.width - 16)
                 height: 1
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -428,7 +429,7 @@ Rectangle {
                         }
 
                         Text {
-                            width: Math.max(16, parent.width - root.chevronSize - root.itemIconSize - parent.spacing * 2)
+                            width: Math.max(0, parent.width - root.chevronSize - root.itemIconSize - parent.spacing * 2)
                             elide: Text.ElideRight
                             text: modelData.name || ""
                             color: (treeRow.isActiveFile || treeRow.hovered) ? root.fgMain : root.fgMuted
@@ -468,7 +469,8 @@ Rectangle {
         onPositionChanged: function (mouse) {
             if (pressed) {
                 const gx = mapToGlobal(mouse.x, 0).x;
-                const nextW = Math.max(140, Math.min(480, Math.round(startWidth + (gx - pressScreenX))));
+                const cap = Math.min(480, Math.max(140, root.maxWidth));
+                const nextW = Math.max(140, Math.min(cap, Math.round(startWidth + (gx - pressScreenX))));
                 root.resizeRequested(nextW);
             }
         }

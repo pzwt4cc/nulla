@@ -1282,8 +1282,8 @@ void NullaEditorView::paint(QPainter *painter) {
     return;
   }
 
-  const qreal gw = gutterWidth();
-  const qreal textViewW = qMax(1.0, width() - gw);
+  const qreal gw = qMin(gutterWidth(), width());
+  const qreal textViewW = qMax(0.0, width() - gw);
   const qreal docTop = qMax(0.0, m_contentY - kPadTop);
   const size_t totalLines =
       static_cast<size_t>(qMax(1, m_session->lineCount()));
@@ -1329,7 +1329,9 @@ void NullaEditorView::paint(QPainter *painter) {
   if (m_showLineNumbers && gw > 0.0) {
     painter->save();
     painter->setClipRect(QRectF(0.0, 0.0, gw, height()));
-    painter->fillRect(QRectF(0.0, 0.0, gw - 1.0, height()), m_gutterBackground);
+    if (gw > 1.0) {
+      painter->fillRect(QRectF(0.0, 0.0, gw - 1.0, height()), m_gutterBackground);
+    }
     painter->setRenderHint(QPainter::TextAntialiasing, true);
     painter->setFont(m_font);
 
@@ -1353,6 +1355,10 @@ void NullaEditorView::paint(QPainter *painter) {
 
     painter->fillRect(QRectF(gw - 1.0, 0.0, 1.0, height()), m_gutterBorder);
     painter->restore();
+  }
+
+  if (textViewW <= 0.0) {
+    return;
   }
 
   painter->save();

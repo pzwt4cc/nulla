@@ -568,10 +568,10 @@ ApplicationWindow {
 
             Item {
                 id: workspaceHost
-                anchors.top: headerHost.bottom
-                anchors.bottom: footerHost.top
-                anchors.left: parent.left
-                anchors.right: parent.right
+                x: 0
+                y: headerHost.height
+                width: parent.width
+                height: Math.max(0, parent.height - headerHost.height - footerHost.height)
                 clip: true
 
                 LeftRail {
@@ -604,6 +604,7 @@ ApplicationWindow {
                     id: openFilesDrawer
                     open: win.expandedMode && editorBackend.sidebarOpen
                     preferredWidth: editorBackend.sidebarWidth
+                    maxWidth: Math.max(0, workspaceHost.width - leftRail.width - 180)
                     scalePercent: editorBackend.sidebarScalePercent
                     visible: win.expandedMode && width > 1
                     anchors.left: leftRail.right
@@ -649,10 +650,10 @@ ApplicationWindow {
 
                 Item {
                     id: mainColumn
-                    anchors.left: win.expandedMode ? openFilesDrawer.right : parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
+                    x: win.expandedMode ? (openFilesDrawer.x + openFilesDrawer.width) : 0
+                    y: 0
+                    width: Math.max(0, parent.width - x)
+                    height: parent.height
                     clip: true
 
                     FindBar {
@@ -710,10 +711,11 @@ ApplicationWindow {
 
                     Item {
                         id: editorHost
-                        anchors.top: win.expandedMode ? breadcrumbBar.bottom : findBar.bottom
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        anchors.right: parent.right
+                        readonly property real topY: win.expandedMode ? (breadcrumbBar.y + breadcrumbBar.height) : (findBar.y + findBar.height)
+                        x: 0
+                        y: topY
+                        width: parent.width
+                        height: Math.max(0, parent.height - topY)
                         clip: true
 
                         EditorPane {
@@ -821,9 +823,10 @@ ApplicationWindow {
 
         Popup {
             id: menuPopup
-            x: win.menuAnchorX > 0 ? Math.max(8, win.menuAnchorX - width) : (win.width - width - 10)
-            y: (win.expandedMode ? expandedHeader.implicitHeight : topbar.implicitHeight) - 2
-            width: 248
+            x: win.menuAnchorX > 0 ? Math.max(8, Math.min(win.width - width - 8, win.menuAnchorX - width)) : Math.max(8, win.width - width - 10)
+            y: Math.max(8, Math.min(win.height - height - 8, (win.expandedMode ? expandedHeader.implicitHeight : topbar.implicitHeight) - 2))
+            width: Math.min(248, Math.max(120, win.width - 16))
+            height: Math.min(menuCol.implicitHeight + padding * 2, Math.max(80, win.height - 16))
             padding: 6
             modal: true
             focus: true
@@ -851,8 +854,28 @@ ApplicationWindow {
                 }
             }
 
-            contentItem: Column {
-                spacing: 2
+            contentItem: Flickable {
+                id: menuFlick
+                clip: true
+                contentWidth: width
+                contentHeight: menuCol.implicitHeight
+                interactive: contentHeight > height
+                boundsBehavior: Flickable.StopAtBounds
+
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AsNeeded
+                    width: 4
+                    contentItem: Rectangle {
+                        implicitWidth: 3
+                        radius: 2
+                        color: win.theme.scrollIdle || (win.dark ? "#3a3a42" : "#c1c6d0")
+                    }
+                }
+
+                Column {
+                    id: menuCol
+                    width: menuFlick.width
+                    spacing: 2
 
                 Repeater {
                     model: [
@@ -943,7 +966,7 @@ ApplicationWindow {
                     ]
 
                     delegate: Column {
-                        width: 236
+                        width: menuCol.width
                         spacing: 2
 
                         Rectangle {
@@ -1020,6 +1043,7 @@ ApplicationWindow {
                             color: win.borderSubtle
                         }
                     }
+                }
                 }
             }
         }

@@ -68,8 +68,8 @@ Item {
 
     Rectangle {
         id: card
-        width: Math.min(parent.width - 40, 468)
-        height: Math.min(parent.height - 40, mainCol.implicitHeight + 36)
+        width: Math.max(0, Math.min(parent.width - 40, 468))
+        height: Math.max(0, Math.min(parent.height - 40, mainCol.implicitHeight + 36))
         anchors.centerIn: parent
         radius: 12
         color: root.bgCard

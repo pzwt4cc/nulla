@@ -28,7 +28,7 @@ Rectangle {
     implicitWidth: Math.max(42, iconSize + 26)
     width: implicitWidth
     clip: true
-    color: bgShell
+    color: "transparent"
 
     Rectangle {
         width: 1

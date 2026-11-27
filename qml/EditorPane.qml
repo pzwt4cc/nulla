@@ -167,9 +167,9 @@ Item {
 
         Item {
             id: bandsClip
-            x: editorView.gutterWidth
+            x: Math.min(parent.width, editorView.gutterWidth)
             y: 0
-            width: Math.max(0, parent.width - editorView.gutterWidth - editorView.rightInset)
+            width: Math.max(0, parent.width - x - editorView.rightInset)
             height: Math.max(0, parent.height - editorView.bottomInset)
             clip: true
 
@@ -323,11 +323,10 @@ Item {
 
         Flickable {
             id: flick
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.right: parent.right
-            anchors.left: parent.left
-            anchors.leftMargin: editorView.gutterWidth
+            x: Math.min(parent.width, editorView.gutterWidth)
+            y: 0
+            width: Math.max(0, parent.width - x)
+            height: parent.height
             interactive: false
             contentWidth: Math.max(width, editorView.docContentWidth)
             contentHeight: Math.max(height, editorView.docContentHeight)

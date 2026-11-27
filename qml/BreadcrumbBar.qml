@@ -31,11 +31,11 @@ Rectangle {
     }
 
     Row {
-        anchors.left: parent.left
-        anchors.leftMargin: 12
-        anchors.right: parent.right
-        anchors.rightMargin: 12
-        anchors.verticalCenter: parent.verticalCenter
+        x: 12
+        y: 0
+        width: Math.max(0, parent.width - 24)
+        height: parent.height
+        clip: true
         spacing: 8
 
         Text {
@@ -44,7 +44,7 @@ Rectangle {
             color: root.fgMuted
             font.pixelSize: 11
             elide: Text.ElideLeft
-            width: Math.min(implicitWidth, Math.max(40, parent.width - 68))
+            width: Math.min(implicitWidth, Math.max(0, parent.width - 68))
         }
 
         Rectangle {

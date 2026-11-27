@@ -31,8 +31,8 @@ Item {
 
     Rectangle {
         id: card
-        width: Math.min(parent.width - 48, 396)
-        height: contentCol.implicitHeight + 40
+        width: Math.max(0, Math.min(parent.width - 48, 396))
+        height: Math.max(0, Math.min(parent.height - 40, contentCol.implicitHeight + 40))
         anchors.centerIn: parent
         radius: 12
         color: theme.bgCard || (darkMode ? "#17191e" : "#ffffff")

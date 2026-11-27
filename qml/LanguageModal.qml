@@ -56,8 +56,8 @@ Item {
 
     Rectangle {
         id: card
-        width: Math.min(parent.width - 40, 380)
-        height: Math.min(parent.height - 40, mainCol.implicitHeight + 36)
+        width: Math.max(0, Math.min(parent.width - 40, 380))
+        height: Math.max(0, Math.min(parent.height - 40, mainCol.implicitHeight + 36))
         anchors.centerIn: parent
         radius: 12
         color: root.bgCard
@@ -158,7 +158,7 @@ Item {
             ListView {
                 id: langList
                 width: parent.width
-                height: 248
+                height: Math.max(60, Math.min(248, root.height - 180))
                 clip: true
                 spacing: 4
                 model: {

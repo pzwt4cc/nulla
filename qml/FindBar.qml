@@ -64,18 +64,16 @@ Rectangle {
 
             Row {
                 id: findRow
-                anchors.left: parent.left
-                anchors.leftMargin: 10
-                anchors.right: closeFindBtn.left
-                anchors.rightMargin: 8
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
+                x: 10
+                y: 0
+                width: Math.max(0, closeFindBtn.x - 18)
+                height: parent.height
                 clip: true
                 spacing: 6
 
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
-                    width: Math.min(264, Math.max(48, findRow.width - (root.gotoMode ? 0 : (82 + findNavBox.width + replaceToggleBtn.width + 18))))
+                    width: Math.min(264, Math.max(0, findRow.width - (root.gotoMode ? 0 : (82 + findNavBox.width + replaceToggleBtn.width + 18))))
                     height: 26
                     radius: 6
                     color: root.bgEditor
@@ -84,9 +82,10 @@ Rectangle {
 
                     TextInput {
                         id: findInput
-                        anchors.fill: parent
-                        anchors.leftMargin: 9
-                        anchors.rightMargin: 9
+                        x: 9
+                        y: 0
+                        width: Math.max(0, parent.width - 18)
+                        height: parent.height
                         verticalAlignment: TextInput.AlignVCenter
                         color: root.fgMain
                         selectionColor: root.selBg
@@ -118,6 +117,8 @@ Rectangle {
 
                         Text {
                             visible: findInput.text === ""
+                            width: parent.width
+                            elide: Text.ElideRight
                             text: root.gotoMode ? ((root.ui.gotoPlaceholderPrefix || "Go to line (1–") + root.totalLines + (root.ui.gotoPlaceholderSuffix || ")...")) : (root.ui.findPlaceholder || "Find in file...")
                             color: root.fgGutter
                             font.pixelSize: 12
@@ -238,7 +239,7 @@ Rectangle {
 
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
-                    width: Math.min(264, Math.max(48, replaceRow.width - replaceOneBtn.width - replaceAllBtn.width - 12))
+                    width: Math.min(264, Math.max(0, replaceRow.width - replaceOneBtn.width - replaceAllBtn.width - 12))
                     height: 26
                     radius: 6
                     color: root.bgEditor
@@ -247,9 +248,10 @@ Rectangle {
 
                     TextInput {
                         id: replaceInput
-                        anchors.fill: parent
-                        anchors.leftMargin: 9
-                        anchors.rightMargin: 9
+                        x: 9
+                        y: 0
+                        width: Math.max(0, parent.width - 18)
+                        height: parent.height
                         verticalAlignment: TextInput.AlignVCenter
                         color: root.fgMain
                         selectionColor: root.selBg
@@ -268,6 +270,8 @@ Rectangle {
 
                         Text {
                             visible: replaceInput.text === ""
+                            width: parent.width
+                            elide: Text.ElideRight
                             text: root.ui.replacePlaceholder || "Replace with..."
                             color: root.fgGutter
                             font.pixelSize: 12
