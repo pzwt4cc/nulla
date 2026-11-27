@@ -1,0 +1,17 @@
+[package]
+name = "nulla_core"
+version = "0.2.0"
+edition = "2021"
+description = "Memory-safe paged text engine, lexer, and viewport builder for Nulla"
+license = "WTFPL"
+
+[lib]
+name = "nulla_core"
+crate-type = ["staticlib", "rlib"]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "unwind"
+strip = "debuginfo"
