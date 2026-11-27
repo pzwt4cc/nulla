@@ -905,6 +905,41 @@ Item {
                                     anchors.left: parent.left
                                     anchors.leftMargin: 14
                                     anchors.verticalCenter: parent.verticalCenter
+                                    text: root.ui.lblIndentGuides || "Indent guides"
+                                    color: root.fgLabel
+                                    font.pixelSize: 13
+                                }
+
+                                M3Switch {
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 12
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    darkMode: root.darkMode
+                                    theme: root.theme
+                                    checked: root.backend ? root.backend.showIndentGuides : true
+                                    onToggled: function (v) {
+                                        if (root.backend) {
+                                            root.backend.showIndentGuides = v;
+                                        }
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                width: parent.width - 24
+                                height: 1
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                color: root.borderDivider
+                            }
+
+                            Item {
+                                width: parent.width
+                                height: 48
+
+                                Text {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 14
+                                    anchors.verticalCenter: parent.verticalCenter
                                     text: root.ui.lblSyntax || "Syntax highlighting"
                                     color: root.fgLabel
                                     font.pixelSize: 13

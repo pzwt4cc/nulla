@@ -80,6 +80,7 @@
   "lblZoom": "Масштаб",
   "resetZoomTip": "Сбросить (Ctrl+0)",
   "secEditor": "РЕДАКТОР",
+  "lblIndentGuides": "Линии отступов",
   "lblLineNumbers": "Нумерация строк",
   "lblSyntax": "Подсветка синтаксиса",
   "openFiles": "Открытые файлы",

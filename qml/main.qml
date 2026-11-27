@@ -753,6 +753,7 @@ ApplicationWindow {
                                 darkMode: win.dark
                                 theme: win.theme
                                 showLineNumbers: editorBackend.showLineNumbers
+                                showIndentGuides: editorBackend.showIndentGuides
                                 zoomPercent: editorBackend.zoomPercent
                                 monoFontFamily: editorBackend.monoFontFamily
                                 ui: win.ui

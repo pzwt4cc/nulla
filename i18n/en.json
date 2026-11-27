@@ -80,6 +80,7 @@
   "lblZoom": "Zoom",
   "resetZoomTip": "Reset (Ctrl+0)",
   "secEditor": "EDITOR",
+  "lblIndentGuides": "Indent guides",
   "lblLineNumbers": "Line numbers",
   "lblSyntax": "Syntax highlighting",
   "openFiles": "Open Files",

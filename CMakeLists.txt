@@ -15,6 +15,7 @@ set(NULLA_SOURCES
     src/tab_session.cpp
     src/highlighter.cpp
     src/gutter.cpp
+    src/indent_guides.cpp
 )
 
 set(NULLA_HEADERS
@@ -22,6 +23,7 @@ set(NULLA_HEADERS
     include/tab_session.h
     include/highlighter.h
     include/gutter.h
+    include/indent_guides.h
 )
 
 set(NULLA_RESOURCES

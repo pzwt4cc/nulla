@@ -10,6 +10,7 @@ Item {
     property bool darkMode: true
     property var theme: ({})
     property bool showLineNumbers: true
+    property bool showIndentGuides: true
     property int zoomPercent: 100
     property string monoFontFamily: "monospace"
     property var ui: ({})
@@ -977,6 +978,23 @@ Item {
                         }
                     }
                 }
+            }
+
+            IndentGuides {
+                id: indentGuides
+                visible: pane.showIndentGuides
+                anchors.fill: parent
+                anchors.rightMargin: (vScroll.visible && vScroll.size < 1.0) ? 8 : 0
+                anchors.bottomMargin: (hScroll.visible && hScroll.size < 1.0) ? 8 : 0
+                document: editor.textDocument
+                contentX: flick.contentX
+                contentY: flick.contentY
+                currentLine: pane.session ? pane.session.cursorLine : 1
+                font: editor.font
+                guideColor: pane.theme.indentGuide || (pane.darkMode ? "#262b36" : "#e5e8ef")
+                activeGuideColor: pane.theme.indentGuideActive || (pane.darkMode ? "#4e586e" : "#aeb6c7")
+                leftPadding: editor.x
+                topPadding: editor.y
             }
 
             MouseArea {

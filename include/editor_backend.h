@@ -53,6 +53,8 @@ class EditorBackend : public QObject {
   Q_PROPERTY(int tabCount READ tabCount NOTIFY tabCountChanged)
   Q_PROPERTY(bool showLineNumbers READ showLineNumbers WRITE setShowLineNumbers
                  NOTIFY settingsChanged)
+  Q_PROPERTY(bool showIndentGuides READ showIndentGuides WRITE
+                 setShowIndentGuides NOTIFY settingsChanged)
   Q_PROPERTY(
       int themeMode READ themeMode WRITE setThemeMode NOTIFY themeChanged)
   Q_PROPERTY(
@@ -106,6 +108,7 @@ public:
   int tabCount() const { return m_tabModel.count(); }
 
   bool showLineNumbers() const { return m_showLineNumbers; }
+  bool showIndentGuides() const { return m_showIndentGuides; }
   int themeMode() const { return m_themeMode; }
   int layoutMode() const { return m_layoutMode; }
   bool sidebarOpen() const { return m_sidebarOpen; }
@@ -129,6 +132,7 @@ public:
 
   void setActiveTabIndex(int index);
   void setShowLineNumbers(bool show);
+  void setShowIndentGuides(bool show);
   void setThemeMode(int mode);
   void setLayoutMode(int mode);
   void setSidebarOpen(bool open);
@@ -201,6 +205,7 @@ private:
   int m_activeTabIndex = 0;
 
   bool m_showLineNumbers = true;
+  bool m_showIndentGuides = true;
   int m_themeMode = ThemeDark;
   int m_layoutMode = LayoutMinimal;
   bool m_sidebarOpen = true;

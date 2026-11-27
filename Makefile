@@ -13,8 +13,8 @@ CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Werror -Wpedantic -fPIC -Iinclude $(QT
 TARGET := nulla
 BUILD_DIR := build
 
-SRCS := src/main.cpp src/editor_backend.cpp src/tab_session.cpp src/highlighter.cpp src/gutter.cpp
-MOC_HDRS := include/editor_backend.h include/tab_session.h include/highlighter.h include/gutter.h
+SRCS := src/main.cpp src/editor_backend.cpp src/tab_session.cpp src/highlighter.cpp src/gutter.cpp src/indent_guides.cpp
+MOC_HDRS := include/editor_backend.h include/tab_session.h include/highlighter.h include/gutter.h include/indent_guides.h
 
 OBJS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 MOC_OBJS := $(patsubst include/%.h,$(BUILD_DIR)/moc_%.o,$(MOC_HDRS))
@@ -62,12 +62,13 @@ qmltypes: $(MOC_HDRS) | $(BUILD_DIR)
 	$(MOC) -Iinclude $(QT_CFLAGS) --output-json -o $(BUILD_DIR)/moc_editor_backend.cpp include/editor_backend.h
 	$(MOC) -Iinclude $(QT_CFLAGS) --output-json -o $(BUILD_DIR)/moc_tab_session.cpp include/tab_session.h
 	$(MOC) -Iinclude $(QT_CFLAGS) --output-json -o $(BUILD_DIR)/moc_gutter.cpp include/gutter.h
+	$(MOC) -Iinclude $(QT_CFLAGS) --output-json -o $(BUILD_DIR)/moc_indent_guides.cpp include/indent_guides.h
 	$(QMLTYPEREGISTRAR) --import-name Nulla --major-version 1 --minor-version 0 \
 		--foreign-types=$(QT_METATYPES_DIR)/qt6core_metatypes.json,$(QT_METATYPES_DIR)/qt6gui_metatypes.json,$(QT_METATYPES_DIR)/qt6qml_metatypes.json,$(QT_METATYPES_DIR)/qt6quick_metatypes.json \
 		--generate-qmltypes=qml/Nulla/nulla.qmltypes \
 		-o $(BUILD_DIR)/nulla_qmltyperegistrations.cpp \
-		$(BUILD_DIR)/moc_editor_backend.cpp.json $(BUILD_DIR)/moc_tab_session.cpp.json $(BUILD_DIR)/moc_gutter.cpp.json
-	python3 -c "open('qml/Nulla/nulla.qmltypes', 'w').write('''.join(l for l in open('qml/Nulla/nulla.qmltypes') if not l.startswith(chr(47)+chr(47))))"
+		$(BUILD_DIR)/moc_editor_backend.cpp.json $(BUILD_DIR)/moc_tab_session.cpp.json $(BUILD_DIR)/moc_gutter.cpp.json $(BUILD_DIR)/moc_indent_guides.cpp.json
+	python3 -c "p='qml/Nulla/nulla.qmltypes'; data=open(p).read(); open(p,'w').write(''.join(l for l in data.splitlines(True) if not l.startswith('//')))"
 
 install: $(TARGET)
 	install -Dm755 $(TARGET) $(DESTDIR)$(BINDIR)/$(TARGET)

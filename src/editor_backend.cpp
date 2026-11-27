@@ -620,6 +620,8 @@ static QVariantMap buildFixedTheme(bool dark) {
     t.insert(QStringLiteral("sheenBright"), QStringLiteral("#14ffffff"));
     t.insert(QStringLiteral("sheenPrimary"), QStringLiteral("#26ffffff"));
     t.insert(QStringLiteral("hoverLineBand"), QStringLiteral("#0effffff"));
+    t.insert(QStringLiteral("indentGuide"), QStringLiteral("#262b36"));
+    t.insert(QStringLiteral("indentGuideActive"), QStringLiteral("#4e586e"));
   } else {
     t.insert(QStringLiteral("bgShell"), QStringLiteral("#ebedf2"));
     t.insert(QStringLiteral("bgHeader"), QStringLiteral("#ebedf2"));
@@ -673,6 +675,8 @@ static QVariantMap buildFixedTheme(bool dark) {
     t.insert(QStringLiteral("sheenBright"), QStringLiteral("#90ffffff"));
     t.insert(QStringLiteral("sheenPrimary"), QStringLiteral("#30ffffff"));
     t.insert(QStringLiteral("hoverLineBand"), QStringLiteral("#07000000"));
+    t.insert(QStringLiteral("indentGuide"), QStringLiteral("#e5e8ef"));
+    t.insert(QStringLiteral("indentGuideActive"), QStringLiteral("#aeb6c7"));
   }
   return t;
 }
@@ -733,6 +737,8 @@ static QVariantMap buildGraphiteTheme() {
   t.insert(QStringLiteral("sheenBright"), QStringLiteral("#16ffffff"));
   t.insert(QStringLiteral("sheenPrimary"), QStringLiteral("#26ffffff"));
   t.insert(QStringLiteral("hoverLineBand"), QStringLiteral("#0effffff"));
+  t.insert(QStringLiteral("indentGuide"), QStringLiteral("#292930"));
+  t.insert(QStringLiteral("indentGuideActive"), QStringLiteral("#555562"));
   return t;
 }
 
@@ -870,6 +876,10 @@ static QVariantMap buildAdaptiveTheme(const AdaptivePaletteSeed &seed) {
            colorStr(withAlpha(QColor(255, 255, 255), dark ? 38 : 48)));
   t.insert(QStringLiteral("hoverLineBand"),
            colorStr(withAlpha(fgMain, dark ? 14 : 10)));
+  t.insert(QStringLiteral("indentGuide"),
+           colorStr(blendColors(bgEditor, fgMain, dark ? 0.09 : 0.10)));
+  t.insert(QStringLiteral("indentGuideActive"),
+           colorStr(blendColors(bgEditor, fgMain, dark ? 0.28 : 0.28)));
   return t;
 }
 
@@ -1200,6 +1210,15 @@ void EditorBackend::setShowLineNumbers(bool show) {
     return;
   }
   m_showLineNumbers = show;
+  saveSettings();
+  emit settingsChanged();
+}
+
+void EditorBackend::setShowIndentGuides(bool show) {
+  if (m_showIndentGuides == show) {
+    return;
+  }
+  m_showIndentGuides = show;
   saveSettings();
   emit settingsChanged();
 }
@@ -1661,6 +1680,7 @@ void EditorBackend::loadSettings() {
   QSettings s(iniPath, QSettings::IniFormat);
   s.beginGroup(QStringLiteral("editor"));
   m_showLineNumbers = s.value(QStringLiteral("line_numbers"), true).toBool();
+  m_showIndentGuides = s.value(QStringLiteral("indent_guides"), true).toBool();
   const int mode = s.value(QStringLiteral("theme"), ThemeDark).toInt();
   m_themeMode =
       (mode >= ThemeSystem && mode <= ThemeGraphite) ? mode : ThemeDark;
@@ -1693,6 +1713,7 @@ void EditorBackend::saveSettings() const {
   QSettings s(iniPath, QSettings::IniFormat);
   s.beginGroup(QStringLiteral("editor"));
   s.setValue(QStringLiteral("line_numbers"), m_showLineNumbers);
+  s.setValue(QStringLiteral("indent_guides"), m_showIndentGuides);
   s.setValue(QStringLiteral("theme"), m_themeMode);
   s.setValue(QStringLiteral("layout_mode"), m_layoutMode);
   s.setValue(QStringLiteral("sidebar_open"), m_sidebarOpen);
