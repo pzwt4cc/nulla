@@ -90,8 +90,8 @@ Item {
 
     Rectangle {
         id: card
-        width: Math.max(0, Math.min(parent.width - 40, 560))
-        height: Math.max(0, Math.min(parent.height - 40, 520))
+        width: Math.max(0, Math.min(parent.width - 40, Math.min(860, Math.max(560, Math.round(parent.width * 0.40)))))
+        height: Math.max(0, Math.min(parent.height - 40, Math.min(780, Math.max(520, Math.round(parent.height * 0.68)))))
         anchors.centerIn: parent
         radius: 12
         color: root.bgCard
