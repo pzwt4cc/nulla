@@ -33,12 +33,14 @@ set(NULLA_SOURCES
     src/editor_backend.cpp
     src/tab_session.cpp
     src/editor_view.cpp
+    src/theme_palette.cpp
 )
 
 set(NULLA_HEADERS
     include/editor_backend.h
     include/tab_session.h
     include/editor_view.h
+    include/theme_palette.h
     include/nulla_core.h
 )
 

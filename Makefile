@@ -10,18 +10,19 @@ QT_PKGS := Qt6Widgets Qt6QuickControls2 Qt6Quick Qt6Qml Qt6Gui Qt6Core
 QT_CFLAGS := $(shell pkg-config --cflags $(QT_PKGS))
 QT_LIBS := $(shell pkg-config --libs $(QT_PKGS))
 
-CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Werror -Wpedantic -fPIC -Iinclude $(QT_CFLAGS)
+CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Werror -Wpedantic -MMD -MP -fPIC -Iinclude $(QT_CFLAGS)
 TARGET := nulla
 BUILD_DIR := build
 RUST_LIB := core/target/release/libnulla_core.a
 RUST_SRCS := $(shell find core/src -name '*.rs')
 
-SRCS := src/main.cpp src/editor_backend.cpp src/tab_session.cpp src/editor_view.cpp
+SRCS := src/main.cpp src/editor_backend.cpp src/tab_session.cpp src/editor_view.cpp src/theme_palette.cpp
 MOC_HDRS := include/editor_backend.h include/tab_session.h include/editor_view.h
 
 OBJS := $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 MOC_OBJS := $(patsubst include/%.h,$(BUILD_DIR)/moc_%.o,$(MOC_HDRS))
 QRC_OBJ := $(BUILD_DIR)/qrc_resources.o
+DEPS := $(OBJS:.o=.d) $(MOC_OBJS:.o=.d) $(QRC_OBJ:.o=.d)
 
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
@@ -89,5 +90,7 @@ uninstall:
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
+
+-include $(DEPS)
 
 .PHONY: all qmltypes install uninstall clean

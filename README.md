@@ -5,7 +5,7 @@
     <strong>Minimalist text and code editor for scripts and configs</strong>
   </p>
   <p>
-    Built with C++17 and Qt 6 Quick (QML), designed around a monochrome Material 3 outlined interface.
+    Hybrid C++17 / Qt 6 Quick (QML) shell paired with a memory-safe Rust core engine (<code>nulla_core</code>) and a monochrome Material 3 outlined interface.
   </p>
   <p>
     <a href="https://github.com/pzwt4cc/nulla/releases/latest">Windows Installer (.msi)</a>
@@ -24,13 +24,14 @@
 
 ## Features
 
-- Multi-tab workspace (`Ctrl+T`, `Ctrl+W`, `Ctrl+Tab`, `Ctrl+Shift+Tab`, `Ctrl+1..9`, drag & drop)
+- Hybrid architecture: C++17 / Qt 6 Quick UI + custom viewport-only renderer (`NullaEditorView`) backed by a Rust static engine (`nulla_core`) for memory-safe paged storage, UTF-8 handling, sparse syntax checkpoints, search/replace, and undo/redo on multi-megabyte and single-line minified files
+- Multi-tab workspace (`Ctrl+T`, `Ctrl+W`, `Ctrl+Tab`, `Ctrl+Shift+Tab`, `Ctrl+1..9`, drag & drop) with Minimal and Expanded layouts, sidebar explorer (`Ctrl+Shift+O`, `Ctrl+B`), and breadcrumb bar
 - Open, edit, and save files (`Ctrl+O`, `Ctrl+S`, `Ctrl+Shift+S`) with unsaved-changes guard
 - Search, Replace, and Go to Line (`Ctrl+F`, `Ctrl+H`, `Ctrl+G`, `F3`, `Shift+F3`)
 - Complete editing shortcuts (`Ctrl+Z/Y/Shift+Z`, `Ctrl+X/C/V/A`, `Ctrl+D`, `Ctrl+L`, `Ctrl+Shift+K`, `Ctrl+/`, `Alt+Up/Down`, `Ctrl+Enter`, `Tab`/`Shift+Tab`) with Cyrillic layout support
 - Custom monochrome Material 3 outlined UI with adaptive DE/WM/Windows window controls and `F11` fullscreen
-- Dark, Light, and adaptive System themes (follows `matugen`, `pywal`, GTK/KDE/qt6ct on Linux and Light/Dark + DWM accent color on Windows)
-- 13 UI languages (`Settings → Language`) and live syntax highlighting for 15 languages with searchable picker
+- Dark, Graphite, Light, and adaptive System themes (follows `matugen`, `pywal`, GTK/KDE/qt6ct on Linux and Light/Dark + DWM accent color on Windows)
+- 13 complete UI languages (`Settings → Language`) and live syntax highlighting + indent guides for 15 languages with searchable picker
 - Smooth zoom control (`Ctrl++`, `Ctrl+-`, `Ctrl+0`, `Ctrl+Wheel`) and smooth wheel scrolling
 
 ## Project Structure
@@ -45,13 +46,26 @@
 │   ├── nulla.ico
 │   ├── nulla.png
 │   └── nulla.svg
+├── core/
+│   ├── Cargo.lock
+│   ├── Cargo.toml
+│   └── src/
+│       ├── buffer.rs
+│       ├── edit.rs
+│       ├── ffi.rs
+│       ├── indent.rs
+│       ├── lib.rs
+│       ├── search.rs
+│       ├── syntax.rs
+│       └── types.rs
 ├── i18n/
 │   └── de.json ... zh.json (13 UI languages)
 ├── include/
 │   ├── editor_backend.h
-│   ├── gutter.h
-│   ├── highlighter.h
-│   └── tab_session.h
+│   ├── editor_view.h
+│   ├── nulla_core.h
+│   ├── tab_session.h
+│   └── theme_palette.h
 ├── package/
 │   ├── arch/
 │   │   └── PKGBUILD
@@ -61,13 +75,21 @@
 │       ├── build-msi.ps1
 │       └── nulla.rc
 ├── qml/
+│   ├── Nulla/
+│   │   ├── nulla.qmltypes
+│   │   └── qmldir
+│   ├── BreadcrumbBar.qml
 │   ├── ConfirmModal.qml
 │   ├── EditorContextMenu.qml
 │   ├── EditorPane.qml
+│   ├── ExpandedHeader.qml
+│   ├── ExpandedStatusBar.qml
 │   ├── FindBar.qml
 │   ├── LanguageModal.qml
+│   ├── LeftRail.qml
 │   ├── M3Button.qml
 │   ├── M3Switch.qml
+│   ├── OpenFilesDrawer.qml
 │   ├── SettingsModal.qml
 │   ├── StatusBar.qml
 │   ├── TabStrip.qml
@@ -75,10 +97,10 @@
 │   └── main.qml
 ├── src/
 │   ├── editor_backend.cpp
-│   ├── gutter.cpp
-│   ├── highlighter.cpp
+│   ├── editor_view.cpp
 │   ├── main.cpp
-│   └── tab_session.cpp
+│   ├── tab_session.cpp
+│   └── theme_palette.cpp
 ├── CMakeLists.txt
 ├── LICENSE
 ├── Makefile
@@ -88,7 +110,7 @@
 
 ## Linux Build & Run
 
-Dependencies: `gcc`, `make`, `pkgconf`, `qt6-base`, `qt6-declarative`.
+Dependencies: `gcc`, `make`, `pkgconf`, `cargo`, `qt6-base`, `qt6-declarative`.
 
 ```sh
 make
@@ -115,7 +137,7 @@ Workflow [.github/workflows/windows-msi.yml](.github/workflows/windows-msi.yml) 
 
 ### Local Windows Build
 
-Requires Qt 6 (`qtdeclarative`, `qtshadertools`, `qtsvg`), MSVC + CMake + Ninja, and WiX Toolset 5 (`WixToolset.UI.wixext`).
+Requires Qt 6 (`qtdeclarative`, `qtshadertools`, `qtsvg`), Rust toolchain (`cargo`), MSVC + CMake + Ninja, and WiX Toolset 5 (`WixToolset.UI.wixext`).
 
 ```powershell
 .\package\windows\build-msi.ps1

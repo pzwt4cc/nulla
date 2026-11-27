@@ -6,7 +6,7 @@ arch=('x86_64' 'aarch64')
 url="https://github.com/pzwt4cc/nulla"
 license=('WTFPL')
 depends=('qt6-base' 'qt6-declarative')
-makedepends=('gcc' 'make' 'pkgconf')
+makedepends=('gcc' 'make' 'pkgconf' 'cargo')
 
 build() {
   cd "$startdir/../.."
