@@ -29,6 +29,8 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
+        hoverEnabled: true
+        acceptedButtons: Qt.AllButtons
         onWheel: function (wheel) {
             wheel.accepted = true;
         }

@@ -32,7 +32,6 @@ Rectangle {
     signal tabActivated(int index)
     signal tabClosed(int index)
     signal resizeRequested(int newWidth)
-    signal openFolderRequested
     signal closeFolderRequested
     signal refreshFolderRequested
     signal folderToggled(string dirPath)
@@ -104,7 +103,7 @@ Rectangle {
             anchors.right: parent.right
             anchors.leftMargin: 6
             anchors.rightMargin: 8
-            height: root.hasFolder ? Math.min(contentHeight + 4, Math.min(root.rowHeight * 6, Math.max(0, parent.height - openFilesHeader.height - root.headerHeight - root.rowHeight * 3))) : Math.max(0, parent.height - openFilesHeader.height - emptyFolderBar.height - 6)
+            height: root.hasFolder ? Math.min(contentHeight + 4, Math.min(root.rowHeight * 6, Math.max(0, parent.height - openFilesHeader.height - root.headerHeight - root.rowHeight * 3))) : Math.max(0, parent.height - openFilesHeader.height - 6)
             clip: true
             spacing: 2
             boundsBehavior: Flickable.StopAtBounds
@@ -218,38 +217,6 @@ Rectangle {
                     theme: root.theme
                     onClicked: root.tabClosed(index)
                 }
-            }
-        }
-
-        Item {
-            id: emptyFolderBar
-            visible: !root.hasFolder
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            height: visible ? Math.round(40 * root.uiScale) : 0
-
-            Rectangle {
-                width: Math.max(0, parent.width - 16)
-                height: 1
-                anchors.top: parent.top
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: root.borderSubtle
-            }
-
-            M3Button {
-                anchors.centerIn: parent
-                width: Math.max(0, parent.width - 16)
-                text: root.ui.openFolderBtn || "Open Folder"
-                iconKind: "folder"
-                ghost: true
-                darkMode: root.darkMode
-                theme: root.theme
-                buttonHeight: Math.round(28 * root.uiScale)
-                iconSize: root.itemIconSize
-                fontPixelSize: root.itemFontSize
-                cornerRadius: 6
-                onClicked: root.openFolderRequested()
             }
         }
 

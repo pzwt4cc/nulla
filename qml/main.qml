@@ -454,6 +454,7 @@ ApplicationWindow {
 
             Item {
                 id: headerHost
+                enabled: !(settingsModal.open || confirmModal.open || languageModal.open)
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -592,6 +593,7 @@ ApplicationWindow {
 
             Item {
                 id: workspaceHost
+                enabled: !(settingsModal.open || confirmModal.open || languageModal.open)
                 x: 0
                 y: headerHost.height
                 width: parent.width
@@ -661,7 +663,6 @@ ApplicationWindow {
                     onResizeRequested: function (newWidth) {
                         editorBackend.sidebarWidth = newWidth;
                     }
-                    onOpenFolderRequested: editorBackend.openFolderDialog()
                     onCloseFolderRequested: editorBackend.closeFolder()
                     onRefreshFolderRequested: editorBackend.refreshFolder()
                     onFolderToggled: function (dirPath) {
@@ -785,6 +786,7 @@ ApplicationWindow {
 
             Item {
                 id: footerHost
+                enabled: !(settingsModal.open || confirmModal.open || languageModal.open)
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right

@@ -56,6 +56,8 @@ Item {
 
     MouseArea {
         anchors.fill: parent
+        hoverEnabled: true
+        acceptedButtons: Qt.AllButtons
         onClicked: root.closed()
         onWheel: function (wheel) {
             wheel.accepted = true;
@@ -75,6 +77,8 @@ Item {
 
         MouseArea {
             anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.AllButtons
             onWheel: function (wheel) {
                 wheel.accepted = true;
             }

@@ -86,6 +86,8 @@ Item {
 
     MouseArea {
         anchors.fill: parent
+        hoverEnabled: true
+        acceptedButtons: Qt.AllButtons
         onClicked: root.closed()
         onWheel: function(wheel) {
             wheel.accepted = true;
@@ -106,6 +108,8 @@ Item {
 
         MouseArea {
             anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.AllButtons
             onWheel: function(wheel) {
                 wheel.accepted = true;
             }
@@ -126,12 +130,12 @@ Item {
             id: headerBar
 
             anchors.top: parent.top
-            anchors.topMargin: 16
+            anchors.topMargin: 14
             anchors.left: parent.left
             anchors.leftMargin: 18
             anchors.right: parent.right
             anchors.rightMargin: 18
-            height: 30
+            height: 36
 
             Text {
                 anchors.left: parent.left
@@ -149,11 +153,11 @@ Item {
                 id: settingsTabsBox
 
                 anchors.right: closeSettingsBtn.left
-                anchors.rightMargin: 8
+                anchors.rightMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
-                height: 30
-                width: settingsTabsRow.implicitWidth + 4
-                radius: 9
+                height: 36
+                width: settingsTabsRow.implicitWidth + 6
+                radius: 10
                 color: theme.bgInput || (darkMode ? "#1a1c22" : "#eceef3")
                 border.width: 1
                 border.color: root.borderGroup
@@ -162,17 +166,17 @@ Item {
                     id: settingsTabsRow
 
                     anchors.centerIn: parent
-                    spacing: 2
+                    spacing: 3
 
                     M3Button {
                         text: root.ui.tabGeneral || "General"
                         ghost: root.activeSettingsTab !== 0
                         activeChip: root.activeSettingsTab === 0
-                        fontPixelSize: 12 + root.fontDelta
+                        fontPixelSize: 13 + root.fontDelta
                         darkMode: root.darkMode
                         theme: root.theme
-                        buttonHeight: 26
-                        horizontalPadding: 10
+                        buttonHeight: 30
+                        horizontalPadding: 14
                         cornerRadius: 8
                         onClicked: root.activeSettingsTab = 0
                     }
@@ -181,11 +185,11 @@ Item {
                         text: root.ui.tabTheme || "Theme"
                         ghost: root.activeSettingsTab !== 1
                         activeChip: root.activeSettingsTab === 1
-                        fontPixelSize: 12 + root.fontDelta
+                        fontPixelSize: 13 + root.fontDelta
                         darkMode: root.darkMode
                         theme: root.theme
-                        buttonHeight: 26
-                        horizontalPadding: 10
+                        buttonHeight: 30
+                        horizontalPadding: 14
                         cornerRadius: 8
                         onClicked: root.activeSettingsTab = 1
                     }
@@ -195,11 +199,11 @@ Item {
                         ghost: root.activeSettingsTab !== 2
                         activeChip: root.activeSettingsTab === 2
                         showDot: root.updStatus === 3 || root.updStatus === 5
-                        fontPixelSize: 12 + root.fontDelta
+                        fontPixelSize: 13 + root.fontDelta
                         darkMode: root.darkMode
                         theme: root.theme
-                        buttonHeight: 26
-                        horizontalPadding: 10
+                        buttonHeight: 30
+                        horizontalPadding: 14
                         cornerRadius: 8
                         onClicked: root.activeSettingsTab = 2
                     }
@@ -218,7 +222,7 @@ Item {
                 ghost: true
                 darkMode: root.darkMode
                 theme: root.theme
-                buttonHeight: 28
+                buttonHeight: 32
                 cornerRadius: 9
                 onClicked: root.closed()
             }
