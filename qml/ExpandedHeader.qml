@@ -63,11 +63,9 @@ Rectangle {
         anchors.bottom: parent.bottom
         width: root.railWidth
 
-        Image {
-            source: "qrc:/assets/nulla.svg"
-            width: root.logoSize
-            height: root.logoSize
-            sourceSize: Qt.size(52, 52)
+        NullaMark {
+            size: root.logoSize
+            color: root.fgMain
             anchors.centerIn: parent
             opacity: root.darkMode ? 0.94 : 0.9
         }

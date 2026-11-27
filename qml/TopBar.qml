@@ -166,12 +166,10 @@ Rectangle {
             height: parent.height
             x: Math.round(Math.max(0, Math.min(centerBadge.width - rowW, (root.width - rowW) * 0.5 - centerBadge.x)))
 
-            Image {
+            NullaMark {
                 id: titleIcon
-                source: "qrc:/assets/nulla.svg"
-                width: 16
-                height: 16
-                sourceSize: Qt.size(32, 32)
+                size: 16
+                color: root.fgMain
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 opacity: root.darkMode ? 0.92 : 0.88
@@ -244,7 +242,7 @@ Rectangle {
                     iconSize: 15
                     cornerRadius: 4
                     darkMode: root.darkMode
-                theme: root.theme
+                    theme: root.theme
                     tooltipText: root.ui.findTip || "Find (Ctrl+F)"
                     onClicked: root.findRequested()
                 }
@@ -265,7 +263,7 @@ Rectangle {
                     iconSize: 15
                     cornerRadius: 4
                     darkMode: root.darkMode
-                theme: root.theme
+                    theme: root.theme
                     tooltipText: root.ui.settingsTip || "Settings (Ctrl+,)"
                     onClicked: root.settingsRequested()
                 }
@@ -288,7 +286,7 @@ Rectangle {
                     iconSize: 15
                     cornerRadius: 4
                     darkMode: root.darkMode
-                theme: root.theme
+                    theme: root.theme
                     tooltipText: root.ui.menuTip || "Menu"
                     onClicked: root.menuToggleRequested(rightControls.x + utilityGroup.x + utilRow.x + menuBtn.x + menuBtn.width)
                 }
@@ -329,7 +327,7 @@ Rectangle {
                     iconSize: 14
                     cornerRadius: 4
                     darkMode: root.darkMode
-                theme: root.theme
+                    theme: root.theme
                     tooltipText: root.ui.minimizeTip || "Minimize"
                     onClicked: root.minimizeRequested()
                 }
@@ -350,7 +348,7 @@ Rectangle {
                     iconSize: 14
                     cornerRadius: 4
                     darkMode: root.darkMode
-                theme: root.theme
+                    theme: root.theme
                     tooltipText: root.isMaximized ? (root.ui.restoreTip || "Restore") : (root.ui.maximizeTip || "Maximize")
                     onClicked: root.toggleMaximizeRequested()
                 }
@@ -371,7 +369,7 @@ Rectangle {
                     iconSize: 14
                     cornerRadius: 4
                     darkMode: root.darkMode
-                theme: root.theme
+                    theme: root.theme
                     dangerHover: true
                     tooltipText: root.ui.closeTip || "Close"
                     onClicked: root.closeWindowRequested()
