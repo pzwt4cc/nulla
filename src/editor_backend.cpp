@@ -18,8 +18,8 @@
 #include <QStandardPaths>
 #include <QStyleHints>
 #include <QTimer>
-#include <QtEnvironmentVariables>
 #include <QUrl>
+#include <QtEnvironmentVariables>
 
 #include <algorithm>
 #include <cmath>
@@ -68,14 +68,18 @@ static bool detectDesktopEnvironment() {
 
 static QString pickMonoFontFamily() {
   const QStringList available = QFontDatabase::families();
-  const char *const preferred[] = {
-      "JetBrains Mono", "IBM Plex Mono",
-      "Cascadia Mono",  "Cascadia Code",
-      "CaskaydiaCove Nerd Font Mono",
-      "Fira Code",      "FiraCode Nerd Font Mono",
-      "Consolas",       "Hack",
-      "Adwaita Mono",   "Ubuntu Mono",
-      "Liberation Mono"};
+  const char *const preferred[] = {"JetBrains Mono",
+                                   "IBM Plex Mono",
+                                   "Cascadia Mono",
+                                   "Cascadia Code",
+                                   "CaskaydiaCove Nerd Font Mono",
+                                   "Fira Code",
+                                   "FiraCode Nerd Font Mono",
+                                   "Consolas",
+                                   "Hack",
+                                   "Adwaita Mono",
+                                   "Ubuntu Mono",
+                                   "Liberation Mono"};
   for (const char *name : preferred) {
     const QString qname = QLatin1String(name);
     if (available.contains(qname, Qt::CaseInsensitive)) {
@@ -99,8 +103,7 @@ static double linearChannel(double c) {
 }
 
 static double relativeLuminance(const QColor &c) {
-  return 0.2126 * linearChannel(c.redF()) +
-         0.7152 * linearChannel(c.greenF()) +
+  return 0.2126 * linearChannel(c.redF()) + 0.7152 * linearChannel(c.greenF()) +
          0.0722 * linearChannel(c.blueF());
 }
 
@@ -145,12 +148,15 @@ struct AdaptivePaletteSeed {
 static AdaptivePaletteSeed tryLoadWindowsPalette() {
   bool sysDark = true;
   if (QGuiApplication::styleHints() &&
-      QGuiApplication::styleHints()->colorScheme() != Qt::ColorScheme::Unknown) {
-    sysDark = (QGuiApplication::styleHints()->colorScheme() != Qt::ColorScheme::Light);
+      QGuiApplication::styleHints()->colorScheme() !=
+          Qt::ColorScheme::Unknown) {
+    sysDark = (QGuiApplication::styleHints()->colorScheme() !=
+               Qt::ColorScheme::Light);
   } else {
-    const QSettings pers(
-        QStringLiteral("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"),
-        QSettings::NativeFormat);
+    const QSettings pers(QStringLiteral("HKEY_CURRENT_"
+                                        "USER\\Software\\Microsoft\\Windows\\Cu"
+                                        "rrentVersion\\Themes\\Personalize"),
+                         QSettings::NativeFormat);
     sysDark = (pers.value(QStringLiteral("AppsUseLightTheme"), 0).toInt() == 0);
   }
 
@@ -164,7 +170,8 @@ static AdaptivePaletteSeed tryLoadWindowsPalette() {
                     static_cast<int>((abgr >> 8) & 0xffU),
                     static_cast<int>((abgr >> 16) & 0xffU));
   } else if (dwm.contains(QStringLiteral("ColorizationColor"))) {
-    const quint32 argb = dwm.value(QStringLiteral("ColorizationColor")).toUInt();
+    const quint32 argb =
+        dwm.value(QStringLiteral("ColorizationColor")).toUInt();
     accent = QColor(static_cast<int>((argb >> 16) & 0xffU),
                     static_cast<int>((argb >> 8) & 0xffU),
                     static_cast<int>(argb & 0xffU));
@@ -179,16 +186,20 @@ static AdaptivePaletteSeed tryLoadWindowsPalette() {
     return AdaptivePaletteSeed();
   }
 
-  const QColor baseShell(sysDark ? QStringLiteral("#0d0e11") : QStringLiteral("#ebedf2"));
-  const QColor baseEditor(sysDark ? QStringLiteral("#16181e") : QStringLiteral("#ffffff"));
-  const QColor baseSurface(sysDark ? QStringLiteral("#1c1f27") : QStringLiteral("#f7f8fa"));
+  const QColor baseShell(sysDark ? QStringLiteral("#0d0e11")
+                                 : QStringLiteral("#ebedf2"));
+  const QColor baseEditor(sysDark ? QStringLiteral("#16181e")
+                                  : QStringLiteral("#ffffff"));
+  const QColor baseSurface(sysDark ? QStringLiteral("#1c1f27")
+                                   : QStringLiteral("#f7f8fa"));
 
   AdaptivePaletteSeed seed;
   seed.valid = true;
   seed.bgShell = blendColors(baseShell, accent, sysDark ? 0.06 : 0.045);
   seed.bgEditor = blendColors(baseEditor, accent, sysDark ? 0.03 : 0.02);
   seed.bgSurface = blendColors(baseSurface, accent, sysDark ? 0.07 : 0.05);
-  seed.fgMain = QColor(sysDark ? QStringLiteral("#f0f2f6") : QStringLiteral("#14161a"));
+  seed.fgMain =
+      QColor(sysDark ? QStringLiteral("#f0f2f6") : QStringLiteral("#14161a"));
   seed.accent = accent;
   return seed;
 }
@@ -219,8 +230,9 @@ static QColor parseCssColorToken(const QString &raw,
     const QColor c(s);
     return c.isValid() ? c : QColor();
   }
-  static const QRegularExpression rgbRe(QStringLiteral(
-      "^rgba?\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)(?:\\s*,\\s*([0-9.]+%?))?\\s*\\)$"));
+  static const QRegularExpression rgbRe(
+      QStringLiteral("^rgba?\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)(?:"
+                     "\\s*,\\s*([0-9.]+%?))?\\s*\\)$"));
   const QRegularExpressionMatch m = rgbRe.match(s);
   if (m.hasMatch()) {
     const int r = qBound(0, m.captured(1).toInt(), 255);
@@ -243,9 +255,8 @@ static QColor parseCssColorToken(const QString &raw,
 }
 
 static void collectGtkCssDefs(const QString &filePath,
-                                QHash<QString, QString> &vars,
-                                QStringList &visitedFiles,
-                                int depth = 0) {
+                              QHash<QString, QString> &vars,
+                              QStringList &visitedFiles, int depth = 0) {
   if (depth > 3) {
     return;
   }
@@ -262,8 +273,9 @@ static void collectGtkCssDefs(const QString &filePath,
   const QString content = QString::fromUtf8(f.readAll());
   const QDir baseDir = QFileInfo(absPath).absoluteDir();
 
-  static const QRegularExpression importRe(QStringLiteral(
-      "@import\\s+(?:url\\(\\s*[\"']?([^\"')]+)[\"']?\\s*\\)|[\"']([^\"']+)[\"'])\\s*;"));
+  static const QRegularExpression importRe(
+      QStringLiteral("@import\\s+(?:url\\(\\s*[\"']?([^\"')]+)[\"']?\\s*\\)|["
+                     "\"']([^\"']+)[\"'])\\s*;"));
   QRegularExpressionMatchIterator iit = importRe.globalMatch(content);
   while (iit.hasNext()) {
     const QRegularExpressionMatch im = iit.next();
@@ -278,8 +290,8 @@ static void collectGtkCssDefs(const QString &filePath,
     collectGtkCssDefs(resolved, vars, visitedFiles, depth + 1);
   }
 
-  static const QRegularExpression defRe(QStringLiteral(
-      "@define-color\\s+([A-Za-z0-9_-]+)\\s+([^;]+);"));
+  static const QRegularExpression defRe(
+      QStringLiteral("@define-color\\s+([A-Za-z0-9_-]+)\\s+([^;]+);"));
   QRegularExpressionMatchIterator dit = defRe.globalMatch(content);
   while (dit.hasNext()) {
     const QRegularExpressionMatch dm = dit.next();
@@ -320,40 +332,43 @@ static AdaptivePaletteSeed tryLoadGtkCssPalette(const QString &cfgRoot,
       usedFiles->append(visited);
     }
     const QColor shell = pickFirstCssColor(
-        vars, {QStringLiteral("window_bg_color"), QStringLiteral("theme_bg_color"),
-               QStringLiteral("bg_color"), QStringLiteral("view_bg_color")});
+        vars,
+        {QStringLiteral("window_bg_color"), QStringLiteral("theme_bg_color"),
+         QStringLiteral("bg_color"), QStringLiteral("view_bg_color")});
     const QColor editor = pickFirstCssColor(
-        vars, {QStringLiteral("view_bg_color"), QStringLiteral("theme_base_color"),
-               QStringLiteral("base_color"), QStringLiteral("window_bg_color")});
+        vars,
+        {QStringLiteral("view_bg_color"), QStringLiteral("theme_base_color"),
+         QStringLiteral("base_color"), QStringLiteral("window_bg_color")});
     const QColor fg = pickFirstCssColor(
-        vars, {QStringLiteral("view_fg_color"), QStringLiteral("window_fg_color"),
-               QStringLiteral("theme_fg_color"), QStringLiteral("fg_color")});
+        vars,
+        {QStringLiteral("view_fg_color"), QStringLiteral("window_fg_color"),
+         QStringLiteral("theme_fg_color"), QStringLiteral("fg_color")});
 
     if (shell.isValid() && editor.isValid() && fg.isValid()) {
       AdaptivePaletteSeed seed;
       seed.valid = true;
       seed.bgShell = QColor(shell.rgb());
       seed.bgEditor = QColor(editor.rgb());
-      seed.bgSurface = pickFirstCssColor(
-          vars, {QStringLiteral("headerbar_bg_color"),
-                 QStringLiteral("popover_bg_color"),
-                 QStringLiteral("card_bg_color"),
-                 QStringLiteral("sidebar_bg_color")});
+      seed.bgSurface =
+          pickFirstCssColor(vars, {QStringLiteral("headerbar_bg_color"),
+                                   QStringLiteral("popover_bg_color"),
+                                   QStringLiteral("card_bg_color"),
+                                   QStringLiteral("sidebar_bg_color")});
       seed.fgMain = QColor(fg.rgb());
-      seed.accent = pickFirstCssColor(
-          vars, {QStringLiteral("accent_bg_color"),
-                 QStringLiteral("accent_color"),
-                 QStringLiteral("theme_selected_bg_color")});
-      seed.accentFg = pickFirstCssColor(
-          vars, {QStringLiteral("accent_fg_color"),
-                 QStringLiteral("theme_selected_fg_color")});
-      seed.border = pickFirstCssColor(
-          vars, {QStringLiteral("headerbar_border_color"),
-                 QStringLiteral("borders")});
-      seed.danger = pickFirstCssColor(
-          vars, {QStringLiteral("destructive_bg_color"),
-                 QStringLiteral("destructive_color"),
-                 QStringLiteral("error_color")});
+      seed.accent =
+          pickFirstCssColor(vars, {QStringLiteral("accent_bg_color"),
+                                   QStringLiteral("accent_color"),
+                                   QStringLiteral("theme_selected_bg_color")});
+      seed.accentFg =
+          pickFirstCssColor(vars, {QStringLiteral("accent_fg_color"),
+                                   QStringLiteral("theme_selected_fg_color")});
+      seed.border =
+          pickFirstCssColor(vars, {QStringLiteral("headerbar_border_color"),
+                                   QStringLiteral("borders")});
+      seed.danger =
+          pickFirstCssColor(vars, {QStringLiteral("destructive_bg_color"),
+                                   QStringLiteral("destructive_color"),
+                                   QStringLiteral("error_color")});
       return seed;
     }
   }
@@ -391,7 +406,8 @@ static AdaptivePaletteSeed tryLoadQt6ctOrKdePalette(const QString &cfgRoot,
     s.beginGroup(QStringLiteral("Appearance"));
     const bool customPal =
         s.value(QStringLiteral("custom_palette"), false).toBool();
-    const QString path = s.value(QStringLiteral("color_scheme_path")).toString();
+    const QString path =
+        s.value(QStringLiteral("color_scheme_path")).toString();
     s.endGroup();
     if (customPal && !path.isEmpty() && QFileInfo::exists(path)) {
       schemePath = path;
@@ -519,7 +535,8 @@ static AdaptivePaletteSeed tryLoadWalOrMatugenJson(const QString &cfgRoot,
       continue;
     }
     const QJsonObject root = doc.object();
-    const QJsonObject special = root.value(QStringLiteral("special")).toObject();
+    const QJsonObject special =
+        root.value(QStringLiteral("special")).toObject();
     const QJsonObject colors = root.value(QStringLiteral("colors")).toObject();
     const QColor bg = parseJsonColor(special, QStringLiteral("background"));
     const QColor fg = parseJsonColor(special, QStringLiteral("foreground"));
@@ -555,6 +572,7 @@ static QVariantMap buildFixedTheme(bool dark) {
     t.insert(QStringLiteral("bgHeader"), QStringLiteral("#0d0e11"));
     t.insert(QStringLiteral("bgEditor"), QStringLiteral("#16181e"));
     t.insert(QStringLiteral("bgGutter"), QStringLiteral("#121318"));
+    t.insert(QStringLiteral("bgDrawer"), QStringLiteral("#101217"));
     t.insert(QStringLiteral("bgSurfaceElev"), QStringLiteral("#1c1f27"));
     t.insert(QStringLiteral("bgCard"), QStringLiteral("#17191e"));
     t.insert(QStringLiteral("bgGroup"), QStringLiteral("#131418"));
@@ -607,6 +625,7 @@ static QVariantMap buildFixedTheme(bool dark) {
     t.insert(QStringLiteral("bgHeader"), QStringLiteral("#ebedf2"));
     t.insert(QStringLiteral("bgEditor"), QStringLiteral("#ffffff"));
     t.insert(QStringLiteral("bgGutter"), QStringLiteral("#f5f6f9"));
+    t.insert(QStringLiteral("bgDrawer"), QStringLiteral("#f2f4f8"));
     t.insert(QStringLiteral("bgSurfaceElev"), QStringLiteral("#ffffff"));
     t.insert(QStringLiteral("bgCard"), QStringLiteral("#ffffff"));
     t.insert(QStringLiteral("bgGroup"), QStringLiteral("#f7f8fa"));
@@ -658,13 +677,76 @@ static QVariantMap buildFixedTheme(bool dark) {
   return t;
 }
 
+static QVariantMap buildGraphiteTheme() {
+  QVariantMap t;
+  t.insert(QStringLiteral("dark"), true);
+  t.insert(QStringLiteral("adaptive"), false);
+  t.insert(QStringLiteral("bgShell"), QStringLiteral("#101012"));
+  t.insert(QStringLiteral("bgHeader"), QStringLiteral("#101012"));
+  t.insert(QStringLiteral("bgEditor"), QStringLiteral("#18181b"));
+  t.insert(QStringLiteral("bgGutter"), QStringLiteral("#151518"));
+  t.insert(QStringLiteral("bgDrawer"), QStringLiteral("#131316"));
+  t.insert(QStringLiteral("bgSurfaceElev"), QStringLiteral("#202025"));
+  t.insert(QStringLiteral("bgCard"), QStringLiteral("#18181c"));
+  t.insert(QStringLiteral("bgGroup"), QStringLiteral("#141417"));
+  t.insert(QStringLiteral("bgInput"), QStringLiteral("#1d1d22"));
+  t.insert(QStringLiteral("bgHover"), QStringLiteral("#27272d"));
+  t.insert(QStringLiteral("bgPressed"), QStringLiteral("#2e2e36"));
+  t.insert(QStringLiteral("bgLineHighlight"), QStringLiteral("#212126"));
+  t.insert(QStringLiteral("bgLineHighlightSel"), QStringLiteral("#262933"));
+  t.insert(QStringLiteral("borderSubtle"), QStringLiteral("#242429"));
+  t.insert(QStringLiteral("borderGroup"), QStringLiteral("#2a2a30"));
+  t.insert(QStringLiteral("borderDivider"), QStringLiteral("#222227"));
+  t.insert(QStringLiteral("borderControl"), QStringLiteral("#34343c"));
+  t.insert(QStringLiteral("borderHover"), QStringLiteral("#565663"));
+  t.insert(QStringLiteral("borderFocus"), QStringLiteral("#727280"));
+  t.insert(QStringLiteral("fgMain"), QStringLiteral("#f2f2f5"));
+  t.insert(QStringLiteral("fgTitle"), QStringLiteral("#eeeef2"));
+  t.insert(QStringLiteral("fgLabel"), QStringLiteral("#d8d8df"));
+  t.insert(QStringLiteral("fgMuted"), QStringLiteral("#9d9da9"));
+  t.insert(QStringLiteral("fgSub"), QStringLiteral("#787885"));
+  t.insert(QStringLiteral("fgGutter"), QStringLiteral("#5c5c68"));
+  t.insert(QStringLiteral("accent"), QStringLiteral("#d4d4dc"));
+  t.insert(QStringLiteral("accentStrong"), QStringLiteral("#f2f2f5"));
+  t.insert(QStringLiteral("selBg"), QStringLiteral("#343640"));
+  t.insert(QStringLiteral("danger"), QStringLiteral("#e0554d"));
+  t.insert(QStringLiteral("fgOnPrimary"), QStringLiteral("#111113"));
+  t.insert(QStringLiteral("primaryBg"), QStringLiteral("#f2f2f5"));
+  t.insert(QStringLiteral("primaryHover"), QStringLiteral("#e2e2e8"));
+  t.insert(QStringLiteral("primaryPress"), QStringLiteral("#c8c8d0"));
+  t.insert(QStringLiteral("btnBorderNormal"), QStringLiteral("#313139"));
+  t.insert(QStringLiteral("btnBorderHover"), QStringLiteral("#626270"));
+  t.insert(QStringLiteral("btnBorderAccent"), QStringLiteral("#d4d4dc"));
+  t.insert(QStringLiteral("btnFillHover"), QStringLiteral("#1cffffff"));
+  t.insert(QStringLiteral("btnFillPress"), QStringLiteral("#2cffffff"));
+  t.insert(QStringLiteral("btnFillAccent"), QStringLiteral("#14ffffff"));
+  t.insert(QStringLiteral("btnFillChip"), QStringLiteral("#27272e"));
+  t.insert(QStringLiteral("btnFillDanger"), QStringLiteral("#34e5534b"));
+  t.insert(QStringLiteral("chipBg"), QStringLiteral("#292930"));
+  t.insert(QStringLiteral("chipBorder"), QStringLiteral("#4a4a56"));
+  t.insert(QStringLiteral("chipFg"), QStringLiteral("#f2f2f5"));
+  t.insert(QStringLiteral("scrollIdle"), QStringLiteral("#3a3a42"));
+  t.insert(QStringLiteral("scrollHover"), QStringLiteral("#585864"));
+  t.insert(QStringLiteral("scrollPress"), QStringLiteral("#787886"));
+  t.insert(QStringLiteral("scrim"), QStringLiteral("#9608080a"));
+  t.insert(QStringLiteral("sheen"), QStringLiteral("#12ffffff"));
+  t.insert(QStringLiteral("sheenBright"), QStringLiteral("#16ffffff"));
+  t.insert(QStringLiteral("sheenPrimary"), QStringLiteral("#26ffffff"));
+  t.insert(QStringLiteral("hoverLineBand"), QStringLiteral("#0effffff"));
+  return t;
+}
+
 static QVariantMap buildAdaptiveTheme(const AdaptivePaletteSeed &seed) {
   const QColor bgEditor = seed.bgEditor;
   const bool dark = relativeLuminance(bgEditor) < 0.25;
-  const QColor bgShell = seed.bgShell.isValid()
-                             ? seed.bgShell
-                             : blendColors(bgEditor, dark ? QColor(0, 0, 0) : QColor(235, 238, 244), 0.25);
-  QColor fgMain = seed.fgMain.isValid() ? seed.fgMain : (dark ? QColor("#eef1f6") : QColor("#14161a"));
+  const QColor bgShell =
+      seed.bgShell.isValid()
+          ? seed.bgShell
+          : blendColors(bgEditor,
+                        dark ? QColor(0, 0, 0) : QColor(235, 238, 244), 0.25);
+  QColor fgMain = seed.fgMain.isValid()
+                      ? seed.fgMain
+                      : (dark ? QColor("#eef1f6") : QColor("#14161a"));
   if (contrastRatio(bgEditor, fgMain) < 4.5) {
     fgMain = dark ? QColor("#f0f2f6") : QColor("#14161a");
   }
@@ -688,14 +770,14 @@ static QVariantMap buildAdaptiveTheme(const AdaptivePaletteSeed &seed) {
   }
   QColor accentFg = seed.accentFg;
   if (!accentFg.isValid() || contrastRatio(accent, accentFg) < 4.0) {
-    accentFg = (relativeLuminance(accent) > 0.35) ? QColor("#101418") : QColor("#ffffff");
+    accentFg = (relativeLuminance(accent) > 0.35) ? QColor("#101418")
+                                                  : QColor("#ffffff");
   }
   const QColor accentStrong = blendColors(accent, fgMain, 0.22);
 
   const QColor borderSubtle =
-      seed.border.isValid()
-          ? blendColors(bgShell, seed.border, 0.55)
-          : blendColors(bgShell, fgMain, dark ? 0.12 : 0.13);
+      seed.border.isValid() ? blendColors(bgShell, seed.border, 0.55)
+                            : blendColors(bgShell, fgMain, dark ? 0.12 : 0.13);
   const QColor borderControl =
       seed.border.isValid()
           ? blendColors(bgSurface, seed.border, 0.65)
@@ -703,8 +785,10 @@ static QVariantMap buildAdaptiveTheme(const AdaptivePaletteSeed &seed) {
   const QColor borderHover = blendColors(borderControl, fgMain, 0.28);
   const QColor borderFocus = blendColors(accent, fgMain, 0.20);
 
-  const QColor bgLineHighlight = blendColors(bgEditor, fgMain, dark ? 0.045 : 0.04);
-  const QColor bgLineHighlightSel = blendColors(bgEditor, accent, dark ? 0.14 : 0.11);
+  const QColor bgLineHighlight =
+      blendColors(bgEditor, fgMain, dark ? 0.045 : 0.04);
+  const QColor bgLineHighlightSel =
+      blendColors(bgEditor, accent, dark ? 0.14 : 0.11);
   const QColor selBg = blendColors(bgEditor, accent, dark ? 0.28 : 0.24);
   const QColor danger = seed.danger.isValid() ? seed.danger : QColor("#e0554d");
 
@@ -715,6 +799,8 @@ static QVariantMap buildAdaptiveTheme(const AdaptivePaletteSeed &seed) {
   t.insert(QStringLiteral("bgHeader"), colorStr(bgShell));
   t.insert(QStringLiteral("bgEditor"), colorStr(bgEditor));
   t.insert(QStringLiteral("bgGutter"), colorStr(bgGutter));
+  t.insert(QStringLiteral("bgDrawer"),
+           colorStr(blendColors(bgShell, bgEditor, 0.35)));
   t.insert(QStringLiteral("bgSurfaceElev"), colorStr(bgSurface));
   t.insert(QStringLiteral("bgCard"), colorStr(bgCard));
   t.insert(QStringLiteral("bgGroup"), colorStr(bgGroup));
@@ -731,37 +817,59 @@ static QVariantMap buildAdaptiveTheme(const AdaptivePaletteSeed &seed) {
   t.insert(QStringLiteral("borderFocus"), colorStr(borderFocus));
   t.insert(QStringLiteral("fgMain"), colorStr(fgMain));
   t.insert(QStringLiteral("fgTitle"), colorStr(fgMain));
-  t.insert(QStringLiteral("fgLabel"), colorStr(blendColors(fgMain, bgEditor, 0.10)));
-  t.insert(QStringLiteral("fgMuted"), colorStr(blendColors(fgMain, bgEditor, 0.36)));
-  t.insert(QStringLiteral("fgSub"), colorStr(blendColors(fgMain, bgEditor, 0.48)));
-  t.insert(QStringLiteral("fgGutter"), colorStr(blendColors(fgMain, bgEditor, 0.60)));
+  t.insert(QStringLiteral("fgLabel"),
+           colorStr(blendColors(fgMain, bgEditor, 0.10)));
+  t.insert(QStringLiteral("fgMuted"),
+           colorStr(blendColors(fgMain, bgEditor, 0.36)));
+  t.insert(QStringLiteral("fgSub"),
+           colorStr(blendColors(fgMain, bgEditor, 0.48)));
+  t.insert(QStringLiteral("fgGutter"),
+           colorStr(blendColors(fgMain, bgEditor, 0.60)));
   t.insert(QStringLiteral("accent"), colorStr(accent));
   t.insert(QStringLiteral("accentStrong"), colorStr(accentStrong));
   t.insert(QStringLiteral("selBg"), colorStr(selBg));
   t.insert(QStringLiteral("danger"), colorStr(danger));
   t.insert(QStringLiteral("fgOnPrimary"), colorStr(accentFg));
   t.insert(QStringLiteral("primaryBg"), colorStr(accent));
-  t.insert(QStringLiteral("primaryHover"), colorStr(blendColors(accent, accentFg, 0.10)));
-  t.insert(QStringLiteral("primaryPress"), colorStr(blendColors(accent, accentFg, 0.20)));
+  t.insert(QStringLiteral("primaryHover"),
+           colorStr(blendColors(accent, accentFg, 0.10)));
+  t.insert(QStringLiteral("primaryPress"),
+           colorStr(blendColors(accent, accentFg, 0.20)));
   t.insert(QStringLiteral("btnBorderNormal"), colorStr(borderControl));
   t.insert(QStringLiteral("btnBorderHover"), colorStr(borderHover));
-  t.insert(QStringLiteral("btnBorderAccent"), colorStr(blendColors(accent, fgMain, 0.25)));
-  t.insert(QStringLiteral("btnFillHover"), colorStr(withAlpha(fgMain, dark ? 28 : 16)));
-  t.insert(QStringLiteral("btnFillPress"), colorStr(withAlpha(fgMain, dark ? 44 : 28)));
-  t.insert(QStringLiteral("btnFillAccent"), colorStr(withAlpha(accent, dark ? 34 : 24)));
-  t.insert(QStringLiteral("btnFillChip"), colorStr(blendColors(bgSurface, accent, dark ? 0.18 : 0.16)));
-  t.insert(QStringLiteral("btnFillDanger"), colorStr(withAlpha(danger, dark ? 52 : 34)));
-  t.insert(QStringLiteral("chipBg"), colorStr(blendColors(bgSurface, accent, dark ? 0.20 : 0.18)));
-  t.insert(QStringLiteral("chipBorder"), colorStr(blendColors(borderControl, accent, 0.45)));
+  t.insert(QStringLiteral("btnBorderAccent"),
+           colorStr(blendColors(accent, fgMain, 0.25)));
+  t.insert(QStringLiteral("btnFillHover"),
+           colorStr(withAlpha(fgMain, dark ? 28 : 16)));
+  t.insert(QStringLiteral("btnFillPress"),
+           colorStr(withAlpha(fgMain, dark ? 44 : 28)));
+  t.insert(QStringLiteral("btnFillAccent"),
+           colorStr(withAlpha(accent, dark ? 34 : 24)));
+  t.insert(QStringLiteral("btnFillChip"),
+           colorStr(blendColors(bgSurface, accent, dark ? 0.18 : 0.16)));
+  t.insert(QStringLiteral("btnFillDanger"),
+           colorStr(withAlpha(danger, dark ? 52 : 34)));
+  t.insert(QStringLiteral("chipBg"),
+           colorStr(blendColors(bgSurface, accent, dark ? 0.20 : 0.18)));
+  t.insert(QStringLiteral("chipBorder"),
+           colorStr(blendColors(borderControl, accent, 0.45)));
   t.insert(QStringLiteral("chipFg"), colorStr(fgMain));
-  t.insert(QStringLiteral("scrollIdle"), colorStr(blendColors(bgEditor, fgMain, dark ? 0.20 : 0.22)));
-  t.insert(QStringLiteral("scrollHover"), colorStr(blendColors(bgEditor, fgMain, dark ? 0.34 : 0.38)));
-  t.insert(QStringLiteral("scrollPress"), colorStr(blendColors(bgEditor, fgMain, dark ? 0.48 : 0.52)));
-  t.insert(QStringLiteral("scrim"), colorStr(withAlpha(bgShell.darker(220), dark ? 155 : 105)));
-  t.insert(QStringLiteral("sheen"), colorStr(withAlpha(QColor(255, 255, 255), dark ? 18 : 128)));
-  t.insert(QStringLiteral("sheenBright"), colorStr(withAlpha(QColor(255, 255, 255), dark ? 22 : 144)));
-  t.insert(QStringLiteral("sheenPrimary"), colorStr(withAlpha(QColor(255, 255, 255), dark ? 38 : 48)));
-  t.insert(QStringLiteral("hoverLineBand"), colorStr(withAlpha(fgMain, dark ? 14 : 10)));
+  t.insert(QStringLiteral("scrollIdle"),
+           colorStr(blendColors(bgEditor, fgMain, dark ? 0.20 : 0.22)));
+  t.insert(QStringLiteral("scrollHover"),
+           colorStr(blendColors(bgEditor, fgMain, dark ? 0.34 : 0.38)));
+  t.insert(QStringLiteral("scrollPress"),
+           colorStr(blendColors(bgEditor, fgMain, dark ? 0.48 : 0.52)));
+  t.insert(QStringLiteral("scrim"),
+           colorStr(withAlpha(bgShell.darker(220), dark ? 155 : 105)));
+  t.insert(QStringLiteral("sheen"),
+           colorStr(withAlpha(QColor(255, 255, 255), dark ? 18 : 128)));
+  t.insert(QStringLiteral("sheenBright"),
+           colorStr(withAlpha(QColor(255, 255, 255), dark ? 22 : 144)));
+  t.insert(QStringLiteral("sheenPrimary"),
+           colorStr(withAlpha(QColor(255, 255, 255), dark ? 38 : 48)));
+  t.insert(QStringLiteral("hoverLineBand"),
+           colorStr(withAlpha(fgMain, dark ? 14 : 10)));
   return t;
 }
 
@@ -916,6 +1024,11 @@ void EditorBackend::rebuildThemePalette() {
     m_effectiveDark = false;
     return;
   }
+  if (m_themeMode == ThemeGraphite) {
+    m_theme = buildGraphiteTheme();
+    m_effectiveDark = true;
+    return;
+  }
 
 #if defined(Q_OS_WIN)
   const AdaptivePaletteSeed seed = tryLoadWindowsPalette();
@@ -1039,6 +1152,14 @@ TabSession *EditorBackend::tabAtOrActive(int index) const {
                                                     : activeTab();
 }
 
+QString EditorBackend::workspaceName() const {
+  if (m_workspaceRoot.isEmpty()) {
+    return QString();
+  }
+  const QString name = QFileInfo(m_workspaceRoot).fileName();
+  return name.isEmpty() ? m_workspaceRoot : name;
+}
+
 QString EditorBackend::languageId() const {
   TabSession *tab = activeTab();
   return tab ? tab->languageId() : QStringLiteral("auto");
@@ -1084,7 +1205,7 @@ void EditorBackend::setShowLineNumbers(bool show) {
 }
 
 void EditorBackend::setThemeMode(int mode) {
-  if (mode < ThemeSystem || mode > ThemeDark || m_themeMode == mode) {
+  if (mode < ThemeSystem || mode > ThemeGraphite || m_themeMode == mode) {
     return;
   }
   m_themeMode = mode;
@@ -1093,6 +1214,54 @@ void EditorBackend::setThemeMode(int mode) {
   updateThemeWatches();
   propagateThemeAndSyntax();
   emit themeChanged();
+  emit settingsChanged();
+}
+
+void EditorBackend::setLayoutMode(int mode) {
+  if (mode < LayoutMinimal || mode > LayoutExpanded || m_layoutMode == mode) {
+    return;
+  }
+  m_layoutMode = mode;
+  saveSettings();
+  emit settingsChanged();
+}
+
+void EditorBackend::setSidebarOpen(bool open) {
+  if (m_sidebarOpen == open) {
+    return;
+  }
+  m_sidebarOpen = open;
+  saveSettings();
+  emit settingsChanged();
+}
+
+void EditorBackend::setSidebarWidth(int width) {
+  const int clamped = qBound(140, width, 480);
+  if (m_sidebarWidth == clamped) {
+    return;
+  }
+  m_sidebarWidth = clamped;
+  saveSettings();
+  emit settingsChanged();
+}
+
+void EditorBackend::setSidebarScalePercent(int percent) {
+  const int clamped = qBound(80, percent, 150);
+  if (m_sidebarScalePercent == clamped) {
+    return;
+  }
+  m_sidebarScalePercent = clamped;
+  saveSettings();
+  emit settingsChanged();
+}
+
+void EditorBackend::setExpandedIconSize(int size) {
+  const int clamped = qBound(14, size, 28);
+  if (m_expandedIconSize == clamped) {
+    return;
+  }
+  m_expandedIconSize = clamped;
+  saveSettings();
   emit settingsChanged();
 }
 
@@ -1139,6 +1308,16 @@ void EditorBackend::zoomIn() { setZoomPercent(m_zoomPercent + 10); }
 void EditorBackend::zoomOut() { setZoomPercent(m_zoomPercent - 10); }
 
 void EditorBackend::zoomReset() { setZoomPercent(100); }
+
+void EditorBackend::sidebarScaleIn() {
+  setSidebarScalePercent(m_sidebarScalePercent + 10);
+}
+
+void EditorBackend::sidebarScaleOut() {
+  setSidebarScalePercent(m_sidebarScalePercent - 10);
+}
+
+void EditorBackend::sidebarScaleReset() { setSidebarScalePercent(100); }
 
 int EditorBackend::newTab(const QString &initialFilePath) {
   TabSession *tab = createSession();
@@ -1251,15 +1430,128 @@ bool EditorBackend::loadFile(const QString &path, bool allowMissing) {
 
 bool EditorBackend::openFileDialog() {
   TabSession *cur = activeTab();
-  const QString initialDir = (cur && !cur->filePath().isEmpty())
-                                 ? QFileInfo(cur->filePath()).absolutePath()
-                                 : QDir::currentPath();
+  const QString initialDir =
+      (cur && !cur->filePath().isEmpty())
+          ? QFileInfo(cur->filePath()).absolutePath()
+          : (!m_workspaceRoot.isEmpty() ? m_workspaceRoot
+                                        : QDir::currentPath());
   const QString chosen = QFileDialog::getOpenFileName(
       nullptr, QStringLiteral("Open File"), initialDir);
   if (chosen.isEmpty()) {
     return false;
   }
   return loadFile(chosen, false);
+}
+
+bool EditorBackend::openFolderDialog() {
+  TabSession *cur = activeTab();
+  const QString initialDir =
+      !m_workspaceRoot.isEmpty()
+          ? m_workspaceRoot
+          : ((cur && !cur->filePath().isEmpty())
+                 ? QFileInfo(cur->filePath()).absolutePath()
+                 : QDir::currentPath());
+  const QString chosen = QFileDialog::getExistingDirectory(
+      nullptr, QStringLiteral("Open Folder"), initialDir,
+      QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+  if (chosen.isEmpty()) {
+    return false;
+  }
+  return openFolder(chosen);
+}
+
+bool EditorBackend::openFolder(const QString &path) {
+  const QString absPath = normalizeFilePath(path);
+  const QFileInfo info(absPath);
+  if (!info.exists() || !info.isDir()) {
+    return false;
+  }
+  m_workspaceRoot = absPath;
+  m_expandedFolders.clear();
+  rebuildFolderEntries();
+  if (!m_sidebarOpen) {
+    m_sidebarOpen = true;
+    saveSettings();
+    emit settingsChanged();
+  }
+  emit folderChanged();
+  return true;
+}
+
+void EditorBackend::closeFolder() {
+  if (m_workspaceRoot.isEmpty() && m_folderEntries.isEmpty()) {
+    return;
+  }
+  m_workspaceRoot.clear();
+  m_expandedFolders.clear();
+  m_folderEntries.clear();
+  emit folderChanged();
+}
+
+void EditorBackend::toggleFolderExpanded(const QString &dirPath) {
+  if (dirPath.isEmpty()) {
+    return;
+  }
+  if (m_expandedFolders.contains(dirPath)) {
+    m_expandedFolders.remove(dirPath);
+  } else {
+    m_expandedFolders.insert(dirPath);
+  }
+  rebuildFolderEntries();
+  emit folderChanged();
+}
+
+void EditorBackend::refreshFolder() {
+  if (m_workspaceRoot.isEmpty()) {
+    return;
+  }
+  rebuildFolderEntries();
+  emit folderChanged();
+}
+
+void EditorBackend::rebuildFolderEntries() {
+  m_folderEntries.clear();
+  if (m_workspaceRoot.isEmpty()) {
+    return;
+  }
+  int budget = 2500;
+  collectFolderLevel(m_workspaceRoot, 0, budget);
+}
+
+void EditorBackend::collectFolderLevel(const QString &dirPath, int depth,
+                                       int &budget) {
+  if (budget <= 0 || depth > 16) {
+    return;
+  }
+  const QDir dir(dirPath);
+  const QFileInfoList entries =
+      dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden,
+                        QDir::DirsFirst | QDir::IgnoreCase | QDir::Name);
+  for (const QFileInfo &fi : entries) {
+    if (budget <= 0) {
+      break;
+    }
+    const QString name = fi.fileName();
+    if (name == QStringLiteral(".git")) {
+      continue;
+    }
+    const bool isDir = fi.isDir();
+    const QString abs = fi.absoluteFilePath();
+    const bool expanded = isDir && m_expandedFolders.contains(abs);
+
+    QVariantMap item;
+    item.insert(QStringLiteral("path"), abs);
+    item.insert(QStringLiteral("name"), name);
+    item.insert(QStringLiteral("isDir"), isDir);
+    item.insert(QStringLiteral("depth"), depth);
+    item.insert(QStringLiteral("expanded"), expanded);
+    m_folderEntries.append(item);
+    --budget;
+
+    if (expanded) {
+      collectFolderLevel(abs, depth + 1, budget);
+    }
+  }
 }
 
 bool EditorBackend::saveFile(int index) {
@@ -1280,7 +1572,9 @@ bool EditorBackend::saveFileAsDialog(int index) {
   }
   const QString initial =
       tab->filePath().isEmpty()
-          ? QDir(QDir::currentPath()).filePath(QStringLiteral("Untitled"))
+          ? QDir(!m_workspaceRoot.isEmpty() ? m_workspaceRoot
+                                            : QDir::currentPath())
+                .filePath(QStringLiteral("Untitled"))
           : tab->filePath();
   const QString chosen = QFileDialog::getSaveFileName(
       nullptr, QStringLiteral("Save File"), initial);
@@ -1300,13 +1594,20 @@ void EditorBackend::setInitialFiles(const QStringList &paths) {
   if (paths.isEmpty()) {
     return;
   }
-  for (int i = 0; i < paths.size(); ++i) {
-    if (i == 0 && m_tabModel.count() == 1 &&
-        m_tabModel.at(0)->isPristineUntitled()) {
-      m_tabModel.at(0)->setPendingInitialFile(paths.at(i), true);
-    } else {
-      newTab(paths.at(i));
+  int fileIdx = 0;
+  for (const QString &p : paths) {
+    const QString abs = normalizeFilePath(p);
+    if (QFileInfo(abs).isDir()) {
+      openFolder(abs);
+      continue;
     }
+    if (fileIdx == 0 && m_tabModel.count() == 1 &&
+        m_tabModel.at(0)->isPristineUntitled()) {
+      m_tabModel.at(0)->setPendingInitialFile(p, true);
+    } else {
+      newTab(p);
+    }
+    ++fileIdx;
   }
   setActiveTabIndex(0);
 }
@@ -1361,7 +1662,20 @@ void EditorBackend::loadSettings() {
   s.beginGroup(QStringLiteral("editor"));
   m_showLineNumbers = s.value(QStringLiteral("line_numbers"), true).toBool();
   const int mode = s.value(QStringLiteral("theme"), ThemeDark).toInt();
-  m_themeMode = (mode >= ThemeSystem && mode <= ThemeDark) ? mode : ThemeDark;
+  m_themeMode =
+      (mode >= ThemeSystem && mode <= ThemeGraphite) ? mode : ThemeDark;
+  const int layout =
+      s.value(QStringLiteral("layout_mode"), LayoutMinimal).toInt();
+  m_layoutMode = (layout >= LayoutMinimal && layout <= LayoutExpanded)
+                     ? layout
+                     : LayoutMinimal;
+  m_sidebarOpen = s.value(QStringLiteral("sidebar_open"), true).toBool();
+  m_sidebarWidth =
+      qBound(140, s.value(QStringLiteral("sidebar_width"), 180).toInt(), 480);
+  m_sidebarScalePercent =
+      qBound(80, s.value(QStringLiteral("sidebar_scale"), 100).toInt(), 150);
+  m_expandedIconSize =
+      qBound(14, s.value(QStringLiteral("expanded_icon_size"), 18).toInt(), 28);
   m_syntaxEnabled = s.value(QStringLiteral("syntax"), true).toBool();
   m_zoomPercent = qBound(50, s.value(QStringLiteral("zoom"), 100).toInt(), 300);
   const QString lang =
@@ -1380,6 +1694,11 @@ void EditorBackend::saveSettings() const {
   s.beginGroup(QStringLiteral("editor"));
   s.setValue(QStringLiteral("line_numbers"), m_showLineNumbers);
   s.setValue(QStringLiteral("theme"), m_themeMode);
+  s.setValue(QStringLiteral("layout_mode"), m_layoutMode);
+  s.setValue(QStringLiteral("sidebar_open"), m_sidebarOpen);
+  s.setValue(QStringLiteral("sidebar_width"), m_sidebarWidth);
+  s.setValue(QStringLiteral("sidebar_scale"), m_sidebarScalePercent);
+  s.setValue(QStringLiteral("expanded_icon_size"), m_expandedIconSize);
   s.setValue(QStringLiteral("syntax"), m_syntaxEnabled);
   s.setValue(QStringLiteral("zoom"), m_zoomPercent);
   s.setValue(QStringLiteral("ui_language"), m_uiLanguage);

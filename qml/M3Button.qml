@@ -25,7 +25,7 @@ Item {
     property int cornerRadius: 5
     property int iconSize: 14
 
-    signal clicked()
+    signal clicked
 
     readonly property bool hovered: ma.containsMouse
     readonly property bool pressed: ma.pressed
@@ -48,70 +48,83 @@ Item {
 
     readonly property color iconColor: {
         if (primaryFill) {
-            return fgOnPrimary
+            return fgOnPrimary;
         }
         if (dangerHover && (hovered || pressed)) {
-            return borderDanger
+            return borderDanger;
         }
         if (accent || activeChip || hovered || pressed) {
-            return fgNormal
+            return fgNormal;
         }
-        return fgMuted
+        return fgMuted;
     }
 
     function svgBody(kind) {
         if (kind === "plus") {
-            return '<path d="M12 5v14M5 12h14"/>'
+            return '<path d="M12 5v14M5 12h14"/>';
         }
         if (kind === "minus") {
-            return '<path d="M5 12h14"/>'
+            return '<path d="M5 12h14"/>';
         }
         if (kind === "close") {
-            return '<path d="M17 7L7 17M7 7l10 10"/>'
+            return '<path d="M17 7L7 17M7 7l10 10"/>';
         }
         if (kind === "max") {
-            return '<rect x="5.5" y="5.5" width="13" height="13" rx="2"/>'
+            return '<rect x="5.5" y="5.5" width="13" height="13" rx="2"/>';
         }
         if (kind === "restore") {
-            return '<rect x="5" y="8" width="11" height="11" rx="1.8"/><path d="M8 8V6.8A1.8 1.8 0 0 1 9.8 5h7.4A1.8 1.8 0 0 1 19 6.8v7.4a1.8 1.8 0 0 1-1.8 1.8H16"/>'
+            return '<rect x="5" y="8" width="11" height="11" rx="1.8"/><path d="M8 8V6.8A1.8 1.8 0 0 1 9.8 5h7.4A1.8 1.8 0 0 1 19 6.8v7.4a1.8 1.8 0 0 1-1.8 1.8H16"/>';
         }
         if (kind === "dots") {
-            return '<circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none"/>'
+            return '<circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none"/>';
         }
         if (kind === "gear") {
-            return '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'
+            return '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>';
         }
         if (kind === "chevron") {
-            return '<path d="m6 9 6 6 6-6"/>'
+            return '<path d="m6 9 6 6 6-6"/>';
         }
         if (kind === "up") {
-            return '<path d="m18 15-6-6-6 6"/>'
+            return '<path d="m18 15-6-6-6 6"/>';
         }
         if (kind === "back") {
-            return '<path d="M19 12H5M11 6l-6 6 6 6"/>'
+            return '<path d="M19 12H5M11 6l-6 6 6 6"/>';
         }
         if (kind === "search") {
-            return '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>'
+            return '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>';
         }
         if (kind === "folder") {
-            return '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'
+            return '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>';
         }
         if (kind === "save") {
-            return '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>'
+            return '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>';
         }
-        return ""
+        if (kind === "sidebar") {
+            return '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>';
+        }
+        if (kind === "newfile") {
+            return '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6M9 15h6"/>';
+        }
+        if (kind === "openfile") {
+            return '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6M9.5 14.5 12 12l2.5 2.5"/>';
+        }
+        if (kind === "file") {
+            return '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>';
+        }
+        if (kind === "refresh") {
+            return '<path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>';
+        }
+        return "";
     }
 
     function iconDataUri(kind, col) {
         if (kind === "") {
-            return ""
+            return "";
         }
-        const hex = col.toString()
-        const body = svgBody(kind).split("currentColor").join(hex)
-        const svg = '<svg xmlns="http:\x2f\x2fwww.w3.org\x2f2000\x2fsvg" viewBox="0 0 24 24" fill="none" stroke="' +
-                  hex + '" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">' +
-                  body + '</svg>'
-        return "data:image/svg+xml;utf8," + encodeURIComponent(svg)
+        const hex = col.toString();
+        const body = svgBody(kind).split("currentColor").join(hex);
+        const svg = '<svg xmlns="http:\x2f\x2fwww.w3.org\x2f2000\x2fsvg" viewBox="0 0 24 24" fill="none" stroke="' + hex + '" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">' + body + '</svg>';
+        return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
     }
 
     implicitHeight: buttonHeight
@@ -123,52 +136,63 @@ Item {
         radius: root.cornerRadius
         color: {
             if (primaryFill) {
-                if (pressed) return root.primaryPress
-                if (hovered) return root.primaryHover
-                return root.primaryBg
+                if (pressed)
+                    return root.primaryPress;
+                if (hovered)
+                    return root.primaryHover;
+                return root.primaryBg;
             }
             if (pressed) {
-                return dangerHover ? fillDanger : fillPress
+                return dangerHover ? fillDanger : fillPress;
             }
             if (hovered) {
-                return dangerHover ? fillDanger : fillHover
+                return dangerHover ? fillDanger : fillHover;
             }
             if (activeChip) {
-                return fillChip
+                return fillChip;
             }
             if (accent) {
-                return fillAccent
+                return fillAccent;
             }
             if (elevated) {
-                return root.theme.bgSurfaceElev || (darkMode ? "#1c1f27" : "#ffffff")
+                return root.theme.bgSurfaceElev || (darkMode ? "#1c1f27" : "#ffffff");
             }
-            return "transparent"
+            return "transparent";
         }
         border.width: primaryFill ? 0 : (accent ? 1.25 : 1)
         border.color: {
             if (dangerHover && (hovered || pressed)) {
-                return borderDanger
+                return borderDanger;
             }
             if (accent || activeChip) {
-                return borderAccent
+                return borderAccent;
             }
             if (ghost && !hovered && !pressed) {
-                return "transparent"
+                return "transparent";
             }
-            return (hovered || pressed) ? borderHover : borderNormal
+            return (hovered || pressed) ? borderHover : borderNormal;
         }
 
         scale: pressed ? 0.955 : 1.0
         transformOrigin: Item.Center
 
         Behavior on color {
-            ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
+            ColorAnimation {
+                duration: 90
+                easing.type: Easing.OutCubic
+            }
         }
         Behavior on border.color {
-            ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
+            ColorAnimation {
+                duration: 90
+                easing.type: Easing.OutCubic
+            }
         }
         Behavior on scale {
-            NumberAnimation { duration: 75; easing.type: Easing.OutCubic }
+            NumberAnimation {
+                duration: 75
+                easing.type: Easing.OutCubic
+            }
         }
 
         Rectangle {
@@ -180,9 +204,7 @@ Item {
             anchors.leftMargin: Math.max(4, root.cornerRadius - 1)
             anchors.rightMargin: Math.max(4, root.cornerRadius - 1)
             height: 1
-            color: root.primaryFill
-                   ? (root.theme.sheenPrimary || (root.darkMode ? "#26ffffff" : "#30ffffff"))
-                   : (root.theme.sheen || (root.darkMode ? "#12ffffff" : "#80ffffff"))
+            color: root.primaryFill ? (root.theme.sheenPrimary || (root.darkMode ? "#26ffffff" : "#30ffffff")) : (root.theme.sheen || (root.darkMode ? "#12ffffff" : "#80ffffff"))
         }
 
         Row {
@@ -213,17 +235,23 @@ Item {
                 visible: root.text !== ""
                 text: root.text
                 color: {
-                    if (root.primaryFill) return root.fgOnPrimary
-                    if (root.dangerHover && (root.hovered || root.pressed)) return root.borderDanger
-                    if (root.accent || root.activeChip || root.hovered || root.pressed) return root.fgNormal
-                    return root.fgMuted
+                    if (root.primaryFill)
+                        return root.fgOnPrimary;
+                    if (root.dangerHover && (root.hovered || root.pressed))
+                        return root.borderDanger;
+                    if (root.accent || root.activeChip || root.hovered || root.pressed)
+                        return root.fgNormal;
+                    return root.fgMuted;
                 }
                 font.pixelSize: root.fontPixelSize
                 font.weight: (root.primaryFill || root.accent || root.activeChip) ? Font.DemiBold : Font.Medium
                 anchors.verticalCenter: parent.verticalCenter
 
                 Behavior on color {
-                    ColorAnimation { duration: 90; easing.type: Easing.OutCubic }
+                    ColorAnimation {
+                        duration: 90
+                        easing.type: Easing.OutCubic
+                    }
                 }
             }
 

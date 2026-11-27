@@ -5,6 +5,11 @@
         <file>qml/EditorContextMenu.qml</file>
         <file>qml/TopBar.qml</file>
         <file>qml/TabStrip.qml</file>
+        <file>qml/ExpandedHeader.qml</file>
+        <file>qml/LeftRail.qml</file>
+        <file>qml/OpenFilesDrawer.qml</file>
+        <file>qml/BreadcrumbBar.qml</file>
+        <file>qml/ExpandedStatusBar.qml</file>
         <file>qml/FindBar.qml</file>
         <file>qml/StatusBar.qml</file>
         <file>qml/M3Button.qml</file>

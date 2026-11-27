@@ -12,8 +12,7 @@ ApplicationWindow {
     minimumHeight: 360
     flags: Qt.Window | Qt.FramelessWindowHint
     color: "transparent"
-    title: ((editorBackend.activeTab && editorBackend.activeTab.modified) ? "* " : "") + ((editorBackend.activeTab && editorBackend.activeTab.filePath !== "") ? editorBackend.activeTab.fileName : (win.ui.untitled || "Untitled")) +
-           " — Nulla"
+    title: ((editorBackend.activeTab && editorBackend.activeTab.modified) ? "* " : "") + ((editorBackend.activeTab && editorBackend.activeTab.filePath !== "") ? editorBackend.activeTab.fileName : (win.ui.untitled || "Untitled")) + " — Nulla"
 
     property bool forceClose: false
     property string pendingAction: ""
@@ -23,10 +22,12 @@ ApplicationWindow {
     readonly property bool dark: editorBackend.effectiveDark
     readonly property var theme: editorBackend.theme
     readonly property var ui: editorBackend.ui
+    readonly property bool expandedMode: editorBackend.layoutMode === 1
     readonly property color bgShell: theme.bgShell || (dark ? "#0d0e11" : "#ebedf2")
     readonly property color bgHeader: theme.bgHeader || (dark ? "#0d0e11" : "#ebedf2")
     readonly property color bgEditor: theme.bgEditor || (dark ? "#16181e" : "#ffffff")
     readonly property color bgGutter: theme.bgGutter || (dark ? "#121318" : "#f5f6f9")
+    readonly property color bgDrawer: theme.bgDrawer || (dark ? "#101217" : "#f2f4f8")
     readonly property color bgSurfaceElev: theme.bgSurfaceElev || (dark ? "#1c1f27" : "#ffffff")
     readonly property color bgHover: theme.bgHover || (dark ? "#252934" : "#e2e5ed")
     readonly property color bgLineHighlight: theme.bgLineHighlight || (dark ? "#1f232c" : "#eff2f8")
@@ -48,7 +49,14 @@ ApplicationWindow {
             if (findBar.open && !findBar.gotoMode) {
                 updateMatchStats();
             }
-            Qt.callLater(focusActiveEditor);
+            if (!win.modalOpen && !findBar.open) {
+                focusActiveEditor();
+                Qt.callLater(function () {
+                    if (!win.modalOpen && !findBar.open) {
+                        focusActiveEditor();
+                    }
+                });
+            }
         }
         onErrorOccurred: function (title, message) {
             confirmModal.errorOnly = true;
@@ -66,8 +74,9 @@ ApplicationWindow {
     }
 
     function focusActiveEditor() {
-        if (activePane) {
-            activePane.focusEditor();
+        const pane = tabRepeater.itemAt(editorBackend.activeTabIndex);
+        if (pane) {
+            pane.focusEditor();
         }
     }
 
@@ -139,8 +148,8 @@ ApplicationWindow {
     }
 
     function localizedTabName(index) {
-        const name = editorBackend.tabFileName(index)
-        return name === "Untitled" ? (win.ui.untitled || "Untitled") : name
+        const name = editorBackend.tabFileName(index);
+        return name === "Untitled" ? (win.ui.untitled || "Untitled") : name;
     }
 
     function requestCloseTab(index) {
@@ -153,9 +162,7 @@ ApplicationWindow {
             win.pendingTabIndex = index;
             confirmModal.errorOnly = false;
             confirmModal.title = win.ui.confirmUnsavedTitle || "Unsaved changes";
-            confirmModal.message = (win.ui.confirmClosePrefix || 'Save changes to "') +
-                                   localizedTabName(index) +
-                                   (win.ui.confirmCloseSuffix || '" before closing?')
+            confirmModal.message = (win.ui.confirmClosePrefix || 'Save changes to "') + localizedTabName(index) + (win.ui.confirmCloseSuffix || '" before closing?');
             confirmModal.open = true;
             return;
         }
@@ -170,9 +177,7 @@ ApplicationWindow {
             win.pendingTabIndex = dirtyIdx;
             confirmModal.errorOnly = false;
             confirmModal.title = win.ui.confirmUnsavedTitle || "Unsaved changes";
-            confirmModal.message = (win.ui.confirmClosePrefix || 'Save changes to "') +
-                                   localizedTabName(dirtyIdx) +
-                                   (win.ui.confirmExitSuffix || '" before exiting?')
+            confirmModal.message = (win.ui.confirmClosePrefix || 'Save changes to "') + localizedTabName(dirtyIdx) + (win.ui.confirmExitSuffix || '" before exiting?');
             confirmModal.open = true;
             return;
         }
@@ -217,6 +222,11 @@ ApplicationWindow {
     }
     Shortcut {
         enabled: !win.modalOpen
+        sequence: "Ctrl+Shift+O"
+        onActivated: editorBackend.openFolderDialog()
+    }
+    Shortcut {
+        enabled: !win.modalOpen
         sequence: "Ctrl+S"
         onActivated: editorBackend.saveFile()
     }
@@ -229,6 +239,11 @@ ApplicationWindow {
         enabled: !win.modalOpen
         sequence: "Ctrl+W"
         onActivated: requestCloseTab(editorBackend.activeTabIndex)
+    }
+    Shortcut {
+        enabled: !win.modalOpen && win.expandedMode
+        sequence: "Ctrl+B"
+        onActivated: editorBackend.sidebarOpen = !editorBackend.sidebarOpen
     }
     Shortcut {
         enabled: !win.modalOpen
@@ -397,7 +412,7 @@ ApplicationWindow {
             } else if (menuPopup.opened) {
                 menuPopup.close();
             } else if (activePane && activePane.contextMenuOpen) {
-                activePane.closeContextMenu()
+                activePane.closeContextMenu();
             } else if (findBar.open) {
                 closeFindBar();
                 return;
@@ -434,144 +449,244 @@ ApplicationWindow {
             anchors.margins: shell.edgeToEdge ? 0 : 1
             clip: true
 
-            TopBar {
-                id: topbar
+            Item {
+                id: headerHost
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                darkMode: win.dark
-                theme: win.theme
-                activeTab: editorBackend.activeTab
-                showWindowControls: editorBackend.showWindowControls
-                isMaximized: win.visibility === Window.Maximized
-                menuOpened: menuPopup.opened
-                ui: win.ui
-                bgHeader: win.bgHeader
-                bgSurfaceElev: win.bgSurfaceElev
-                borderSubtle: win.borderSubtle
-                borderControl: win.borderControl
-                fgMain: win.fgMain
-                fgMuted: win.fgMuted
+                height: win.expandedMode ? expandedHeader.height : (topbar.height + (tabBar.visible ? tabBar.height : 0))
 
-                onMoveWindowRequested: win.startSystemMove()
-                onToggleMaximizeRequested: {
-                    if (win.visibility === Window.Maximized) {
-                        win.showNormal();
-                    } else {
-                        win.showMaximized();
+                TopBar {
+                    id: topbar
+                    visible: !win.expandedMode
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    darkMode: win.dark
+                    theme: win.theme
+                    activeTab: editorBackend.activeTab
+                    showWindowControls: editorBackend.showWindowControls
+                    isMaximized: win.visibility === Window.Maximized
+                    menuOpened: menuPopup.opened
+                    ui: win.ui
+                    bgHeader: win.bgHeader
+                    bgSurfaceElev: win.bgSurfaceElev
+                    borderSubtle: win.borderSubtle
+                    borderControl: win.borderControl
+                    fgMain: win.fgMain
+                    fgMuted: win.fgMuted
+
+                    onMoveWindowRequested: win.startSystemMove()
+                    onToggleMaximizeRequested: {
+                        if (win.visibility === Window.Maximized) {
+                            win.showNormal();
+                        } else {
+                            win.showMaximized();
+                        }
+                    }
+                    onMinimizeRequested: win.showMinimized()
+                    onCloseWindowRequested: win.requestQuit()
+                    onNewTabRequested: editorBackend.newTab()
+                    onOpenFileRequested: editorBackend.openFileDialog()
+                    onSaveFileRequested: editorBackend.saveFile()
+                    onFindRequested: openFindBar(false, false)
+                    onSettingsRequested: settingsModal.open = true
+                    onMenuToggleRequested: function (anchorX) {
+                        win.menuAnchorX = anchorX;
+                        if (menuPopup.opened) {
+                            menuPopup.close();
+                        } else {
+                            menuPopup.open();
+                        }
                     }
                 }
-                onMinimizeRequested: win.showMinimized()
-                onCloseWindowRequested: win.requestQuit()
-                onNewTabRequested: editorBackend.newTab()
-                onOpenFileRequested: editorBackend.openFileDialog()
-                onSaveFileRequested: editorBackend.saveFile()
-                onFindRequested: openFindBar(false, false)
-                onSettingsRequested: settingsModal.open = true
-                onMenuToggleRequested: function (anchorX) {
-                    win.menuAnchorX = anchorX;
-                    if (menuPopup.opened) {
-                        menuPopup.close();
-                    } else {
-                        menuPopup.open();
+
+                TabStrip {
+                    id: tabBar
+                    visible: !win.expandedMode && editorBackend.tabCount > 1
+                    anchors.top: topbar.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    darkMode: win.dark
+                    theme: win.theme
+                    tabModel: editorBackend.tabModel
+                    tabCount: editorBackend.tabCount
+                    activeIndex: editorBackend.activeTabIndex
+                    ui: win.ui
+                    bgShell: win.bgShell
+                    bgEditor: win.bgEditor
+                    bgHover: win.bgHover
+                    borderSubtle: win.borderSubtle
+                    borderControl: win.borderControl
+                    borderHover: win.borderHover
+                    fgMain: win.fgMain
+                    fgMuted: win.fgMuted
+
+                    onTabActivated: function (index) {
+                        editorBackend.activateTab(index);
+                    }
+                    onTabClosed: function (index) {
+                        requestCloseTab(index);
+                    }
+                    onNewTabRequested: editorBackend.newTab()
+                }
+
+                ExpandedHeader {
+                    id: expandedHeader
+                    visible: win.expandedMode
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    darkMode: win.dark
+                    theme: win.theme
+                    tabModel: editorBackend.tabModel
+                    tabCount: editorBackend.tabCount
+                    activeIndex: editorBackend.activeTabIndex
+                    showWindowControls: editorBackend.showWindowControls
+                    isMaximized: win.visibility === Window.Maximized
+                    menuOpened: menuPopup.opened
+                    iconSize: editorBackend.expandedIconSize
+                    railWidth: leftRail.width
+                    ui: win.ui
+                    bgHeader: win.bgHeader
+                    bgEditor: win.bgEditor
+                    bgSurfaceElev: win.bgSurfaceElev
+                    bgHover: win.bgHover
+                    borderSubtle: win.borderSubtle
+                    borderControl: win.borderControl
+                    fgMain: win.fgMain
+                    fgMuted: win.fgMuted
+
+                    onMoveWindowRequested: win.startSystemMove()
+                    onToggleMaximizeRequested: {
+                        if (win.visibility === Window.Maximized) {
+                            win.showNormal();
+                        } else {
+                            win.showMaximized();
+                        }
+                    }
+                    onMinimizeRequested: win.showMinimized()
+                    onCloseWindowRequested: win.requestQuit()
+                    onTabActivated: function (index) {
+                        editorBackend.activateTab(index);
+                    }
+                    onTabClosed: function (index) {
+                        requestCloseTab(index);
+                    }
+                    onNewTabRequested: editorBackend.newTab()
+                    onFindRequested: openFindBar(false, false)
+                    onMenuToggleRequested: function (anchorX) {
+                        win.menuAnchorX = anchorX;
+                        if (menuPopup.opened) {
+                            menuPopup.close();
+                        } else {
+                            menuPopup.open();
+                        }
                     }
                 }
-            }
-
-            TabStrip {
-                id: tabBar
-                anchors.top: topbar.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
-                darkMode: win.dark
-                theme: win.theme
-                tabModel: editorBackend.tabModel
-                tabCount: editorBackend.tabCount
-                activeIndex: editorBackend.activeTabIndex
-                ui: win.ui
-                bgShell: win.bgShell
-                bgEditor: win.bgEditor
-                bgHover: win.bgHover
-                borderSubtle: win.borderSubtle
-                borderControl: win.borderControl
-                borderHover: win.borderHover
-                fgMain: win.fgMain
-                fgMuted: win.fgMuted
-
-                onTabActivated: function (index) {
-                    editorBackend.activateTab(index);
-                }
-                onTabClosed: function (index) {
-                    requestCloseTab(index);
-                }
-                onNewTabRequested: editorBackend.newTab()
-            }
-
-            FindBar {
-                id: findBar
-                anchors.top: tabBar.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
-                darkMode: win.dark
-                theme: win.theme
-                totalLines: editorBackend.activeTab ? editorBackend.activeTab.lineCount : 1
-                ui: win.ui
-                bgGutter: win.bgGutter
-                bgEditor: win.bgEditor
-                bgSurfaceElev: win.bgSurfaceElev
-                borderSubtle: win.borderSubtle
-                borderControl: win.borderControl
-                borderFocus: win.borderFocus
-                fgMain: win.fgMain
-                fgMuted: win.fgMuted
-                fgGutter: win.fgGutter
-                selBg: win.selBg
-
-                onQueryEdited: updateMatchStats()
-                onFindNextRequested: function (backward) {
-                    findNext(backward);
-                }
-                onReplaceOneRequested: function (rep) {
-                    replaceOne(rep);
-                }
-                onReplaceAllRequested: function (rep) {
-                    replaceAll(rep);
-                }
-                onGotoLineRequested: function (ln) {
-                    if (activePane) {
-                        activePane.jumpToLine(ln);
-                    }
-                }
-                onClosed: closeFindBar()
             }
 
             Item {
-                id: editorHost
-                anchors.top: findBar.bottom
-                anchors.bottom: statusBar.top
+                id: workspaceHost
+                anchors.top: headerHost.bottom
+                anchors.bottom: footerHost.top
                 anchors.left: parent.left
                 anchors.right: parent.right
                 clip: true
 
-                Repeater {
-                    id: tabRepeater
-                    model: editorBackend.tabModel
+                LeftRail {
+                    id: leftRail
+                    visible: win.expandedMode
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    darkMode: win.dark
+                    theme: win.theme
+                    activeTab: editorBackend.activeTab
+                    sidebarOpen: editorBackend.sidebarOpen
+                    folderOpen: editorBackend.workspaceRoot !== ""
+                    settingsOpen: settingsModal.open
+                    iconSize: editorBackend.expandedIconSize
+                    ui: win.ui
+                    bgShell: win.bgShell
+                    borderSubtle: win.borderSubtle
+                    fgMain: win.fgMain
 
-                    delegate: EditorPane {
-                        anchors.fill: parent
-                        visible: index === editorBackend.activeTabIndex
-                        session: model.session
+                    onToggleSidebarRequested: editorBackend.sidebarOpen = !editorBackend.sidebarOpen
+                    onNewTabRequested: editorBackend.newTab()
+                    onOpenFileRequested: editorBackend.openFileDialog()
+                    onOpenFolderRequested: editorBackend.openFolderDialog()
+                    onSaveFileRequested: editorBackend.saveFile()
+                    onSettingsRequested: settingsModal.open = true
+                }
+
+                OpenFilesDrawer {
+                    id: openFilesDrawer
+                    open: win.expandedMode && editorBackend.sidebarOpen
+                    preferredWidth: editorBackend.sidebarWidth
+                    scalePercent: editorBackend.sidebarScalePercent
+                    visible: win.expandedMode && width > 1
+                    anchors.left: leftRail.right
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    darkMode: win.dark
+                    theme: win.theme
+                    tabModel: editorBackend.tabModel
+                    activeIndex: editorBackend.activeTabIndex
+                    activeFilePath: editorBackend.activeTab ? editorBackend.activeTab.filePath : ""
+                    workspaceRoot: editorBackend.workspaceRoot
+                    workspaceName: editorBackend.workspaceName
+                    folderEntries: editorBackend.folderEntries
+                    ui: win.ui
+                    bgDrawer: win.bgDrawer
+                    bgHover: win.bgHover
+                    bgSurfaceElev: win.bgSurfaceElev
+                    borderSubtle: win.borderSubtle
+                    borderControl: win.borderControl
+                    fgMain: win.fgMain
+                    fgMuted: win.fgMuted
+                    fgSub: win.fgGutter
+
+                    onTabActivated: function (index) {
+                        editorBackend.activateTab(index);
+                    }
+                    onTabClosed: function (index) {
+                        requestCloseTab(index);
+                    }
+                    onResizeRequested: function (newWidth) {
+                        editorBackend.sidebarWidth = newWidth;
+                    }
+                    onOpenFolderRequested: editorBackend.openFolderDialog()
+                    onCloseFolderRequested: editorBackend.closeFolder()
+                    onRefreshFolderRequested: editorBackend.refreshFolder()
+                    onFolderToggled: function (dirPath) {
+                        editorBackend.toggleFolderExpanded(dirPath);
+                    }
+                    onFileOpenRequested: function (filePath) {
+                        editorBackend.loadFile(filePath, false);
+                    }
+                }
+
+                Item {
+                    id: mainColumn
+                    anchors.left: win.expandedMode ? openFilesDrawer.right : parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    clip: true
+
+                    FindBar {
+                        id: findBar
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: parent.right
                         darkMode: win.dark
-                theme: win.theme
-                        showLineNumbers: editorBackend.showLineNumbers
-                        zoomPercent: editorBackend.zoomPercent
-                        monoFontFamily: editorBackend.monoFontFamily
+                        theme: win.theme
+                        totalLines: editorBackend.activeTab ? editorBackend.activeTab.lineCount : 1
                         ui: win.ui
-                        bgEditor: win.bgEditor
                         bgGutter: win.bgGutter
+                        bgEditor: win.bgEditor
                         bgSurfaceElev: win.bgSurfaceElev
-                        bgHover: win.bgHover
-                        bgLineHighlight: win.bgLineHighlight
                         borderSubtle: win.borderSubtle
                         borderControl: win.borderControl
                         borderFocus: win.borderFocus
@@ -580,54 +695,160 @@ ApplicationWindow {
                         fgGutter: win.fgGutter
                         selBg: win.selBg
 
-                        onZoomInRequested: editorBackend.zoomIn()
-                        onZoomOutRequested: editorBackend.zoomOut()
-                        onOpenFindRequested: openFindBar(false, false)
-                        onOpenReplaceRequested: openFindBar(true, false)
-                        onOpenGotoRequested: openFindBar(false, true)
-                        onNewTabRequested: editorBackend.newTab()
-                        onOpenFileRequested: editorBackend.openFileDialog()
-                        onSaveFileRequested: editorBackend.saveFile()
-                        onSaveAsRequested: editorBackend.saveFileAsDialog()
-                        onCloseTabRequested: requestCloseTab(index)
-                        onQuitRequested: requestQuit()
-                        onToggleSettingsRequested: settingsModal.open = !settingsModal.open
+                        onQueryEdited: updateMatchStats()
+                        onFindNextRequested: function (backward) {
+                            findNext(backward);
+                        }
+                        onReplaceOneRequested: function (rep) {
+                            replaceOne(rep);
+                        }
+                        onReplaceAllRequested: function (rep) {
+                            replaceAll(rep);
+                        }
+                        onGotoLineRequested: function (ln) {
+                            if (activePane) {
+                                activePane.jumpToLine(ln);
+                            }
+                        }
+                        onClosed: closeFindBar()
+                    }
+
+                    BreadcrumbBar {
+                        id: breadcrumbBar
+                        visible: win.expandedMode
+                        height: visible ? 25 : 0
+                        anchors.top: findBar.bottom
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        activeTab: editorBackend.activeTab
+                        ui: win.ui
+                        bgEditor: win.bgEditor
+                        borderSubtle: win.borderSubtle
+                        fgMain: win.fgMain
+                        fgMuted: win.fgMuted
+                        fgGutter: win.fgGutter
+                    }
+
+                    Item {
+                        id: editorHost
+                        anchors.top: win.expandedMode ? breadcrumbBar.bottom : findBar.bottom
+                        anchors.bottom: parent.bottom
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        clip: true
+
+                        Repeater {
+                            id: tabRepeater
+                            model: editorBackend.tabModel
+
+                            delegate: EditorPane {
+                                anchors.fill: parent
+                                visible: index === editorBackend.activeTabIndex
+                                onVisibleChanged: {
+                                    if (visible && !win.modalOpen && !findBar.open) {
+                                        focusEditor();
+                                    }
+                                }
+                                session: model.session
+                                darkMode: win.dark
+                                theme: win.theme
+                                showLineNumbers: editorBackend.showLineNumbers
+                                zoomPercent: editorBackend.zoomPercent
+                                monoFontFamily: editorBackend.monoFontFamily
+                                ui: win.ui
+                                bgEditor: win.bgEditor
+                                bgGutter: win.bgGutter
+                                bgSurfaceElev: win.bgSurfaceElev
+                                bgHover: win.bgHover
+                                bgLineHighlight: win.bgLineHighlight
+                                borderSubtle: win.borderSubtle
+                                borderControl: win.borderControl
+                                borderFocus: win.borderFocus
+                                fgMain: win.fgMain
+                                fgMuted: win.fgMuted
+                                fgGutter: win.fgGutter
+                                selBg: win.selBg
+
+                                onZoomInRequested: editorBackend.zoomIn()
+                                onZoomOutRequested: editorBackend.zoomOut()
+                                onOpenFindRequested: openFindBar(false, false)
+                                onOpenReplaceRequested: openFindBar(true, false)
+                                onOpenGotoRequested: openFindBar(false, true)
+                                onNewTabRequested: editorBackend.newTab()
+                                onOpenFileRequested: editorBackend.openFileDialog()
+                                onSaveFileRequested: editorBackend.saveFile()
+                                onSaveAsRequested: editorBackend.saveFileAsDialog()
+                                onCloseTabRequested: requestCloseTab(index)
+                                onQuitRequested: requestQuit()
+                                onToggleSettingsRequested: settingsModal.open = !settingsModal.open
+                            }
+                        }
                     }
                 }
             }
 
-            StatusBar {
-                id: statusBar
+            Item {
+                id: footerHost
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
-                darkMode: win.dark
-                theme: win.theme
-                activeTab: editorBackend.activeTab
-                zoomPercent: editorBackend.zoomPercent
-                selectedChars: activePane ? activePane.selectedLength : 0
-                ui: win.ui
-                bgShell: win.bgShell
-                bgSurfaceElev: win.bgSurfaceElev
-                borderSubtle: win.borderSubtle
-                borderControl: win.borderControl
-                fgMain: win.fgMain
-                fgMuted: win.fgMuted
-                fgGutter: win.fgGutter
+                height: win.expandedMode ? expandedStatusBar.height : statusBar.height
 
-                onGotoLineClicked: openFindBar(false, true)
-                onLanguageClicked: languageModal.open = true
-                onZoomInRequested: editorBackend.zoomIn()
-                onZoomOutRequested: editorBackend.zoomOut()
-                onZoomResetRequested: editorBackend.zoomReset()
+                StatusBar {
+                    id: statusBar
+                    visible: !win.expandedMode
+                    anchors.fill: parent
+                    darkMode: win.dark
+                    theme: win.theme
+                    activeTab: editorBackend.activeTab
+                    zoomPercent: editorBackend.zoomPercent
+                    selectedChars: activePane ? activePane.selectedLength : 0
+                    ui: win.ui
+                    bgShell: win.bgShell
+                    bgSurfaceElev: win.bgSurfaceElev
+                    borderSubtle: win.borderSubtle
+                    borderControl: win.borderControl
+                    fgMain: win.fgMain
+                    fgMuted: win.fgMuted
+                    fgGutter: win.fgGutter
+
+                    onGotoLineClicked: openFindBar(false, true)
+                    onLanguageClicked: languageModal.open = true
+                    onZoomInRequested: editorBackend.zoomIn()
+                    onZoomOutRequested: editorBackend.zoomOut()
+                    onZoomResetRequested: editorBackend.zoomReset()
+                }
+
+                ExpandedStatusBar {
+                    id: expandedStatusBar
+                    visible: win.expandedMode
+                    anchors.fill: parent
+                    darkMode: win.dark
+                    theme: win.theme
+                    activeTab: editorBackend.activeTab
+                    zoomPercent: editorBackend.zoomPercent
+                    selectedChars: activePane ? activePane.selectedLength : 0
+                    ui: win.ui
+                    bgShell: win.bgShell
+                    borderSubtle: win.borderSubtle
+                    fgMain: win.fgMain
+                    fgMuted: win.fgMuted
+                    fgGutter: win.fgGutter
+
+                    onGotoLineClicked: openFindBar(false, true)
+                    onLanguageClicked: languageModal.open = true
+                    onZoomInRequested: editorBackend.zoomIn()
+                    onZoomOutRequested: editorBackend.zoomOut()
+                    onZoomResetRequested: editorBackend.zoomReset()
+                }
             }
         }
 
         Popup {
             id: menuPopup
             x: win.menuAnchorX > 0 ? Math.max(8, win.menuAnchorX - width) : (win.width - width - 10)
-            y: topbar.height - 2
-            width: 240
+            y: (win.expandedMode ? expandedHeader.height : topbar.height) - 2
+            width: 248
             padding: 6
             modal: true
             focus: true
@@ -679,23 +900,94 @@ ApplicationWindow {
 
                 Repeater {
                     model: [
-                        { label: win.ui.menuNewTab || "New Tab", shortcut: "Ctrl+T", act: "new", sep: false },
-                        { label: win.ui.menuOpen || "Open...", shortcut: "Ctrl+O", act: "open", sep: false },
-                        { label: win.ui.menuSave || "Save", shortcut: "Ctrl+S", act: "save", sep: false },
-                        { label: win.ui.menuSaveAs || "Save As...", shortcut: "Ctrl+Shift+S", act: "saveas", sep: false },
-                        { label: win.ui.menuCloseTab || "Close Tab", shortcut: "Ctrl+W", act: "closetab", sep: true },
-                        { label: win.ui.menuFind || "Find...", shortcut: "Ctrl+F", act: "find", sep: false },
-                        { label: win.ui.menuReplace || "Replace...", shortcut: "Ctrl+H", act: "replace", sep: false },
-                        { label: win.ui.menuGoto || "Go to Line...", shortcut: "Ctrl+G", act: "goto", sep: true },
-                        { label: win.ui.menuZoomIn || "Zoom In", shortcut: "Ctrl++", act: "zoomin", sep: false },
-                        { label: win.ui.menuZoomOut || "Zoom Out", shortcut: "Ctrl+-", act: "zoomout", sep: false },
-                        { label: win.ui.menuZoomReset || "Reset Zoom", shortcut: "Ctrl+0", act: "zoomreset", sep: true },
-                        { label: win.ui.menuSettings || "Settings", shortcut: "Ctrl+,", act: "settings", sep: false },
-                        { label: win.ui.menuQuit || "Quit", shortcut: "Ctrl+Q", act: "quit", sep: false }
+                        {
+                            label: win.ui.menuNewTab || "New Tab",
+                            shortcut: "Ctrl+T",
+                            act: "new",
+                            sep: false
+                        },
+                        {
+                            label: win.ui.menuOpen || "Open...",
+                            shortcut: "Ctrl+O",
+                            act: "open",
+                            sep: false
+                        },
+                        {
+                            label: win.ui.menuOpenFolder || "Open Folder...",
+                            shortcut: "Ctrl+Shift+O",
+                            act: "openfolder",
+                            sep: false
+                        },
+                        {
+                            label: win.ui.menuSave || "Save",
+                            shortcut: "Ctrl+S",
+                            act: "save",
+                            sep: false
+                        },
+                        {
+                            label: win.ui.menuSaveAs || "Save As...",
+                            shortcut: "Ctrl+Shift+S",
+                            act: "saveas",
+                            sep: false
+                        },
+                        {
+                            label: win.ui.menuCloseTab || "Close Tab",
+                            shortcut: "Ctrl+W",
+                            act: "closetab",
+                            sep: true
+                        },
+                        {
+                            label: win.ui.menuFind || "Find...",
+                            shortcut: "Ctrl+F",
+                            act: "find",
+                            sep: false
+                        },
+                        {
+                            label: win.ui.menuReplace || "Replace...",
+                            shortcut: "Ctrl+H",
+                            act: "replace",
+                            sep: false
+                        },
+                        {
+                            label: win.ui.menuGoto || "Go to Line...",
+                            shortcut: "Ctrl+G",
+                            act: "goto",
+                            sep: true
+                        },
+                        {
+                            label: win.ui.menuZoomIn || "Zoom In",
+                            shortcut: "Ctrl++",
+                            act: "zoomin",
+                            sep: false
+                        },
+                        {
+                            label: win.ui.menuZoomOut || "Zoom Out",
+                            shortcut: "Ctrl+-",
+                            act: "zoomout",
+                            sep: false
+                        },
+                        {
+                            label: win.ui.menuZoomReset || "Reset Zoom",
+                            shortcut: "Ctrl+0",
+                            act: "zoomreset",
+                            sep: true
+                        },
+                        {
+                            label: win.ui.menuSettings || "Settings",
+                            shortcut: "Ctrl+,",
+                            act: "settings",
+                            sep: false
+                        },
+                        {
+                            label: win.ui.menuQuit || "Quit",
+                            shortcut: "Ctrl+Q",
+                            act: "quit",
+                            sep: false
+                        }
                     ]
 
                     delegate: Column {
-                        width: 228
+                        width: 236
                         spacing: 2
 
                         Rectangle {
@@ -753,6 +1045,8 @@ ApplicationWindow {
                                         editorBackend.newTab();
                                     else if (a === "open")
                                         editorBackend.openFileDialog();
+                                    else if (a === "openfolder")
+                                        editorBackend.openFolderDialog();
                                     else if (a === "save")
                                         editorBackend.saveFile();
                                     else if (a === "saveas")
@@ -794,7 +1088,7 @@ ApplicationWindow {
         SettingsModal {
             id: settingsModal
             darkMode: win.dark
-                theme: win.theme
+            theme: win.theme
             backend: editorBackend
             ui: win.ui
             onClosed: {
@@ -806,7 +1100,7 @@ ApplicationWindow {
         LanguageModal {
             id: languageModal
             darkMode: win.dark
-                theme: win.theme
+            theme: win.theme
             backend: editorBackend
             ui: win.ui
             onClosed: {
@@ -818,7 +1112,7 @@ ApplicationWindow {
         ConfirmModal {
             id: confirmModal
             darkMode: win.dark
-                theme: win.theme
+            theme: win.theme
             ui: win.ui
             onCancelled: {
                 open = false;

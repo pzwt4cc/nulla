@@ -6,6 +6,7 @@
 #include <QAbstractListModel>
 #include <QHash>
 #include <QObject>
+#include <QSet>
 #include <QString>
 #include <QStringList>
 #include <QVariantList>
@@ -54,6 +55,19 @@ class EditorBackend : public QObject {
                  NOTIFY settingsChanged)
   Q_PROPERTY(
       int themeMode READ themeMode WRITE setThemeMode NOTIFY themeChanged)
+  Q_PROPERTY(
+      int layoutMode READ layoutMode WRITE setLayoutMode NOTIFY settingsChanged)
+  Q_PROPERTY(bool sidebarOpen READ sidebarOpen WRITE setSidebarOpen NOTIFY
+                 settingsChanged)
+  Q_PROPERTY(int sidebarWidth READ sidebarWidth WRITE setSidebarWidth NOTIFY
+                 settingsChanged)
+  Q_PROPERTY(int sidebarScalePercent READ sidebarScalePercent WRITE
+                 setSidebarScalePercent NOTIFY settingsChanged)
+  Q_PROPERTY(int expandedIconSize READ expandedIconSize WRITE
+                 setExpandedIconSize NOTIFY settingsChanged)
+  Q_PROPERTY(QString workspaceRoot READ workspaceRoot NOTIFY folderChanged)
+  Q_PROPERTY(QString workspaceName READ workspaceName NOTIFY folderChanged)
+  Q_PROPERTY(QVariantList folderEntries READ folderEntries NOTIFY folderChanged)
   Q_PROPERTY(bool effectiveDark READ effectiveDark NOTIFY themeChanged)
   Q_PROPERTY(QVariantMap theme READ theme NOTIFY themeChanged)
   Q_PROPERTY(bool syntaxEnabled READ syntaxEnabled WRITE setSyntaxEnabled NOTIFY
@@ -71,8 +85,16 @@ class EditorBackend : public QObject {
   Q_PROPERTY(QString monoFontFamily READ monoFontFamily CONSTANT)
 
 public:
-  enum ThemeMode { ThemeSystem = 0, ThemeLight = 1, ThemeDark = 2 };
+  enum ThemeMode {
+    ThemeSystem = 0,
+    ThemeLight = 1,
+    ThemeDark = 2,
+    ThemeGraphite = 3
+  };
   Q_ENUM(ThemeMode)
+
+  enum LayoutMode { LayoutMinimal = 0, LayoutExpanded = 1 };
+  Q_ENUM(LayoutMode)
 
   explicit EditorBackend(QObject *parent = nullptr);
 
@@ -85,6 +107,14 @@ public:
 
   bool showLineNumbers() const { return m_showLineNumbers; }
   int themeMode() const { return m_themeMode; }
+  int layoutMode() const { return m_layoutMode; }
+  bool sidebarOpen() const { return m_sidebarOpen; }
+  int sidebarWidth() const { return m_sidebarWidth; }
+  int sidebarScalePercent() const { return m_sidebarScalePercent; }
+  int expandedIconSize() const { return m_expandedIconSize; }
+  QString workspaceRoot() const { return m_workspaceRoot; }
+  QString workspaceName() const;
+  QVariantList folderEntries() const { return m_folderEntries; }
   bool effectiveDark() const { return m_effectiveDark; }
   QVariantMap theme() const { return m_theme; }
   bool syntaxEnabled() const { return m_syntaxEnabled; }
@@ -100,6 +130,11 @@ public:
   void setActiveTabIndex(int index);
   void setShowLineNumbers(bool show);
   void setThemeMode(int mode);
+  void setLayoutMode(int mode);
+  void setSidebarOpen(bool open);
+  void setSidebarWidth(int width);
+  void setSidebarScalePercent(int percent);
+  void setExpandedIconSize(int size);
   void setSyntaxEnabled(bool enabled);
   void setLanguageId(const QString &id);
   void setZoomPercent(int percent);
@@ -108,6 +143,9 @@ public:
   Q_INVOKABLE void zoomIn();
   Q_INVOKABLE void zoomOut();
   Q_INVOKABLE void zoomReset();
+  Q_INVOKABLE void sidebarScaleIn();
+  Q_INVOKABLE void sidebarScaleOut();
+  Q_INVOKABLE void sidebarScaleReset();
 
   Q_INVOKABLE int newTab(const QString &initialFilePath = QString());
   Q_INVOKABLE void activateTab(int index);
@@ -121,6 +159,11 @@ public:
 
   Q_INVOKABLE bool loadFile(const QString &path, bool allowMissing = false);
   Q_INVOKABLE bool openFileDialog();
+  Q_INVOKABLE bool openFolderDialog();
+  Q_INVOKABLE bool openFolder(const QString &path);
+  Q_INVOKABLE void closeFolder();
+  Q_INVOKABLE void toggleFolderExpanded(const QString &dirPath);
+  Q_INVOKABLE void refreshFolder();
   Q_INVOKABLE bool saveFile(int index = -1);
   Q_INVOKABLE bool saveFileAsDialog(int index = -1);
   Q_INVOKABLE void discardTabChanges(int index = -1);
@@ -130,6 +173,7 @@ signals:
   void activeTabChanged();
   void tabCountChanged();
   void settingsChanged();
+  void folderChanged();
   void themeChanged();
   void languageChanged();
   void uiLanguageChanged();
@@ -143,6 +187,8 @@ private:
   TabSession *createSession();
   TabSession *tabAtOrActive(int index) const;
   int findOpenTabByPath(const QString &absPath) const;
+  void rebuildFolderEntries();
+  void collectFolderLevel(const QString &dirPath, int depth, int &budget);
   void propagateThemeAndSyntax();
   void rebuildThemePalette();
   void updateThemeWatches();
@@ -156,6 +202,14 @@ private:
 
   bool m_showLineNumbers = true;
   int m_themeMode = ThemeDark;
+  int m_layoutMode = LayoutMinimal;
+  bool m_sidebarOpen = true;
+  int m_sidebarWidth = 180;
+  int m_sidebarScalePercent = 100;
+  int m_expandedIconSize = 18;
+  QString m_workspaceRoot;
+  QSet<QString> m_expandedFolders;
+  QVariantList m_folderEntries;
   bool m_effectiveDark = true;
   QVariantMap m_theme;
   bool m_syntaxEnabled = true;
