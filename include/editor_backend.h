@@ -93,7 +93,8 @@ public:
     ThemeSystem = 0,
     ThemeLight = 1,
     ThemeDark = 2,
-    ThemeGraphite = 3
+    ThemeGraphite = 3,
+    ThemeCarbonNo8 = 4
   };
   Q_ENUM(ThemeMode)
 

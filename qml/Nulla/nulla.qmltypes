@@ -17,12 +17,13 @@ Module {
                 "ThemeSystem",
                 "ThemeLight",
                 "ThemeDark",
-                "ThemeGraphite"
+                "ThemeGraphite",
+                "ThemeCarbonNo8"
             ]
         }
         Enum {
             name: "LayoutMode"
-            lineNumber: 100
+            lineNumber: 101
             values: ["LayoutMinimal", "LayoutExpanded"]
         }
         Property {
@@ -271,71 +272,71 @@ Module {
             isReadonly: true
             isPropertyConstant: true
         }
-        Signal { name: "activeTabChanged"; lineNumber: 180 }
-        Signal { name: "tabCountChanged"; lineNumber: 181 }
-        Signal { name: "settingsChanged"; lineNumber: 182 }
-        Signal { name: "folderChanged"; lineNumber: 183 }
-        Signal { name: "themeChanged"; lineNumber: 184 }
-        Signal { name: "languageChanged"; lineNumber: 185 }
-        Signal { name: "uiLanguageChanged"; lineNumber: 186 }
+        Signal { name: "activeTabChanged"; lineNumber: 181 }
+        Signal { name: "tabCountChanged"; lineNumber: 182 }
+        Signal { name: "settingsChanged"; lineNumber: 183 }
+        Signal { name: "folderChanged"; lineNumber: 184 }
+        Signal { name: "themeChanged"; lineNumber: 185 }
+        Signal { name: "languageChanged"; lineNumber: 186 }
+        Signal { name: "uiLanguageChanged"; lineNumber: 187 }
         Signal {
             name: "errorOccurred"
-            lineNumber: 187
+            lineNumber: 188
             Parameter { name: "title"; type: "QString" }
             Parameter { name: "message"; type: "QString" }
         }
-        Method { name: "onSystemColorSchemeChanged"; lineNumber: 190 }
-        Method { name: "onThemeFilesChanged"; lineNumber: 191 }
-        Method { name: "zoomIn"; lineNumber: 150 }
-        Method { name: "zoomOut"; lineNumber: 151 }
-        Method { name: "zoomReset"; lineNumber: 152 }
-        Method { name: "sidebarScaleIn"; lineNumber: 153 }
-        Method { name: "sidebarScaleOut"; lineNumber: 154 }
-        Method { name: "sidebarScaleReset"; lineNumber: 155 }
+        Method { name: "onSystemColorSchemeChanged"; lineNumber: 191 }
+        Method { name: "onThemeFilesChanged"; lineNumber: 192 }
+        Method { name: "zoomIn"; lineNumber: 151 }
+        Method { name: "zoomOut"; lineNumber: 152 }
+        Method { name: "zoomReset"; lineNumber: 153 }
+        Method { name: "sidebarScaleIn"; lineNumber: 154 }
+        Method { name: "sidebarScaleOut"; lineNumber: 155 }
+        Method { name: "sidebarScaleReset"; lineNumber: 156 }
         Method {
             name: "newTab"
             type: "int"
-            lineNumber: 157
+            lineNumber: 158
             Parameter { name: "initialFilePath"; type: "QString" }
         }
-        Method { name: "newTab"; type: "int"; isCloned: true; lineNumber: 157 }
+        Method { name: "newTab"; type: "int"; isCloned: true; lineNumber: 158 }
         Method {
             name: "activateTab"
-            lineNumber: 158
+            lineNumber: 159
             Parameter { name: "index"; type: "int" }
         }
-        Method { name: "nextTab"; lineNumber: 159 }
-        Method { name: "prevTab"; lineNumber: 160 }
+        Method { name: "nextTab"; lineNumber: 160 }
+        Method { name: "prevTab"; lineNumber: 161 }
         Method {
             name: "closeTabImmediate"
-            lineNumber: 161
+            lineNumber: 162
             Parameter { name: "index"; type: "int" }
         }
         Method {
             name: "isTabModified"
             type: "bool"
             isMethodConstant: true
-            lineNumber: 162
+            lineNumber: 163
             Parameter { name: "index"; type: "int" }
         }
         Method {
             name: "isActivePristineUntitled"
             type: "bool"
             isMethodConstant: true
-            lineNumber: 163
+            lineNumber: 164
         }
         Method {
             name: "tabFileName"
             type: "QString"
             isMethodConstant: true
-            lineNumber: 164
+            lineNumber: 165
             Parameter { name: "index"; type: "int" }
         }
-        Method { name: "firstModifiedTabIndex"; type: "int"; isMethodConstant: true; lineNumber: 165 }
+        Method { name: "firstModifiedTabIndex"; type: "int"; isMethodConstant: true; lineNumber: 166 }
         Method {
             name: "loadFile"
             type: "bool"
-            lineNumber: 167
+            lineNumber: 168
             Parameter { name: "path"; type: "QString" }
             Parameter { name: "allowMissing"; type: "bool" }
         }
@@ -343,47 +344,47 @@ Module {
             name: "loadFile"
             type: "bool"
             isCloned: true
-            lineNumber: 167
+            lineNumber: 168
             Parameter { name: "path"; type: "QString" }
         }
-        Method { name: "openFileDialog"; type: "bool"; lineNumber: 168 }
-        Method { name: "openFolderDialog"; type: "bool"; lineNumber: 169 }
+        Method { name: "openFileDialog"; type: "bool"; lineNumber: 169 }
+        Method { name: "openFolderDialog"; type: "bool"; lineNumber: 170 }
         Method {
             name: "openFolder"
             type: "bool"
-            lineNumber: 170
+            lineNumber: 171
             Parameter { name: "path"; type: "QString" }
         }
-        Method { name: "closeFolder"; lineNumber: 171 }
+        Method { name: "closeFolder"; lineNumber: 172 }
         Method {
             name: "toggleFolderExpanded"
-            lineNumber: 172
+            lineNumber: 173
             Parameter { name: "dirPath"; type: "QString" }
         }
-        Method { name: "refreshFolder"; lineNumber: 173 }
+        Method { name: "refreshFolder"; lineNumber: 174 }
         Method {
             name: "saveFile"
-            type: "bool"
-            lineNumber: 174
-            Parameter { name: "index"; type: "int" }
-        }
-        Method { name: "saveFile"; type: "bool"; isCloned: true; lineNumber: 174 }
-        Method {
-            name: "saveFileAsDialog"
             type: "bool"
             lineNumber: 175
             Parameter { name: "index"; type: "int" }
         }
-        Method { name: "saveFileAsDialog"; type: "bool"; isCloned: true; lineNumber: 175 }
+        Method { name: "saveFile"; type: "bool"; isCloned: true; lineNumber: 175 }
         Method {
-            name: "discardTabChanges"
+            name: "saveFileAsDialog"
+            type: "bool"
             lineNumber: 176
             Parameter { name: "index"; type: "int" }
         }
-        Method { name: "discardTabChanges"; isCloned: true; lineNumber: 176 }
+        Method { name: "saveFileAsDialog"; type: "bool"; isCloned: true; lineNumber: 176 }
+        Method {
+            name: "discardTabChanges"
+            lineNumber: 177
+            Parameter { name: "index"; type: "int" }
+        }
+        Method { name: "discardTabChanges"; isCloned: true; lineNumber: 177 }
         Method {
             name: "setInitialFiles"
-            lineNumber: 177
+            lineNumber: 178
             Parameter { name: "paths"; type: "QStringList" }
         }
     }

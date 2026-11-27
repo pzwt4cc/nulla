@@ -670,6 +670,67 @@ QVariantMap buildGraphiteTheme() {
   return t;
 }
 
+QVariantMap buildCarbonNo8Theme() {
+  QVariantMap t;
+  t.insert(QStringLiteral("dark"), true);
+  t.insert(QStringLiteral("adaptive"), false);
+  t.insert(QStringLiteral("bgShell"), QStringLiteral("#0d1012"));
+  t.insert(QStringLiteral("bgHeader"), QStringLiteral("#0d1012"));
+  t.insert(QStringLiteral("bgEditor"), QStringLiteral("#14191c"));
+  t.insert(QStringLiteral("bgGutter"), QStringLiteral("#111518"));
+  t.insert(QStringLiteral("bgDrawer"), QStringLiteral("#101417"));
+  t.insert(QStringLiteral("bgSurfaceElev"), QStringLiteral("#181f23"));
+  t.insert(QStringLiteral("bgCard"), QStringLiteral("#14191d"));
+  t.insert(QStringLiteral("bgGroup"), QStringLiteral("#111519"));
+  t.insert(QStringLiteral("bgInput"), QStringLiteral("#192025"));
+  t.insert(QStringLiteral("bgHover"), QStringLiteral("#1f282e"));
+  t.insert(QStringLiteral("bgPressed"), QStringLiteral("#263138"));
+  t.insert(QStringLiteral("bgLineHighlight"), QStringLiteral("#192226"));
+  t.insert(QStringLiteral("bgLineHighlightSel"), QStringLiteral("#142c28"));
+  t.insert(QStringLiteral("borderSubtle"), QStringLiteral("#222b30"));
+  t.insert(QStringLiteral("borderGroup"), QStringLiteral("#263036"));
+  t.insert(QStringLiteral("borderDivider"), QStringLiteral("#1f282c"));
+  t.insert(QStringLiteral("borderControl"), QStringLiteral("#2f3b42"));
+  t.insert(QStringLiteral("borderHover"), QStringLiteral("#4a5e66"));
+  t.insert(QStringLiteral("borderFocus"), QStringLiteral("#00b88a"));
+  t.insert(QStringLiteral("fgMain"), QStringLiteral("#edf4f2"));
+  t.insert(QStringLiteral("fgTitle"), QStringLiteral("#f2f8f6"));
+  t.insert(QStringLiteral("fgLabel"), QStringLiteral("#d6e2df"));
+  t.insert(QStringLiteral("fgMuted"), QStringLiteral("#8c9aa2"));
+  t.insert(QStringLiteral("fgSub"), QStringLiteral("#6d7b83"));
+  t.insert(QStringLiteral("fgGutter"), QStringLiteral("#515e66"));
+  t.insert(QStringLiteral("accent"), QStringLiteral("#00e5a3"));
+  t.insert(QStringLiteral("accentStrong"), QStringLiteral("#14f5b4"));
+  t.insert(QStringLiteral("selBg"), QStringLiteral("#163a33"));
+  t.insert(QStringLiteral("danger"), QStringLiteral("#e0554d"));
+  t.insert(QStringLiteral("fgOnPrimary"), QStringLiteral("#081614"));
+  t.insert(QStringLiteral("primaryBg"), QStringLiteral("#00d49f"));
+  t.insert(QStringLiteral("primaryHover"), QStringLiteral("#14e6b0"));
+  t.insert(QStringLiteral("primaryPress"), QStringLiteral("#00b88a"));
+  t.insert(QStringLiteral("btnBorderNormal"), QStringLiteral("#2a363d"));
+  t.insert(QStringLiteral("btnBorderHover"), QStringLiteral("#00b88a"));
+  t.insert(QStringLiteral("btnBorderAccent"), QStringLiteral("#00d49f"));
+  t.insert(QStringLiteral("btnFillHover"), QStringLiteral("#1cffffff"));
+  t.insert(QStringLiteral("btnFillPress"), QStringLiteral("#2cffffff"));
+  t.insert(QStringLiteral("btnFillAccent"), QStringLiteral("#2000d49f"));
+  t.insert(QStringLiteral("btnFillChip"), QStringLiteral("#0f2b26"));
+  t.insert(QStringLiteral("btnFillDanger"), QStringLiteral("#34e5534b"));
+  t.insert(QStringLiteral("chipBg"), QStringLiteral("#0f2b26"));
+  t.insert(QStringLiteral("chipBorder"), QStringLiteral("#00b88a"));
+  t.insert(QStringLiteral("chipFg"), QStringLiteral("#e8fff9"));
+  t.insert(QStringLiteral("scrollIdle"), QStringLiteral("#2e3b42"));
+  t.insert(QStringLiteral("scrollHover"), QStringLiteral("#465c66"));
+  t.insert(QStringLiteral("scrollPress"), QStringLiteral("#00b88a"));
+  t.insert(QStringLiteral("scrim"), QStringLiteral("#9606090b"));
+  t.insert(QStringLiteral("sheen"), QStringLiteral("#12ffffff"));
+  t.insert(QStringLiteral("sheenBright"), QStringLiteral("#1600e5a3"));
+  t.insert(QStringLiteral("sheenPrimary"), QStringLiteral("#36ffffff"));
+  t.insert(QStringLiteral("hoverLineBand"), QStringLiteral("#0e00e5a3"));
+  t.insert(QStringLiteral("indentGuide"), QStringLiteral("#212c31"));
+  t.insert(QStringLiteral("indentGuideActive"), QStringLiteral("#2d6b5e"));
+  return t;
+}
+
 QVariantMap buildAdaptiveTheme(const AdaptivePaletteSeed &seed) {
   const QColor bgEditor = seed.bgEditor;
   const bool dark = relativeLuminance(bgEditor) < 0.25;
@@ -873,6 +934,10 @@ QVariantMap buildThemePalette(int themeMode, bool &effectiveDark,
   if (themeMode == 3) {
     effectiveDark = true;
     return buildGraphiteTheme();
+  }
+  if (themeMode == 4) {
+    effectiveDark = true;
+    return buildCarbonNo8Theme();
   }
 
 #if defined(Q_OS_WIN)

@@ -299,7 +299,7 @@ void EditorBackend::setShowIndentGuides(bool show) {
 }
 
 void EditorBackend::setThemeMode(int mode) {
-  if (mode < ThemeSystem || mode > ThemeGraphite || m_themeMode == mode) {
+  if (mode < ThemeSystem || mode > ThemeCarbonNo8 || m_themeMode == mode) {
     return;
   }
   m_themeMode = mode;
@@ -761,7 +761,7 @@ void EditorBackend::loadSettings() {
   m_showIndentGuides = s.value(QStringLiteral("indent_guides"), true).toBool();
   const int mode = s.value(QStringLiteral("theme"), ThemeDark).toInt();
   m_themeMode =
-      (mode >= ThemeSystem && mode <= ThemeGraphite) ? mode : ThemeDark;
+      (mode >= ThemeSystem && mode <= ThemeCarbonNo8) ? mode : ThemeDark;
   const int layout =
       s.value(QStringLiteral("layout_mode"), LayoutMinimal).toInt();
   m_layoutMode = (layout >= LayoutMinimal && layout <= LayoutExpanded)

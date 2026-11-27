@@ -27,6 +27,12 @@ Item {
     signal closed()
     signal updateRestartRequested()
 
+    function checkIconUri(col) {
+        const hex = col.toString();
+        const svg = "<svg xmlns=\"http:\x2f\x2fwww.w3.org\x2f2000\x2fsvg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"" + hex + "\" stroke-width=\"2.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12.5 9.5 17 19 7.5\"/></svg>";
+        return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+    }
+
     function closeDropdown() {
         langPopup.close();
     }
@@ -323,9 +329,9 @@ Item {
                                             horizontalPadding: 11
                                             cornerRadius: 9
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.layoutMode = 0;
-                                                }
+
                                             }
                                         }
 
@@ -340,9 +346,9 @@ Item {
                                             horizontalPadding: 11
                                             cornerRadius: 9
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.layoutMode = 1;
-                                                }
+
                                             }
                                         }
 
@@ -402,9 +408,9 @@ Item {
                                             horizontalPadding: 10
                                             cornerRadius: 9
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.expandedIconSize = 15;
-                                                }
+
                                             }
                                         }
 
@@ -419,9 +425,9 @@ Item {
                                             horizontalPadding: 10
                                             cornerRadius: 9
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.expandedIconSize = 18;
-                                                }
+
                                             }
                                         }
 
@@ -436,9 +442,9 @@ Item {
                                             horizontalPadding: 10
                                             cornerRadius: 9
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.expandedIconSize = 21;
-                                                }
+
                                             }
                                         }
 
@@ -453,9 +459,9 @@ Item {
                                             horizontalPadding: 10
                                             cornerRadius: 9
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.expandedIconSize = 25;
-                                                }
+
                                             }
                                         }
 
@@ -515,9 +521,9 @@ Item {
                                             buttonWidth: 28
                                             cornerRadius: 9
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.sidebarScaleOut();
-                                                }
+
                                             }
                                         }
 
@@ -539,9 +545,9 @@ Item {
                                             cornerRadius: 9
                                             tooltipText: root.ui.resetSidebarScaleTip || "Reset sidebar scale"
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.sidebarScaleReset();
-                                                }
+
                                             }
                                         }
 
@@ -562,9 +568,9 @@ Item {
                                             buttonWidth: 28
                                             cornerRadius: 9
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.sidebarScaleIn();
-                                                }
+
                                             }
                                         }
 
@@ -845,9 +851,9 @@ Item {
                                             buttonWidth: 28
                                             cornerRadius: 9
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.zoomOut();
-                                                }
+
                                             }
                                         }
 
@@ -869,9 +875,9 @@ Item {
                                             cornerRadius: 9
                                             tooltipText: root.ui.resetZoomTip || "Reset (Ctrl+0)"
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.zoomReset();
-                                                }
+
                                             }
                                         }
 
@@ -892,9 +898,9 @@ Item {
                                             buttonWidth: 28
                                             cornerRadius: 9
                                             onClicked: {
-                                                if (root.backend) {
+                                                if (root.backend)
                                                     root.backend.zoomIn();
-                                                }
+
                                             }
                                         }
 
@@ -1050,202 +1056,626 @@ Item {
                         font.letterSpacing: 0.8
                     }
 
-                    Rectangle {
+                    Grid {
+                        id: themeGrid
+
                         width: parent.width
-                        height: themeListCol.implicitHeight
-                        radius: 10
-                        color: root.bgGroup
-                        border.width: 1
-                        border.color: root.borderGroup
-                        clip: true
+                        columns: 2
+                        columnSpacing: 12
+                        rowSpacing: 10
 
-                        Column {
-                            id: themeListCol
+                        Repeater {
+                            model: [{
+                                "mode": 2,
+                                "title": root.ui.themeDark || "Dark",
+                                "desc": root.ui.themeDarkDesc || "Deep slate monochrome",
+                                "badge": "",
+                                "cShell": "#0d0e11",
+                                "cGutter": "#121318",
+                                "cEditor": "#16181e",
+                                "cLine": "#1f232c",
+                                "cFg": "#f0f2f6",
+                                "cMuted": "#697082",
+                                "cAccent": "#7aa2f7",
+                                "cBorder": "#2a2f3c",
+                                "cBadgeBg": "transparent",
+                                "cBadgeBorder": "transparent"
+                            }, {
+                                "mode": 1,
+                                "title": root.ui.themeLight || "Light",
+                                "desc": root.ui.themeLightDesc || "Clean bright surface",
+                                "badge": "",
+                                "cShell": "#ebedf2",
+                                "cGutter": "#f5f6f9",
+                                "cEditor": "#ffffff",
+                                "cLine": "#eff2f8",
+                                "cFg": "#14161a",
+                                "cMuted": "#9aa2b2",
+                                "cAccent": "#2563eb",
+                                "cBorder": "#cfd5e2",
+                                "cBadgeBg": "transparent",
+                                "cBadgeBorder": "transparent"
+                            }, {
+                                "mode": 3,
+                                "title": root.ui.themeGraphite || "Graphite",
+                                "desc": root.ui.themeGraphiteDesc || "Warm neutral zinc-graphite",
+                                "badge": "",
+                                "cShell": "#101012",
+                                "cGutter": "#151518",
+                                "cEditor": "#18181b",
+                                "cLine": "#212126",
+                                "cFg": "#f2f2f5",
+                                "cMuted": "#6b6b76",
+                                "cAccent": "#d4d4dc",
+                                "cBorder": "#2f2f37",
+                                "cBadgeBg": "transparent",
+                                "cBadgeBorder": "transparent"
+                            }, {
+                                "mode": 4,
+                                "title": root.ui.themeCarbonNo8 || "Carbon №8",
+                                "desc": root.ui.themeCarbonNo8Desc || "Cool charcoal & electric cyan-teal",
+                                "badge": "№8",
+                                "cShell": "#0d1012",
+                                "cGutter": "#111518",
+                                "cEditor": "#14191c",
+                                "cLine": "#162d28",
+                                "cFg": "#edf4f2",
+                                "cMuted": "#5a6b73",
+                                "cAccent": "#00e5a3",
+                                "cBorder": "#243538",
+                                "cBadgeBg": "#0f2b26",
+                                "cBadgeBorder": "#00b88a"
+                            }]
 
-                            width: parent.width
-                            spacing: 0
+                            delegate: Rectangle {
+                                readonly property bool isCurrent: root.backend && root.backend.themeMode === modelData.mode
 
-                            Repeater {
-                                model: [{
-                                    "mode": 2,
-                                    "title": root.ui.themeDark || "Dark",
-                                    "desc": root.ui.themeDarkDesc || "Deep slate monochrome",
-                                    "cShell": "#0d0e11",
-                                    "cEditor": "#16181e",
-                                    "cFg": "#f0f2f6",
-                                    "cBorder": "#313644",
-                                    "splitSystem": false
-                                }, {
-                                    "mode": 1,
-                                    "title": root.ui.themeLight || "Light",
-                                    "desc": root.ui.themeLightDesc || "Clean bright surface",
-                                    "cShell": "#ebedf2",
-                                    "cEditor": "#ffffff",
-                                    "cFg": "#14161a",
-                                    "cBorder": "#c6ccd8",
-                                    "splitSystem": false
-                                }, {
-                                    "mode": 3,
-                                    "title": root.ui.themeGraphite || "Graphite",
-                                    "desc": root.ui.themeGraphiteDesc || "Warm neutral zinc-graphite",
-                                    "cShell": "#101012",
-                                    "cEditor": "#18181b",
-                                    "cFg": "#f2f2f5",
-                                    "cBorder": "#34343c",
-                                    "splitSystem": false
-                                }, {
-                                    "mode": 0,
-                                    "title": root.ui.themeSystem || "System",
-                                    "desc": root.ui.themeSystemDesc || "Follows OS & desktop palette",
-                                    "cShell": "#0d0e11",
-                                    "cEditor": "#ffffff",
-                                    "cFg": "#7aa2f7",
-                                    "cBorder": "#454b5a",
-                                    "splitSystem": true
-                                }]
+                                width: Math.floor((themeGrid.width - themeGrid.columnSpacing) / 2)
+                                height: 128 + root.fontDelta * 6
+                                radius: 12
+                                color: isCurrent ? (theme.chipBg || (darkMode ? "#1e2430" : "#eef2fb")) : (themeCardMa.containsMouse ? (theme.bgHover || (darkMode ? "#1c1e24" : "#eceff5")) : root.bgGroup)
+                                border.width: isCurrent ? 1.5 : 1
+                                border.color: isCurrent ? (theme.accent || root.fgTitle) : (themeCardMa.containsMouse ? (theme.borderHover || root.borderGroup) : root.borderGroup)
+                                clip: true
 
-                                delegate: Column {
-                                    readonly property bool isCurrent: root.backend && root.backend.themeMode === modelData.mode
+                                Rectangle {
+                                    id: miniPreview
 
-                                    width: themeListCol.width
-                                    spacing: 0
+                                    anchors.top: parent.top
+                                    anchors.topMargin: 9
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 9
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 9
+                                    height: 70 + root.fontDelta * 3
+                                    radius: 8
+                                    color: modelData.cShell
+                                    border.width: 1
+                                    border.color: modelData.cBorder
+                                    clip: true
 
-                                    Rectangle {
-                                        width: parent.width
-                                        height: 56
-                                        color: isCurrent ? (theme.bgSurfaceElev || (darkMode ? "#1e212a" : "#ffffff")) : (themeMa.containsMouse ? (theme.bgHover || (darkMode ? "#1c1e24" : "#eceff5")) : "transparent")
+                                    Item {
+                                        id: miniTop
 
-                                        Rectangle {
-                                            id: swatch
+                                        anchors.top: parent.top
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        height: 14
 
+                                        Row {
                                             anchors.left: parent.left
-                                            anchors.leftMargin: 12
+                                            anchors.leftMargin: 7
                                             anchors.verticalCenter: parent.verticalCenter
-                                            width: 42
-                                            height: 30
-                                            radius: 6
-                                            color: modelData.cShell
-                                            border.width: 1
-                                            border.color: modelData.cBorder
-                                            clip: true
+                                            spacing: 4
 
                                             Rectangle {
-                                                visible: !modelData.splitSystem
-                                                anchors.right: parent.right
-                                                anchors.bottom: parent.bottom
-                                                width: 28
-                                                height: 21
-                                                radius: 3
-                                                color: modelData.cEditor
-
-                                                Rectangle {
-                                                    anchors.left: parent.left
-                                                    anchors.leftMargin: 5
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    width: 14
-                                                    height: 3
-                                                    radius: 1.5
-                                                    color: modelData.cFg
-                                                }
-
+                                                width: 4
+                                                height: 4
+                                                radius: 2
+                                                color: modelData.cAccent
                                             }
 
-                                            Row {
-                                                visible: modelData.splitSystem
-                                                anchors.fill: parent
+                                            Rectangle {
+                                                width: 4
+                                                height: 4
+                                                radius: 2
+                                                color: modelData.cMuted
+                                                opacity: 0.65
+                                            }
+
+                                            Rectangle {
+                                                width: 4
+                                                height: 4
+                                                radius: 2
+                                                color: modelData.cMuted
+                                                opacity: 0.45
+                                            }
+
+                                        }
+
+                                    }
+
+                                    Rectangle {
+                                        id: miniTopDiv
+
+                                        anchors.top: miniTop.bottom
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        height: 1
+                                        color: modelData.cBorder
+                                    }
+
+                                    Row {
+                                        anchors.top: miniTopDiv.bottom
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.bottom: parent.bottom
+                                        spacing: 0
+
+                                        Rectangle {
+                                            width: 18
+                                            height: parent.height
+                                            color: modelData.cGutter
+
+                                            Column {
+                                                anchors.centerIn: parent
+                                                spacing: 5
 
                                                 Rectangle {
-                                                    width: parent.width / 2
-                                                    height: parent.height
-                                                    color: "#14161c"
+                                                    width: 7
+                                                    height: 2
+                                                    radius: 1
+                                                    color: modelData.cMuted
+                                                    opacity: 0.55
                                                 }
 
                                                 Rectangle {
-                                                    width: parent.width / 2
-                                                    height: parent.height
-                                                    color: "#f2f4f8"
+                                                    width: 7
+                                                    height: 2
+                                                    radius: 1
+                                                    color: modelData.cAccent
+                                                }
+
+                                                Rectangle {
+                                                    width: 7
+                                                    height: 2
+                                                    radius: 1
+                                                    color: modelData.cMuted
+                                                    opacity: 0.55
+                                                }
+
+                                                Rectangle {
+                                                    width: 7
+                                                    height: 2
+                                                    radius: 1
+                                                    color: modelData.cMuted
+                                                    opacity: 0.4
                                                 }
 
                                             }
 
                                         }
 
-                                        Column {
-                                            anchors.left: swatch.right
-                                            anchors.leftMargin: 12
-                                            anchors.right: radioRing.left
-                                            anchors.rightMargin: 10
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            spacing: 2
+                                        Rectangle {
+                                            width: 1
+                                            height: parent.height
+                                            color: modelData.cBorder
+                                        }
+
+                                        Rectangle {
+                                            width: parent.width - 19
+                                            height: parent.height
+                                            color: modelData.cEditor
+
+                                            Column {
+                                                anchors.fill: parent
+                                                anchors.margins: 7
+                                                spacing: 4
+
+                                                Row {
+                                                    width: parent.width
+                                                    height: 6
+                                                    spacing: 4
+
+                                                    Rectangle {
+                                                        width: parent.width * 0.28
+                                                        height: 3
+                                                        radius: 1.5
+                                                        anchors.verticalCenter: parent.verticalCenter
+                                                        color: modelData.cAccent
+                                                    }
+
+                                                    Rectangle {
+                                                        width: parent.width * 0.36
+                                                        height: 3
+                                                        radius: 1.5
+                                                        anchors.verticalCenter: parent.verticalCenter
+                                                        color: modelData.cMuted
+                                                        opacity: 0.75
+                                                    }
+
+                                                }
+
+                                                Rectangle {
+                                                    width: parent.width
+                                                    height: 9
+                                                    radius: 2
+                                                    color: modelData.cLine
+
+                                                    Row {
+                                                        anchors.left: parent.left
+                                                        anchors.leftMargin: 3
+                                                        anchors.verticalCenter: parent.verticalCenter
+                                                        spacing: 4
+
+                                                        Rectangle {
+                                                            width: miniPreview.width * 0.34
+                                                            height: 3
+                                                            radius: 1.5
+                                                            color: modelData.cFg
+                                                        }
+
+                                                        Rectangle {
+                                                            width: miniPreview.width * 0.2
+                                                            height: 3
+                                                            radius: 1.5
+                                                            color: modelData.cAccent
+                                                        }
+
+                                                    }
+
+                                                }
+
+                                                Row {
+                                                    width: parent.width
+                                                    height: 6
+                                                    spacing: 4
+
+                                                    Rectangle {
+                                                        width: parent.width * 0.18
+                                                        height: 3
+                                                        radius: 1.5
+                                                        anchors.verticalCenter: parent.verticalCenter
+                                                        color: modelData.cMuted
+                                                        opacity: 0.65
+                                                    }
+
+                                                    Rectangle {
+                                                        width: parent.width * 0.46
+                                                        height: 3
+                                                        radius: 1.5
+                                                        anchors.verticalCenter: parent.verticalCenter
+                                                        color: modelData.cFg
+                                                        opacity: 0.55
+                                                    }
+
+                                                }
+
+                                                Row {
+                                                    width: parent.width
+                                                    height: 6
+                                                    spacing: 4
+
+                                                    Rectangle {
+                                                        width: parent.width * 0.32
+                                                        height: 3
+                                                        radius: 1.5
+                                                        anchors.verticalCenter: parent.verticalCenter
+                                                        color: modelData.cAccent
+                                                        opacity: 0.8
+                                                    }
+
+                                                }
+
+                                            }
+
+                                        }
+
+                                    }
+
+                                }
+
+                                Item {
+                                    anchors.top: miniPreview.bottom
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.bottom: parent.bottom
+                                    anchors.leftMargin: 11
+                                    anchors.rightMargin: 10
+
+                                    Column {
+                                        anchors.left: parent.left
+                                        anchors.right: cardCheck.left
+                                        anchors.rightMargin: 8
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        spacing: 2
+
+                                        Row {
+                                            width: parent.width
+                                            spacing: 6
 
                                             Text {
                                                 text: modelData.title
                                                 color: isCurrent ? root.fgTitle : root.fgLabel
                                                 font.pixelSize: 13 + root.fontDelta
                                                 font.weight: isCurrent ? Font.DemiBold : Font.Medium
+                                                anchors.verticalCenter: parent.verticalCenter
                                             }
-
-                                            Text {
-                                                width: parent.width
-                                                text: modelData.desc
-                                                color: root.fgSub
-                                                font.pixelSize: 11 + root.fontDelta
-                                                elide: Text.ElideRight
-                                            }
-
-                                        }
-
-                                        Rectangle {
-                                            id: radioRing
-
-                                            anchors.right: parent.right
-                                            anchors.rightMargin: 14
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            width: 18
-                                            height: 18
-                                            radius: 9
-                                            color: "transparent"
-                                            border.width: isCurrent ? 2 : 1.5
-                                            border.color: isCurrent ? root.fgTitle : root.borderGroup
 
                                             Rectangle {
-                                                visible: isCurrent
-                                                width: 8
-                                                height: 8
+                                                visible: modelData.badge !== ""
+                                                width: badgeTxt.implicitWidth + 10
+                                                height: badgeTxt.implicitHeight + 2
                                                 radius: 4
-                                                anchors.centerIn: parent
-                                                color: root.fgTitle
+                                                color: modelData.cBadgeBg
+                                                border.width: 1
+                                                border.color: modelData.cBadgeBorder
+                                                anchors.verticalCenter: parent.verticalCenter
+
+                                                Text {
+                                                    id: badgeTxt
+
+                                                    anchors.centerIn: parent
+                                                    text: modelData.badge
+                                                    color: modelData.cAccent
+                                                    font.pixelSize: 9 + root.fontDelta
+                                                    font.weight: Font.Bold
+                                                }
+
                                             }
 
                                         }
 
-                                        MouseArea {
-                                            id: themeMa
-
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                if (root.backend)
-                                                    root.backend.themeMode = modelData.mode;
-
-                                            }
+                                        Text {
+                                            width: parent.width
+                                            text: modelData.desc
+                                            color: root.fgSub
+                                            font.pixelSize: 11 + root.fontDelta
+                                            elide: Text.ElideRight
                                         }
 
                                     }
 
                                     Rectangle {
-                                        visible: index < 3
-                                        width: parent.width - 24
-                                        height: 1
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        color: root.borderDivider
+                                        id: cardCheck
+
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: 18
+                                        height: 18
+                                        radius: 9
+                                        color: isCurrent ? (theme.accent || root.fgTitle) : "transparent"
+                                        border.width: isCurrent ? 0 : 1.5
+                                        border.color: root.borderGroup
+
+                                        Image {
+                                            visible: isCurrent
+                                            anchors.centerIn: parent
+                                            width: 11
+                                            height: 11
+                                            sourceSize: Qt.size(22, 22)
+                                            smooth: true
+                                            source: visible ? root.checkIconUri(theme.fgOnPrimary || (darkMode ? "#111215" : "#ffffff")) : ""
+                                        }
+
+                                    }
+
+                                }
+
+                                MouseArea {
+                                    id: themeCardMa
+
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        if (root.backend)
+                                            root.backend.themeMode = modelData.mode;
+
+                                    }
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                    Rectangle {
+                        readonly property bool isCurrent: root.backend && root.backend.themeMode === 0
+
+                        width: parent.width
+                        height: 76 + root.fontDelta * 4
+                        radius: 12
+                        color: isCurrent ? (theme.chipBg || (darkMode ? "#1e2430" : "#eef2fb")) : (sysThemeMa.containsMouse ? (theme.bgHover || (darkMode ? "#1c1e24" : "#eceff5")) : root.bgGroup)
+                        border.width: isCurrent ? 1.5 : 1
+                        border.color: isCurrent ? (theme.accent || root.fgTitle) : (sysThemeMa.containsMouse ? (theme.borderHover || root.borderGroup) : root.borderGroup)
+                        clip: true
+
+                        Rectangle {
+                            id: sysPreview
+
+                            anchors.left: parent.left
+                            anchors.leftMargin: 9
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 152 + root.fontDelta * 8
+                            height: parent.height - 18
+                            radius: 8
+                            border.width: 1
+                            border.color: root.borderGroup
+                            clip: true
+
+                            Row {
+                                anchors.fill: parent
+                                spacing: 0
+
+                                Rectangle {
+                                    width: Math.floor(parent.width / 2)
+                                    height: parent.height
+                                    color: "#16181e"
+
+                                    Rectangle {
+                                        anchors.top: parent.top
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        height: 12
+                                        color: "#0d0e11"
+                                    }
+
+                                    Column {
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.top: parent.top
+                                        anchors.topMargin: 18
+                                        anchors.leftMargin: 8
+                                        anchors.rightMargin: 6
+                                        spacing: 5
+
+                                        Rectangle {
+                                            width: parent.width * 0.72
+                                            height: 3
+                                            radius: 1.5
+                                            color: "#7aa2f7"
+                                        }
+
+                                        Rectangle {
+                                            width: parent.width * 0.9
+                                            height: 3
+                                            radius: 1.5
+                                            color: "#f0f2f6"
+                                            opacity: 0.75
+                                        }
+
+                                        Rectangle {
+                                            width: parent.width * 0.55
+                                            height: 3
+                                            radius: 1.5
+                                            color: "#697082"
+                                        }
+
+                                    }
+
+                                }
+
+                                Rectangle {
+                                    width: 1
+                                    height: parent.height
+                                    color: root.borderGroup
+                                }
+
+                                Rectangle {
+                                    width: parent.width - Math.floor(parent.width / 2) - 1
+                                    height: parent.height
+                                    color: "#ffffff"
+
+                                    Rectangle {
+                                        anchors.top: parent.top
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        height: 12
+                                        color: "#ebedf2"
+                                    }
+
+                                    Column {
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.top: parent.top
+                                        anchors.topMargin: 18
+                                        anchors.leftMargin: 8
+                                        anchors.rightMargin: 6
+                                        spacing: 5
+
+                                        Rectangle {
+                                            width: parent.width * 0.72
+                                            height: 3
+                                            radius: 1.5
+                                            color: "#2563eb"
+                                        }
+
+                                        Rectangle {
+                                            width: parent.width * 0.9
+                                            height: 3
+                                            radius: 1.5
+                                            color: "#14161a"
+                                            opacity: 0.75
+                                        }
+
+                                        Rectangle {
+                                            width: parent.width * 0.55
+                                            height: 3
+                                            radius: 1.5
+                                            color: "#9aa2b2"
+                                        }
+
                                     }
 
                                 }
 
                             }
 
+                        }
+
+                        Column {
+                            anchors.left: sysPreview.right
+                            anchors.leftMargin: 14
+                            anchors.right: sysCheck.left
+                            anchors.rightMargin: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 3
+
+                            Text {
+                                text: root.ui.themeSystem || "System"
+                                color: parent.parent.isCurrent ? root.fgTitle : root.fgLabel
+                                font.pixelSize: 13 + root.fontDelta
+                                font.weight: parent.parent.isCurrent ? Font.DemiBold : Font.Medium
+                            }
+
+                            Text {
+                                width: parent.width
+                                text: root.ui.themeSystemDesc || "Follows OS & desktop palette"
+                                color: root.fgSub
+                                font.pixelSize: 11 + root.fontDelta
+                                elide: Text.ElideRight
+                            }
+
+                        }
+
+                        Rectangle {
+                            id: sysCheck
+
+                            anchors.right: parent.right
+                            anchors.rightMargin: 12
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 18
+                            height: 18
+                            radius: 9
+                            color: parent.isCurrent ? (theme.accent || root.fgTitle) : "transparent"
+                            border.width: parent.isCurrent ? 0 : 1.5
+                            border.color: root.borderGroup
+
+                            Image {
+                                visible: parent.parent.isCurrent
+                                anchors.centerIn: parent
+                                width: 11
+                                height: 11
+                                sourceSize: Qt.size(22, 22)
+                                smooth: true
+                                source: visible ? root.checkIconUri(theme.fgOnPrimary || (darkMode ? "#111215" : "#ffffff")) : ""
+                            }
+
+                        }
+
+                        MouseArea {
+                            id: sysThemeMa
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                if (root.backend)
+                                    root.backend.themeMode = 0;
+
+                            }
                         }
 
                     }
@@ -1381,9 +1811,9 @@ Item {
                                             cornerRadius: 8
                                             tooltipText: root.ui.updBtnCheck || "Check for updates"
                                             onClicked: {
-                                                if (root.updater) {
+                                                if (root.updater)
                                                     root.updater.checkForUpdates(true);
-                                                }
+
                                             }
                                         }
 
@@ -1400,9 +1830,9 @@ Item {
                                             horizontalPadding: 11
                                             cornerRadius: 8
                                             onClicked: {
-                                                if (root.updater && root.updStatus !== 1) {
+                                                if (root.updater && root.updStatus !== 1)
                                                     root.updater.checkForUpdates(true);
-                                                }
+
                                             }
                                         }
 
@@ -1417,9 +1847,9 @@ Item {
                                             horizontalPadding: 12
                                             cornerRadius: 8
                                             onClicked: {
-                                                if (root.updater) {
+                                                if (root.updater)
                                                     root.updater.startDownload();
-                                                }
+
                                             }
                                         }
 
@@ -1596,9 +2026,9 @@ Item {
                                 cornerRadius: 8
                                 tooltipText: root.updater ? root.updater.repoUrl : "https://github.com/pzwt4cc/nulla"
                                 onClicked: {
-                                    if (root.updater) {
+                                    if (root.updater)
                                         root.updater.openRepoPage();
-                                    }
+
                                 }
                             }
 
