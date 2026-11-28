@@ -140,5 +140,10 @@
   "updSystemHint": "Paquete del sistema: actualiza con tu gestor de paquetes o en GitHub.",
   "updLastChecked": "Última comprobación:",
   "updCurrentPrefix": "Instalada:",
-  "updCreatedBy": "Creado por"
+  "updCreatedBy": "Creado por",
+  "dlgOpenFile": "Abrir archivo",
+  "dlgSaveFile": "Guardar archivo",
+  "dlgFilterText": "Documentos de texto",
+  "dlgFilterAll": "Todos los archivos",
+  "dlgReplacePrompt": "%1 ya existe.\n¿Desea reemplazarlo?"
 }

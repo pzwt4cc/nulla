@@ -14,6 +14,8 @@
 #include <QGuiApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMessageBox>
+#include <QPushButton>
 #include <QSet>
 #include <QSettings>
 #include <QStandardPaths>
@@ -24,6 +26,105 @@
 #include <algorithm>
 
 namespace {
+
+struct FileFormatEntry {
+  const char *filter;
+  const char *defaultExt;
+  const char *langId;
+};
+
+constexpr FileFormatEntry kFileFormats[] = {
+    {nullptr, "txt", "plain"},
+    {"Markdown (*.md *.markdown)", "md", "markdown"},
+    {"Python (*.py *.pyw)", "py", "python"},
+    {"JavaScript / TypeScript (*.js *.mjs *.ts *.tsx *.jsx *.qml)", "js", "js"},
+    {"C (*.c *.h)", "c", "c"},
+    {"C++ (*.cpp *.cc *.cxx *.hpp)", "cpp", "c"},
+    {"Rust (*.rs)", "rs", "rust"},
+    {"Go (*.go)", "go", "go"},
+    {"Shell Script (*.sh *.bash *.zsh)", "sh", "bash"},
+    {"JSON (*.json *.jsonc)", "json", "json"},
+    {"YAML (*.yml *.yaml)", "yaml", "yaml"},
+    {"TOML (*.toml)", "toml", "toml"},
+    {"INI / Config (*.ini *.conf *.cfg *.desktop *.service *.env)", "ini",
+     "ini"},
+    {"HTML / XML (*.html *.htm *.xml *.svg *.qrc)", "html", "html"},
+    {"CSS (*.css *.scss)", "css", "css"},
+    {"Makefile (*.mk)", "mk", "make"},
+};
+
+QString uiStr(const QVariantMap &ui, const QString &key,
+              const QString &fallback) {
+  const QString val = ui.value(key).toString();
+  return val.isEmpty() ? fallback : val;
+}
+
+QString filterStringForEntry(const FileFormatEntry &entry,
+                             const QString &txtFilterLabel) {
+  if (!entry.filter) {
+    return txtFilterLabel + QStringLiteral(" (*.txt)");
+  }
+  return QLatin1String(entry.filter);
+}
+
+QString buildDialogFilters(bool allFilesFirst, const QString &txtFilterLabel,
+                           const QString &allFilterLabel) {
+  QStringList list;
+  const QString allFilter = allFilterLabel + QStringLiteral(" (*)");
+  if (allFilesFirst) {
+    list.append(allFilter);
+  }
+  for (const auto &entry : kFileFormats) {
+    list.append(filterStringForEntry(entry, txtFilterLabel));
+  }
+  if (!allFilesFirst) {
+    list.append(allFilter);
+  }
+  return list.join(QStringLiteral(";;"));
+}
+
+bool filterMatchesSuffix(const QString &filterStr, const QString &suffix) {
+  if (suffix.isEmpty()) {
+    return false;
+  }
+  const int open = filterStr.lastIndexOf(QLatin1Char('('));
+  const int close = filterStr.lastIndexOf(QLatin1Char(')'));
+  if (open < 0 || close <= open) {
+    return false;
+  }
+  const QStringList patterns = filterStr.mid(open + 1, close - open - 1)
+                                   .split(QLatin1Char(' '), Qt::SkipEmptyParts);
+  const QString target = QStringLiteral("*.") + suffix.toLower();
+  for (const QString &pat : patterns) {
+    if (pat.compare(target, Qt::CaseInsensitive) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+QString defaultExtForFilter(const QString &selectedFilter,
+                            const QString &txtFilterLabel) {
+  for (const auto &entry : kFileFormats) {
+    if (selectedFilter == filterStringForEntry(entry, txtFilterLabel)) {
+      return QLatin1String(entry.defaultExt);
+    }
+  }
+  return QString();
+}
+
+const FileFormatEntry *entryForLanguageId(const QString &langId) {
+  if (langId.isEmpty() || langId == QStringLiteral("auto") ||
+      langId == QStringLiteral("plain")) {
+    return &kFileFormats[0];
+  }
+  for (const auto &entry : kFileFormats) {
+    if (langId == QLatin1String(entry.langId)) {
+      return &entry;
+    }
+  }
+  return &kFileFormats[0];
+}
 
 QString pickMonoFontFamily() {
   const QStringList available = QFontDatabase::families();
@@ -55,6 +156,24 @@ QString normalizeFilePath(const QString &rawPath) {
     path = url.toLocalFile();
   }
   return QFileInfo(path).absoluteFilePath();
+}
+
+QString applySaveFilterSuffix(const QString &path,
+                              const QString &selectedFilter,
+                              const QString &txtFilterLabel) {
+  if (path.isEmpty()) {
+    return path;
+  }
+  const QString ext = defaultExtForFilter(selectedFilter, txtFilterLabel);
+  if (ext.isEmpty()) {
+    return path;
+  }
+  const QFileInfo fi(path);
+  const QString name = fi.fileName();
+  if (name.isEmpty() || name.contains(QLatin1Char('.'))) {
+    return path;
+  }
+  return path + QLatin1Char('.') + ext;
 }
 
 }
@@ -532,8 +651,15 @@ bool EditorBackend::openFileDialog() {
           ? QFileInfo(cur->filePath()).absolutePath()
           : (!m_workspaceRoot.isEmpty() ? m_workspaceRoot
                                         : QDir::currentPath());
-  const QString chosen = QFileDialog::getOpenFileName(
-      nullptr, QStringLiteral("Open File"), initialDir);
+  const QString title = uiStr(m_uiStrings, QStringLiteral("dlgOpenFile"),
+                              QStringLiteral("Open File"));
+  const QString txtLabel = uiStr(m_uiStrings, QStringLiteral("dlgFilterText"),
+                                 QStringLiteral("Text Documents"));
+  const QString allLabel = uiStr(m_uiStrings, QStringLiteral("dlgFilterAll"),
+                                 QStringLiteral("All Files"));
+  const QString filters = buildDialogFilters(true, txtLabel, allLabel);
+  const QString chosen =
+      QFileDialog::getOpenFileName(nullptr, title, initialDir, filters);
   if (chosen.isEmpty()) {
     return false;
   }
@@ -548,8 +674,10 @@ bool EditorBackend::openFolderDialog() {
           : ((cur && !cur->filePath().isEmpty())
                  ? QFileInfo(cur->filePath()).absolutePath()
                  : QDir::currentPath());
+  const QString title = uiStr(m_uiStrings, QStringLiteral("openFolderBtn"),
+                              QStringLiteral("Open Folder"));
   const QString chosen = QFileDialog::getExistingDirectory(
-      nullptr, QStringLiteral("Open Folder"), initialDir,
+      nullptr, title, initialDir,
       QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
   if (chosen.isEmpty()) {
     return false;
@@ -667,17 +795,68 @@ bool EditorBackend::saveFileAsDialog(int index) {
   if (!tab) {
     return false;
   }
+  const QString title = uiStr(m_uiStrings, QStringLiteral("dlgSaveFile"),
+                              QStringLiteral("Save File"));
+  const QString txtLabel = uiStr(m_uiStrings, QStringLiteral("dlgFilterText"),
+                                 QStringLiteral("Text Documents"));
+  const QString allLabel = uiStr(m_uiStrings, QStringLiteral("dlgFilterAll"),
+                                 QStringLiteral("All Files"));
+  const QString untitledBase = uiStr(m_uiStrings, QStringLiteral("untitled"),
+                                     QStringLiteral("Untitled"));
+
+  const QString filters = buildDialogFilters(false, txtLabel, allLabel);
+  const QString allFilter = allLabel + QStringLiteral(" (*)");
+
+  const bool hasPath = !tab->filePath().isEmpty();
+  const FileFormatEntry *langEntry = entryForLanguageId(tab->languageId());
   const QString initial =
-      tab->filePath().isEmpty()
-          ? QDir(!m_workspaceRoot.isEmpty() ? m_workspaceRoot
-                                            : QDir::currentPath())
-                .filePath(QStringLiteral("Untitled"))
-          : tab->filePath();
-  const QString chosen = QFileDialog::getSaveFileName(
-      nullptr, QStringLiteral("Save File"), initial);
+      hasPath ? tab->filePath()
+              : QDir(!m_workspaceRoot.isEmpty() ? m_workspaceRoot
+                                                : QDir::currentPath())
+                    .filePath(untitledBase + QLatin1Char('.') +
+                              QLatin1String(langEntry->defaultExt));
+
+  QString selectedFilter = allFilter;
+  if (!hasPath) {
+    selectedFilter = filterStringForEntry(*langEntry, txtLabel);
+  } else {
+    const QString suffix = QFileInfo(initial).suffix();
+    for (const auto &entry : kFileFormats) {
+      const QString candidate = filterStringForEntry(entry, txtLabel);
+      if (filterMatchesSuffix(candidate, suffix)) {
+        selectedFilter = candidate;
+        break;
+      }
+    }
+  }
+
+  QString chosen = QFileDialog::getSaveFileName(nullptr, title, initial,
+                                                filters, &selectedFilter);
   if (chosen.isEmpty()) {
     return false;
   }
+  const QString withSuffix =
+      applySaveFilterSuffix(chosen, selectedFilter, txtLabel);
+  if (withSuffix != chosen && QFileInfo::exists(withSuffix)) {
+    const QString promptTmpl =
+        uiStr(m_uiStrings, QStringLiteral("dlgReplacePrompt"),
+              QStringLiteral("%1 already exists.\nDo you want to replace it?"));
+    const QString replaceText = uiStr(m_uiStrings, QStringLiteral("replaceBtn"),
+                                      QStringLiteral("Replace"));
+    const QString cancelText = uiStr(m_uiStrings, QStringLiteral("btnCancel"),
+                                     QStringLiteral("Cancel"));
+    QMessageBox box(QMessageBox::Question, title,
+                    promptTmpl.arg(QFileInfo(withSuffix).fileName()));
+    QPushButton *replaceBtn =
+        box.addButton(replaceText, QMessageBox::AcceptRole);
+    QPushButton *cancelBtn = box.addButton(cancelText, QMessageBox::RejectRole);
+    box.setDefaultButton(cancelBtn);
+    box.exec();
+    if (box.clickedButton() != replaceBtn) {
+      return false;
+    }
+  }
+  chosen = withSuffix;
   return tab->writeToFile(chosen);
 }
 

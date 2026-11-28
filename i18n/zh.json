@@ -140,5 +140,10 @@
   "updSystemHint": "系统安装包 — 请通过包管理器或 GitHub 发布页更新。",
   "updLastChecked": "上次检查:",
   "updCurrentPrefix": "当前版本:",
-  "updCreatedBy": "作者:"
+  "updCreatedBy": "作者:",
+  "dlgOpenFile": "打开文件",
+  "dlgSaveFile": "保存文件",
+  "dlgFilterText": "文本文档",
+  "dlgFilterAll": "所有文件",
+  "dlgReplacePrompt": "%1 已存在。\n是否要替换它？"
 }

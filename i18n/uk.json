@@ -140,5 +140,10 @@
   "updSystemHint": "Системний пакет — оновіть через пакетний менеджер або реліз GitHub.",
   "updLastChecked": "Остання перевірка:",
   "updCurrentPrefix": "Встановлено:",
-  "updCreatedBy": "Створив"
+  "updCreatedBy": "Створив",
+  "dlgOpenFile": "Відкрити файл",
+  "dlgSaveFile": "Зберегти файл",
+  "dlgFilterText": "Текстові документи",
+  "dlgFilterAll": "Усі файли",
+  "dlgReplacePrompt": "Файл «%1» уже існує.\nЗамінити його?"
 }

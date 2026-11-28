@@ -140,5 +140,10 @@
   "updSystemHint": "System package detected — update via package manager or GitHub release.",
   "updLastChecked": "Last checked:",
   "updCurrentPrefix": "Installed:",
-  "updCreatedBy": "Created by"
+  "updCreatedBy": "Created by",
+  "dlgOpenFile": "Open File",
+  "dlgSaveFile": "Save File",
+  "dlgFilterText": "Text Documents",
+  "dlgFilterAll": "All Files",
+  "dlgReplacePrompt": "%1 already exists.\nDo you want to replace it?"
 }

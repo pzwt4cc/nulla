@@ -140,5 +140,10 @@
   "updSystemHint": "Sistem paketi — paket yöneticisi veya GitHub üzerinden güncelleyin.",
   "updLastChecked": "Son denetim:",
   "updCurrentPrefix": "Yüklü:",
-  "updCreatedBy": "Geliştirici:"
+  "updCreatedBy": "Geliştirici:",
+  "dlgOpenFile": "Dosya Aç",
+  "dlgSaveFile": "Dosyayı Kaydet",
+  "dlgFilterText": "Metin Belgeleri",
+  "dlgFilterAll": "Tüm Dosyalar",
+  "dlgReplacePrompt": "%1 zaten var.\nDeğiştirmek istiyor musunuz?"
 }

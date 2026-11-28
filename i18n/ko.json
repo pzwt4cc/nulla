@@ -140,5 +140,10 @@
   "updSystemHint": "시스템 패키지 — 패키지 관리자 또는 GitHub에서 업데이트하세요.",
   "updLastChecked": "마지막 확인:",
   "updCurrentPrefix": "설치됨:",
-  "updCreatedBy": "제작:"
+  "updCreatedBy": "제작:",
+  "dlgOpenFile": "파일 열기",
+  "dlgSaveFile": "파일 저장",
+  "dlgFilterText": "텍스트 문서",
+  "dlgFilterAll": "모든 파일",
+  "dlgReplacePrompt": "%1이(가) 이미 있습니다.\n바꾸시겠습니까?"
 }

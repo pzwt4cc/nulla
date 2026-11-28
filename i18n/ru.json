@@ -140,5 +140,10 @@
   "updSystemHint": "Системный пакет — обновите через пакетный менеджер или релиз GitHub.",
   "updLastChecked": "Проверено:",
   "updCurrentPrefix": "Установлена:",
-  "updCreatedBy": "Создал"
+  "updCreatedBy": "Создал",
+  "dlgOpenFile": "Открыть файл",
+  "dlgSaveFile": "Сохранить файл",
+  "dlgFilterText": "Текстовые документы",
+  "dlgFilterAll": "Все файлы",
+  "dlgReplacePrompt": "Файл «%1» уже существует.\nЗаменить его?"
 }
