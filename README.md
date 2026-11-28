@@ -105,7 +105,7 @@ Requires Qt 6 (`qtdeclarative`, `qtshadertools`, `qtsvg`), Rust toolchain (`carg
 .\package\windows\build-msi.ps1
 ```
 
-The installer appears in `dist\Nulla-0.4.0-win64.msi` with selectable install location and optional components (Start Menu shortcut, Desktop shortcut, `PATH`, Explorer context menu, and Open With registration).
+The installer appears in `dist\Nulla-0.4.1-win64.msi` with selectable install location and optional components (Start Menu shortcut, Desktop shortcut, `PATH`, Explorer context menu, and Open With registration).
 
 ## License
 
