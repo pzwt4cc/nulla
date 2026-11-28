@@ -137,8 +137,24 @@ jobs:
           path: release-assets
           merge-multiple: true
 
+      - name: Prepare release body
+        id: release_body
+        shell: bash
+        run: |
+          set -euo pipefail
+          win_file="$(basename "$(find release-assets -maxdepth 1 -name '*.msi' | head -n1)")"
+          linux_file="$(basename "$(find release-assets -maxdepth 1 -name '*.tar.gz' | head -n1)")"
+          {
+            echo "body<<EOF"
+            echo "**Downloads:**"
+            echo "- Windows: \`${win_file}\`"
+            echo "- Linux: \`${linux_file}\`"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: release-assets/*
+          body: ${{ steps.release_body.outputs.body }}
           generate_release_notes: true
